@@ -125,7 +125,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Looks in the 'static' folder at the root of your project
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 # Default primary key field type
@@ -138,4 +138,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'innovest05@gmail.com'
-EMAIL_HOST_PASSWORD = 'pqqr ruuf kzfw zlrj'  # App password
+EMAIL_HOST_PASSWORD = 'pqqr ruuf kzfw zlrj'

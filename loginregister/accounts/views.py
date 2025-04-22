@@ -47,7 +47,7 @@ def register_view(request):
                 fail_silently=False,
             )
 
-            messages.success(request, "Registration successful. Check your email.")
+            messages.success(request, "Check your email for complete registration.")
             return redirect('login')
 
     return render(request, 'accounts/register.html')
@@ -97,7 +97,16 @@ def verify_email(request):
 from django.shortcuts import render
 
 def home(request):
-    # You can display the username dynamically if the user is logged in
-    username = request.session.get('username')  # Fetch the username from session
-    return render(request, 'accounts/home.html', {'username': username})  # Pass the username to the template
+    username = request.session.get('username')
+
+    if not username:
+        return redirect('login')  
+
+    return render(request, 'accounts/home.html', {'username': username})
+
+def logout_view(request):
+    request.session.flush() 
+    return redirect('login')
+
+
 
