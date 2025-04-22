@@ -11,11 +11,3 @@ class RegisteredUser(models.Model):
     def __str__(self):
         return self.username
 
-
-class ProfileDescription(models.Model):
-    username = models.CharField(max_length=150)
-    email = models.EmailField()
-
-    def __str__(self):
-        return self.username
-

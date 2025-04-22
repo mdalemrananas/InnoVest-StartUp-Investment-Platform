@@ -1,9 +1,29 @@
-{% extends 'base_genric.html' %}
-
-{% block content %}
-    <div class="verification-already">
-        <h1>Email Already Verified</h1>
-        <p>Your email address has already been verified. You can now log in to your account.</p>
-        <a href="{% url 'login' %}" class="login-btn">Go to Login</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Already Verified</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff8e1;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .message-box {
+            background-color: #fff9c4;
+            padding: 20px;
+            margin: auto;
+            border-radius: 10px;
+            width: 60%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-box">
+        <h2>ℹ️ Already Verified</h2>
+        <p>Your email is already verified. Please <a href="{% url 'login' %}">log in</a>.</p>
     </div>
-{% endblock %}
+</body>
+</html>

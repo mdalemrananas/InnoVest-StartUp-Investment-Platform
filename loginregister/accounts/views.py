@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
-from .models import RegisteredUser, ProfileDescription
+from .models import RegisteredUser
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
+from django.views.decorators.csrf import csrf_exempt
 import random, string
 
 def generate_verification_code():
@@ -18,7 +19,6 @@ def register_view(request):
         email = request.POST['email']
         password = request.POST['password']
 
-        # Check if the username or email already exists in the database
         if RegisteredUser.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
         elif RegisteredUser.objects.filter(email=email).exists():
@@ -26,13 +26,11 @@ def register_view(request):
         else:
             v_code = generate_verification_code()
 
-            # Create the user and profile description objects
-            profile = ProfileDescription.objects.create(username=username, email=email)
             user = RegisteredUser.objects.create(
                 full_name=full_name,
                 username=username,
                 email=email,
-                password=make_password(password),  # Hash the password before storing
+                password=make_password(password),
                 verification_code=v_code,
                 is_verified=False
             )
@@ -60,16 +58,16 @@ def login_view(request):
         password = request.POST['password']
 
         try:
-            # Fetch the user by username or email
+            
             user = RegisteredUser.objects.get(username=email_or_username) if RegisteredUser.objects.filter(username=email_or_username).exists() else RegisteredUser.objects.get(email=email_or_username)
 
-            # Check if the account is verified
+            
             if not user.is_verified:
-                messages.error(request, "You have been blocked by the Admin!")
-            # Check if the password is correct
-            elif check_password(password, user.password):  # Use check_password to verify hashed password
+                messages.error(request, "You are not a verified user!")
+            
+            elif check_password(password, user.password): 
                 request.session['username'] = user.username
-                return redirect('home')  # Redirect to homepage or dashboard after successful login
+                return redirect('home') 
             else:
                 messages.error(request, "Incorrect password.")
         except RegisteredUser.DoesNotExist:
@@ -84,7 +82,7 @@ def verify_email(request):
     v_code = request.GET.get('v_code')
 
     try:
-        # Try to find the user with the given email and verification code
+
         user = RegisteredUser.objects.get(email=email, verification_code=v_code)
         if not user.is_verified:
             user.is_verified = True
@@ -104,9 +102,13 @@ def home(request):
 
     return render(request, 'accounts/home.html', {'username': username})
 
+
 def logout_view(request):
-    request.session.flush() 
-    return redirect('login')
+    if request.method == 'POST':
+        request.session.flush()
+        return redirect('login')
+    return redirect('home')
+
 
 
 
