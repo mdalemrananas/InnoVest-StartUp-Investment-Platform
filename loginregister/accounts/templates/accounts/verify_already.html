@@ -1,0 +1,9 @@
+{% extends 'base_genric.html' %}
+
+{% block content %}
+    <div class="verification-already">
+        <h1>Email Already Verified</h1>
+        <p>Your email address has already been verified. You can now log in to your account.</p>
+        <a href="{% url 'login' %}" class="login-btn">Go to Login</a>
+    </div>
+{% endblock %}

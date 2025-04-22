@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Innovest</title>
+    <link rel="stylesheet" href="{% load static %}{% static 'css/style1.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome, {{ request.session.username }}!</h1>
+            <p>You are now logged in to Innovest. Enjoy your stay!</p>
+        </header>
+
+        <section>
+            <p>Explore the platform and start investing, crowdfunding, or discovering new business ideas!</p>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 Innovest. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
