@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Projects - Innovest{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Crowdfunding Projects</h1>
+            <p class="lead">Discover innovative projects and support them through crowdfunding</p>
+        </div>
+        <div class="col-md-4">
+            <form method="get" class="d-flex">
+                <input type="text" name="search" class="form-control me-2" placeholder="Search projects..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if campaigns %}
+            {% for campaign in campaigns %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        {% if campaign.cover_image %}
+                            <img src="{{ campaign.cover_image.url }}" class="card-img-top" alt="{{ campaign.title }}">
+                        {% else %}
+                            <div class="card-img-top bg-light text-center py-5">
+                                <i class="fas fa-project-diagram fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ campaign.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ campaign.company.name }}</h6>
+                            <p class="card-text">{{ campaign.description|truncatewords:30 }}</p>
+                            
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {% widthratio campaign.current_amount campaign.target_amount 100 %}%"
+                                     aria-valuenow="{{ campaign.current_amount }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="{{ campaign.target_amount }}">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-3">
+                                <small class="text-muted">
+                                    <strong>${{ campaign.current_amount|floatformat:0 }}</strong> raised
+                                </small>
+                                <small class="text-muted">
+                                    <strong>${{ campaign.target_amount|floatformat:0 }}</strong> goal
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No projects found. {% if search_query %}Try different search terms.{% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
