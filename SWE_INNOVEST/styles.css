@@ -1,0 +1,171 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 25%;
+    padding: 20px;
+    background: #fff;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    border-right: 2px solid #ddd;
+    overflow-y: auto;
+}
+
+/* Need Help Button */
+.btn-help {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px 20px;
+    width: 100%;
+    text-align: left;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-help:hover {
+    background-color: #28a745; /* Light gray hover effect */
+    color: white;
+    border-color: #333;
+}
+
+
+/* Fundraise Setup Header */
+.section-header {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    background: #d4a017;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+/* Sidebar Buttons */
+.section-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Progress Status */
+.progress-status {
+    font-weight: normal;
+    color: #555;
+}
+
+/* Launch Fundraise Button */
+.btn-success {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Help Section */
+.help-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.help-section h6 {
+    font-weight: bold;
+}
+
+.help-section ul {
+    padding-left: 20px;
+}
+
+.help-section button {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.help-section button:hover {
+    text-decoration: underline;
+}
+
+/* Content Section */
+.content {
+    margin-left: 27%;
+    width: 70%;
+    padding: 20px;
+    overflow-y: auto;
+    height: 100vh;
+}
+
+/* Forms Section */
+.form-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h3 {
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Input Fields */
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Save Changes Button */
+.btn-save {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: 2px solid #000;
+    border-radius: 5px;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+    color: white;
+    border-color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 30%;
+    }
+    .content {
+        margin-left: 32%;
+        width: 65%;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+    .content {
+        margin-left: 0;
+        width: 100%;
+    }
+}

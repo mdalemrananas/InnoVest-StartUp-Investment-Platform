@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraise Setup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="sidebar">
+            <button type="button" class="btn-help w-100 mb-3">Need Help?</button>
+            <div class="section-header">
+                Your fundraise is in setup. Click "Launch Fundraise" to submit for approval.
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-outline-dark w-100 text-start section-btn" data-section="company">Company Information <span class="progress-status" id="companyProgress">0%</span> Complete</button>
+                <button class="btn btn-outline-dark w-100 text-start section-btn" data-section="terms">
+                    Fundraise Terms <span class="progress-status" id="termsProgress">0%</span> Complete
+                </button>
+                
+                <button class="btn btn-outline-dark w-100 text-start section-btn" data-section="profile">
+                    Public Profile <span class="progress-status" id="profileProgress">0%</span> Complete
+                </button>
+                
+                <button class="btn btn-outline-dark w-100 text-start section-btn" data-section="business">
+                    Business Plan <span class="progress-status" id="businessProgress">0%</span> Complete
+                </button>
+                
+                <button class="btn btn-success w-100 mt-3">Launch Fundraise</button>
+            </div>
+            <div class="help-section mt-4">
+                <h6><strong>Need help?</strong></h6>
+                <p>Upgrade to work with a dedicated advisor!</p>
+                <ul>
+                    <li>Custom pitch deck</li>
+                    <li>Investor research</li>
+                    <li>Funding advisor</li>
+                </ul>
+                <button class="btn btn-link">Request a Consultation</button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="company" class="form-section">
+                <h3><strong>Company Information</strong></h3>
+                <form id="companyForm">
+                    <label><strong>Company/Product Name:</strong></label>
+                    <input type="text" class="form-control mb-2" id="companyName" required>
+                    
+                    <label><strong>Quick Description:</strong></label>
+                    <input type="text" class="form-control mb-2" id="quickDesc" required>
+                    
+                    <label><strong>Industry:</strong></label>
+                    <input type="text" class="form-control mb-2" id="industry" required>
+                    
+                    <label><strong>Location:</strong></label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control mb-2" id="country" placeholder="Enter Country" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control mb-2" id="state" placeholder="Enter State" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control mb-2" id="city" placeholder="Enter City" required>
+                        </div>
+                    </div>
+                    
+                    <label><strong>Company Image:</strong></label>
+                    <input type="file" class="form-control mb-3" id="companyImage" accept="image/png, image/jpeg" required>
+                    
+                    <button type="submit" class="btn btn-save border border-dark px-4 py-2">Save Changes</button>
+                </form>
+            </div>
+            <div id="terms" class="form-section d-none">
+                <h3>Fundraise Terms</h3>
+                <p>Fundraising terms form goes here...</p>
+            </div>
+            <div id="profile" class="form-section d-none">
+                <h3>Public Profile</h3>
+                <p>Public profile form goes here...</p>
+            </div>
+            <div id="business" class="form-section d-none">
+                <h3>Business Plan</h3>
+                <p>Business plan form goes here...</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
