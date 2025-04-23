@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Verification - Django Auth{% endblock %}
+
+{% block content %}
+<div class="card text-center">
+    <div class="card-header">
+        <h2>Email Verification</h2>
+    </div>
+    <div class="card-body">
+        <h4>{{ message }}</h4>
+        <div class="mt-4">
+            <a href="{% url 'login' %}" class="btn btn-primary">Go to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

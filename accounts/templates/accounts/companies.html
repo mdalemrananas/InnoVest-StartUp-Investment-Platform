@@ -1,0 +1,108 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Companies - Crowdfunding Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Companies</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">All Companies</h6>
+        <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuLink">
+                <li><a class="dropdown-item" href="?status=">All Statuses</a></li>
+                {% for status in status_choices %}
+                <li><a class="dropdown-item" href="?status={{ status.0 }}">{{ status.1 }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="companiesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Owner</th>
+                        <th>Industry</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td>{{ company.name }}</td>
+                        <td>{{ company.owner.username }}</td>
+                        <td>{{ company.get_industry_type_display }}</td>
+                        <td>{{ company.location }}</td>
+                        <td class="status-cell">
+                            <span class="status-badge status-{{ company.status }}">
+                                {{ company.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ company.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" 
+                                        id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'company_detail' company.id %}">
+                                            <i class="fas fa-eye me-1"></i> View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <i class="fas fa-edit me-1"></i> Edit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <i class="fas fa-envelope me-1"></i> Message Owner
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No companies found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#companiesTable').DataTable({
+            "order": [[5, "desc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [6] }
+            ]
+        });
+    });
+</script>
+{% endblock %}

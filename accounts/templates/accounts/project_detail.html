@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - InnoVest{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-header {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        padding: 100px 0;
+        color: white;
+    }
+    .project-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    .project-header .content {
+        position: relative;
+        z-index: 1;
+    }
+    .nav-tabs .nav-link {
+        color: #495057;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 1rem 1.5rem;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+    }
+    .tab-content {
+        padding: 2rem 0;
+    }
+    .private-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Project Header -->
+<div class="project-header" style="background-image: url('{{ project.featured_image.url }}');">
+    <div class="container">
+        <div class="content">
+            <h1 class="display-4">{{ project.title }}</h1>
+            <p class="lead">{{ project.short_description }}</p>
+            {% if not user.is_authenticated or not user.has_access %}
+            <div class="private-badge">
+                <i class="fas fa-lock"></i> Private Fundraise
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab">
+                <i class="fas fa-file"></i> PROFILE
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="business-plan-tab" data-bs-toggle="tab" href="#business-plan" role="tab">
+                <i class="fas fa-lock"></i> BUSINESS PLAN
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="updates-tab" data-bs-toggle="tab" href="#updates" role="tab">
+                <i class="fas fa-wifi"></i> UPDATES
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="projectTabContent">
+        <!-- Profile Tab -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Project Description -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>About the Project</h4>
+                            {{ project.description|linebreaks }}
+                            
+                            {% if project.video_url %}
+                            <div class="embed-responsive embed-responsive-16by9 mt-4">
+                                <iframe class="embed-responsive-item" src="{{ project.video_url }}" allowfullscreen></iframe>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    {% if user.is_authenticated and user.has_access %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Comments</h4>
+                            {% if user.is_authenticated %}
+                            <form method="post" class="mb-4">
+                                {% csrf_token %}
+                                {{ comment_form.as_p }}
+                                <button type="submit" name="comment" class="btn btn-primary">Post Comment</button>
+                            </form>
+                            {% endif %}
+                            
+                            {% for comment in comments %}
+                            <div class="mb-3">
+                                <strong>{{ comment.user.get_full_name|default:comment.user.email }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"F d, Y" }}</small>
+                                <p>{{ comment.content }}</p>
+                            </div>
+                            {% empty %}
+                            <p>No comments yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Investment Details -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>Investment Details</h4>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ project.progress }}%" 
+                                     aria-valuenow="{{ project.progress }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ project.progress|floatformat:0 }}%
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Raised:</span>
+                                <strong>${{ project.raised_amount }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Goal:</span>
+                                <strong>${{ project.goal_amount }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Equity Offered:</span>
+                                <strong>{{ project.equity_offered }}%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-4">
+                                <span>Days Left:</span>
+                                <strong>{{ project.days_left }}</strong>
+                            </div>
+
+                            {% if not user.is_authenticated %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-lock"></i> This is a private fundraise. Please request access to see more information.
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary btn-sm d-block mt-2">Login to Request Access</a>
+                            </div>
+                            {% elif not user.has_access %}
+                            <button class="btn btn-primary btn-block" id="requestAccessBtn">
+                                Request Access
+                            </button>
+                            {% else %}
+                            <form method="post" class="mt-4">
+                                {% csrf_token %}
+                                {{ investment_form.as_p }}
+                                <button type="submit" name="invest" class="btn btn-success btn-block">Invest Now</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Plan Tab -->
+        <div class="tab-pane fade" id="business-plan" role="tabpanel">
+            {% if not user.is_authenticated or not user.has_access %}
+            <div class="text-center py-5">
+                <i class="fas fa-lock fa-3x mb-3"></i>
+                <h3>Private Business Plan</h3>
+                <p class="text-muted">This company may be interested in raising funds from accredited investors.</p>
+                <p class="text-muted">You must request access to see more information about the company.</p>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Login to Request Access</a>
+                {% else %}
+                <button class="btn btn-primary" id="requestAccessBtnBP">Request Access</button>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="row">
+                <div class="col-md-8">
+                    {% if project.business_plan %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Business Plan</h4>
+                            <p class="text-muted">Download the detailed business plan document below:</p>
+                            <a href="{{ project.business_plan.url }}" class="btn btn-primary" target="_blank">
+                                <i class="fas fa-file-pdf"></i> Download Business Plan
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Business plan document will be available soon.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Updates Tab -->
+        <div class="tab-pane fade" id="updates" role="tabpanel">
+            {% if user.is_authenticated and user.has_access %}
+            <div class="row">
+                <div class="col-md-8">
+                    {% if project.entrepreneur == user %}
+                    <div class="mb-4">
+                        <a href="{% url 'create_update' project.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Post Update
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% for update in updates %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5>{{ update.title }}</h5>
+                            <p class="text-muted">Posted on {{ update.created_at|date:"F d, Y" }}</p>
+                            <p>{{ update.content }}</p>
+                            {% if update.image %}
+                            <img src="{{ update.image.url }}" class="img-fluid rounded mt-3" alt="Update Image">
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        No updates have been posted yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-lock fa-3x mb-3"></i>
+                <h3>Private Updates</h3>
+                <p class="text-muted">Project updates are only visible to approved investors.</p>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Login to Request Access</a>
+                {% else %}
+                <button class="btn btn-primary" id="requestAccessBtnUpdates">Request Access</button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle request access buttons
+    const requestButtons = ['requestAccessBtn', 'requestAccessBtnBP', 'requestAccessBtnUpdates'];
+    requestButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', function() {
+                // Send request access
+                fetch('{% url "request_access" project.id %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Access request sent successfully! We will review your request and get back to you soon.');
+                        btn.disabled = true;
+                        btn.textContent = 'Request Pending';
+                    } else {
+                        alert(data.error || 'Failed to send request. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+    });
+});
+</script>
+{% endblock %} 

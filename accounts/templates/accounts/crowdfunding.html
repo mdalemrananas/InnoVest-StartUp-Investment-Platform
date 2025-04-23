@@ -1,0 +1,106 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Crowdfunding Campaigns - Crowdfunding Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Crowdfunding Campaigns</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">All Campaigns</h6>
+        <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" 
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuLink">
+                <li><a class="dropdown-item" href="?status=">All Statuses</a></li>
+                {% for status in status_choices %}
+                <li><a class="dropdown-item" href="?status={{ status.0 }}">{{ status.1 }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="campaignsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Company</th>
+                        <th>Funding</th>
+                        <th>Progress</th>
+                        <th>Dates</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in campaigns %}
+                    <tr>
+                        <td>{{ campaign.title }}</td>
+                        <td>{{ campaign.company.name }}</td>
+                        <td>
+                            ${{ campaign.current_amount }}<br>
+                            <small>of ${{ campaign.target_amount }}</small>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ campaign.progress_percentage }}%;" 
+                                     aria-valuenow="{{ campaign.progress_percentage }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ campaign.progress_percentage|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {{ campaign.start_date|date:"M d" }} -<br>
+                            {{ campaign.end_date|date:"M d, Y" }}
+                        </td>
+                        <td class="status-cell">
+                            <span class="status-badge status-{{ campaign.status }}">
+                                {{ campaign.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No campaigns found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#campaignsTable').DataTable({
+            "order": [[4, "desc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [3, 6] }
+            ]
+        });
+    });
+</script>
+{% endblock %}
