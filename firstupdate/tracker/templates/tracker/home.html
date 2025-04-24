@@ -1,0 +1,155 @@
+{% extends 'tracker/base.html' %}
+{% load custom_filters %}
+
+{% block header %}Project Progress Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if messages %}
+        <div class="alert alert-success" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="text-center mb-4">
+        <a href="{% url 'add_update' %}" class="btn btn-primary">Add New Update</a>
+    </div>
+
+    {% if latest_update %}
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ latest_update.project_title }}</h3>
+                <small class="text-muted">Submitted on: {{ latest_update.created_at|date:"F j, Y" }}</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Project Details</h5>
+                        <p><strong>Description:</strong> {{ latest_update.description }}</p>
+                        <p><strong>Start Date:</strong> {{ latest_update.start_date|date:"F j, Y" }}</p>
+                        <p><strong>End Date:</strong> {{ latest_update.time_remaining|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Progress & Budget</h5>
+                        <p><strong>Total Budget:</strong> {{ latest_update.total_budget }} BDT</p>
+                        <p><strong>Expense Amount:</strong> {{ latest_update.expense_amount }} BDT</p>
+                        <p><strong>Remaining Amount:</strong> {{ latest_update.remaining_amount }} BDT</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Project Completed</h5>
+                        <div class="chart-container">
+                            <canvas id="completionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Budget Remaining</h5>
+                        <div class="chart-container">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {% if latest_update.attachment %}
+                    <div class="mt-4">
+                        <h5>Attached File</h5>
+                        <a href="{{ latest_update.attachment.url }}" class="btn btn-outline-primary" download>
+                            Download Attachment
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No project updates have been submitted yet. Click "Add New Update" to submit your first update.
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        margin-bottom: 2rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    .alert {
+        margin-top: 1rem;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Completion Chart
+        new Chart(document.getElementById('completionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    data: [{{ latest_update.completion_percentage }}, {{ 100|sub:latest_update.completion_percentage }}],
+                    backgroundColor: ['#007bff', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Expense Chart
+        new Chart(document.getElementById('expenseChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Spent', 'Remaining'],
+                datasets: [{
+                    data: [{{ latest_update.expense_percentage }}, {{ 100|sub:latest_update.expense_percentage }}],
+                    backgroundColor: ['#dc3545', '#28a745'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 
