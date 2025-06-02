@@ -1,0 +1,7 @@
+INFO 2025-06-02 12:51:23,679 autoreload 13668 14148 Watching for file changes with StatReloader
+INFO 2025-06-02 12:53:31,012 basehttp 13668 8288 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-02 12:54:17,840 basehttp 13668 13944 "POST /api/auth/register/ HTTP/1.1" 201 86
+INFO 2025-06-02 12:54:38,922 basehttp 13668 1820 "GET /api/auth/verify-email/7ed5224e-d160-45d2-b622-3c5808870c94/ HTTP/1.1" 200 64
+INFO 2025-06-02 12:54:38,937 basehttp 13668 1820 "GET /api/auth/verify-email/7ed5224e-d160-45d2-b622-3c5808870c94/ HTTP/1.1" 200 37
+INFO 2025-06-02 12:55:15,795 basehttp 13668 17596 "POST /api/auth/forgot-password/ HTTP/1.1" 200 62
+INFO 2025-06-02 12:57:28,156 basehttp 13668 17596 "POST /api/auth/login/ HTTP/1.1" 200 687
