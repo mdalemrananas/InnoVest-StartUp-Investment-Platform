@@ -15,3 +15,18 @@ INFO 2025-06-02 13:31:17,433 basehttp 22096 21220 "POST /api/auth/forgot-passwor
 INFO 2025-06-02 13:32:06,805 basehttp 22096 21220 "OPTIONS /api/auth/reset-password/d404883e-59fb-41fc-8c6c-5c5bbc2d94fd/ HTTP/1.1" 200 0
 INFO 2025-06-02 13:32:09,109 basehttp 22096 21220 "POST /api/auth/reset-password/d404883e-59fb-41fc-8c6c-5c5bbc2d94fd/ HTTP/1.1" 200 51
 INFO 2025-06-02 13:32:31,820 basehttp 22096 21220 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 13:36:25,311 basehttp 22096 3724 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 13:37:11,267 basehttp 22096 3724 "POST /api/auth/login/ HTTP/1.1" 200 1018
+INFO 2025-06-02 13:53:09,254 autoreload 9544 336 Watching for file changes with StatReloader
+INFO 2025-06-02 13:54:32,962 basehttp 9544 17064 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-02 13:54:34,736 basehttp 9544 17064 "POST /api/auth/login/ HTTP/1.1" 200 1018
+WARNING 2025-06-02 13:55:37,882 log 9544 17064 Bad Request: /api/auth/login/
+WARNING 2025-06-02 13:55:37,884 basehttp 9544 17064 "POST /api/auth/login/ HTTP/1.1" 400 38
+INFO 2025-06-02 13:55:46,719 basehttp 9544 17064 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 14:09:47,769 autoreload 13080 15656 Watching for file changes with StatReloader
+INFO 2025-06-02 14:13:58,930 autoreload 17216 3952 Watching for file changes with StatReloader
+INFO 2025-06-02 14:17:55,775 basehttp 17216 10228 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-02 14:17:57,637 basehttp 17216 10228 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 14:18:14,204 basehttp 17216 10228 "POST /api/auth/login/ HTTP/1.1" 200 1018
+INFO 2025-06-02 14:18:24,332 basehttp 17216 10228 "OPTIONS /api/auth/forgot-password/ HTTP/1.1" 200 0
+INFO 2025-06-02 14:18:30,829 basehttp 17216 10228 "POST /api/auth/forgot-password/ HTTP/1.1" 200 62
