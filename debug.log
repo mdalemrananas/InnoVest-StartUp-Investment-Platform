@@ -30,3 +30,64 @@ INFO 2025-06-02 14:17:57,637 basehttp 17216 10228 "POST /api/auth/login/ HTTP/1.
 INFO 2025-06-02 14:18:14,204 basehttp 17216 10228 "POST /api/auth/login/ HTTP/1.1" 200 1018
 INFO 2025-06-02 14:18:24,332 basehttp 17216 10228 "OPTIONS /api/auth/forgot-password/ HTTP/1.1" 200 0
 INFO 2025-06-02 14:18:30,829 basehttp 17216 10228 "POST /api/auth/forgot-password/ HTTP/1.1" 200 62
+INFO 2025-06-02 14:32:30,711 autoreload 12164 20384 Watching for file changes with StatReloader
+INFO 2025-06-02 14:33:49,720 basehttp 12164 17660 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-02 14:33:50,422 basehttp 12164 17660 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 14:34:10,570 basehttp 12164 21300 "POST /api/auth/login/ HTTP/1.1" 200 1018
+INFO 2025-06-02 14:35:01,065 basehttp 12164 21300 "OPTIONS /api/auth/register/ HTTP/1.1" 200 0
+INFO 2025-06-02 14:35:05,631 basehttp 12164 21300 "POST /api/auth/register/ HTTP/1.1" 201 86
+INFO 2025-06-02 14:35:34,556 basehttp 12164 5364 "GET /api/auth/verify-email/b13c9c35-03ee-4618-a928-b5914e905ad4/ HTTP/1.1" 200 64
+INFO 2025-06-02 14:35:34,564 basehttp 12164 5364 "GET /api/auth/verify-email/b13c9c35-03ee-4618-a928-b5914e905ad4/ HTTP/1.1" 200 37
+INFO 2025-06-02 14:35:54,107 basehttp 12164 21300 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 14:36:15,137 basehttp 12164 21300 "OPTIONS /api/auth/forgot-password/ HTTP/1.1" 200 0
+INFO 2025-06-02 14:36:18,628 basehttp 12164 21300 "POST /api/auth/forgot-password/ HTTP/1.1" 200 62
+INFO 2025-06-02 14:37:34,470 basehttp 12164 13748 "OPTIONS /api/auth/reset-password/a0ee0342-2443-4af1-a6ca-d972e25112c1/ HTTP/1.1" 200 0
+WARNING 2025-06-02 14:37:34,481 log 12164 13748 Bad Request: /api/auth/reset-password/a0ee0342-2443-4af1-a6ca-d972e25112c1/
+WARNING 2025-06-02 14:37:34,486 basehttp 12164 13748 "POST /api/auth/reset-password/a0ee0342-2443-4af1-a6ca-d972e25112c1/ HTTP/1.1" 400 35
+INFO 2025-06-02 14:37:40,848 basehttp 12164 13748 "POST /api/auth/reset-password/a0ee0342-2443-4af1-a6ca-d972e25112c1/ HTTP/1.1" 200 51
+WARNING 2025-06-02 14:38:39,046 log 12164 21300 Bad Request: /api/auth/login/
+WARNING 2025-06-02 14:38:39,047 basehttp 12164 21300 "POST /api/auth/login/ HTTP/1.1" 400 38
+INFO 2025-06-02 14:38:43,220 basehttp 12164 21300 "POST /api/auth/login/ HTTP/1.1" 200 687
+WARNING 2025-06-02 14:39:02,460 log 12164 21300 Bad Request: /api/auth/login/
+WARNING 2025-06-02 14:39:02,461 basehttp 12164 21300 "POST /api/auth/login/ HTTP/1.1" 400 38
+WARNING 2025-06-02 14:40:19,096 log 12164 21300 Bad Request: /api/auth/register/
+WARNING 2025-06-02 14:40:19,097 basehttp 12164 21300 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 14:41:39,143 log 12164 21300 Bad Request: /api/auth/register/
+WARNING 2025-06-02 14:41:39,143 basehttp 12164 21300 "POST /api/auth/register/ HTTP/1.1" 400 46
+WARNING 2025-06-02 14:41:42,836 log 12164 21300 Bad Request: /api/auth/register/
+WARNING 2025-06-02 14:41:42,836 basehttp 12164 21300 "POST /api/auth/register/ HTTP/1.1" 400 46
+WARNING 2025-06-02 14:42:14,802 log 12164 21300 Bad Request: /api/auth/forgot-password/
+WARNING 2025-06-02 14:42:14,803 basehttp 12164 21300 "POST /api/auth/forgot-password/ HTTP/1.1" 400 50
+WARNING 2025-06-02 14:43:04,663 log 12164 9192 Bad Request: /api/auth/login/
+WARNING 2025-06-02 14:43:04,663 basehttp 12164 9192 "POST /api/auth/login/ HTTP/1.1" 400 38
+INFO 2025-06-02 15:14:01,969 autoreload 20676 8024 Watching for file changes with StatReloader
+INFO 2025-06-02 15:15:48,657 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 1165
+WARNING 2025-06-02 15:15:59,302 log 20676 21980 Bad Request: /api/auth/login/
+WARNING 2025-06-02 15:15:59,303 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 400 38
+WARNING 2025-06-02 15:16:44,442 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:16:44,443 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:10,207 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:10,207 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:22,723 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:22,724 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:25,276 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:25,276 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:34,956 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:34,957 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:36,740 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:36,740 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:19:37,898 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:19:37,899 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+WARNING 2025-06-02 15:20:05,333 log 20676 21980 Bad Request: /api/auth/register/
+WARNING 2025-06-02 15:20:05,334 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 400 58
+INFO 2025-06-02 15:20:58,073 basehttp 20676 21980 "POST /api/auth/register/ HTTP/1.1" 201 86
+INFO 2025-06-02 15:21:19,034 basehttp 20676 21168 "GET /api/auth/verify-email/da74640d-28ac-49f7-8d7f-35847be3dd4e/ HTTP/1.1" 200 64
+INFO 2025-06-02 15:21:19,040 basehttp 20676 21168 "GET /api/auth/verify-email/da74640d-28ac-49f7-8d7f-35847be3dd4e/ HTTP/1.1" 200 37
+INFO 2025-06-02 15:21:33,595 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-02 15:21:55,384 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 687
+WARNING 2025-06-02 15:22:09,293 log 20676 21980 Bad Request: /api/auth/forgot-password/
+WARNING 2025-06-02 15:22:09,294 basehttp 20676 21980 "POST /api/auth/forgot-password/ HTTP/1.1" 400 50
+INFO 2025-06-02 15:22:21,979 basehttp 20676 21980 "POST /api/auth/forgot-password/ HTTP/1.1" 200 62
+INFO 2025-06-02 15:22:56,379 basehttp 20676 21980 "OPTIONS /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 0
+INFO 2025-06-02 15:22:56,891 basehttp 20676 21980 "POST /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 51
+INFO 2025-06-02 15:23:18,279 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 687

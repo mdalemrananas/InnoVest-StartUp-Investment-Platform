@@ -48,8 +48,8 @@ const ResetPassword = () => {
         let score = 0;
 
         // Length check
-        if (password.length < 12) {
-            feedback.push('Password should be at least 12 characters long');
+        if (password.length < 8) {
+            feedback.push('Password should be at least 8 characters long');
         } else {
             score += 1;
         }

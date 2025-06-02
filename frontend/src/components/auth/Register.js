@@ -54,8 +54,8 @@ const Register = () => {
         let score = 0;
 
         // Length check
-        if (password.length < 12) {
-            feedback.push('Password should be at least 12 characters long');
+        if (password.length < 8) {
+            feedback.push('Password should be at least 8 characters long');
         } else {
             score += 1;
         }
@@ -138,6 +138,37 @@ const Register = () => {
             checkPasswordStrength(value);
         }
 
+        // Check if passwords match when either password field changes
+        if (name === 'password' || name === 'password2') {
+            if (name === 'password' && formData.password2) {
+                if (value !== formData.password2) {
+                    setValidationErrors(prev => ({
+                        ...prev,
+                        password2: 'Passwords do not match'
+                    }));
+                } else {
+                    setValidationErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.password2;
+                        return newErrors;
+                    });
+                }
+            } else if (name === 'password2' && formData.password) {
+                if (value !== formData.password) {
+                    setValidationErrors(prev => ({
+                        ...prev,
+                        password2: 'Passwords do not match'
+                    }));
+                } else {
+                    setValidationErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.password2;
+                        return newErrors;
+                    });
+                }
+            }
+        }
+
         // Clear validation error when user types
         if (validationErrors[name]) {
             setValidationErrors(prev => {
@@ -155,6 +186,16 @@ const Register = () => {
         setValidationErrors({});
         setLoading(true);
 
+        // Check if passwords match before submitting
+        if (formData.password !== formData.password2) {
+            setValidationErrors(prev => ({
+                ...prev,
+                password2: 'Passwords do not match'
+            }));
+            setLoading(false);
+            return;
+        }
+
         if (passwordStrength.score < 4) {
             setError('Please choose a stronger password');
             setLoading(false);
@@ -170,7 +211,16 @@ const Register = () => {
             if (err.response?.data?.errors) {
                 setValidationErrors(err.response.data.errors);
             } else if (err.response?.data?.error) {
-                setError(err.response.data.error);
+                // Check if the error is about email already being registered
+                if (err.response.data.error.toLowerCase().includes('email') && 
+                    err.response.data.error.toLowerCase().includes('already')) {
+                    setValidationErrors(prev => ({
+                        ...prev,
+                        email: 'This email is already registered. Please use a different email or try logging in.'
+                    }));
+                } else {
+                    setError(err.response.data.error);
+                }
             } else if (err.response?.data?.message) {
                 setError(err.response.data.message);
             } else {
