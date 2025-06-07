@@ -91,3 +91,270 @@ INFO 2025-06-02 15:22:21,979 basehttp 20676 21980 "POST /api/auth/forgot-passwor
 INFO 2025-06-02 15:22:56,379 basehttp 20676 21980 "OPTIONS /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 0
 INFO 2025-06-02 15:22:56,891 basehttp 20676 21980 "POST /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 51
 INFO 2025-06-02 15:23:18,279 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-07 15:13:26,165 autoreload 20412 3404 Watching for file changes with StatReloader
+INFO 2025-06-07 15:15:39,713 basehttp 20412 10000 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+WARNING 2025-06-07 15:15:40,364 log 20412 10000 Bad Request: /api/auth/login/
+WARNING 2025-06-07 15:15:40,364 basehttp 20412 10000 "POST /api/auth/login/ HTTP/1.1" 400 38
+INFO 2025-06-07 15:15:43,929 basehttp 20412 10000 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-07 15:26:03,631 autoreload 16908 23772 Watching for file changes with StatReloader
+INFO 2025-06-07 15:28:31,416 basehttp 16908 1908 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:28:31,416 basehttp 16908 1432 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:28:31,420 basehttp 16908 1908 "OPTIONS /api/chat/messages/users/ HTTP/1.1" 200 0
+WARNING 2025-06-07 15:28:31,476 log 16908 1908 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:31,476 basehttp 16908 1908 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:28:31,487 basehttp 16908 1432 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-07 15:28:31,492 basehttp 16908 1432 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:28:35,323 log 16908 1432 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:35,324 basehttp 16908 1432 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:35,920 log 16908 1432 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:35,921 basehttp 16908 1432 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:36,185 log 16908 1432 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:36,186 basehttp 16908 1432 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:36,324 log 16908 1432 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:36,325 basehttp 16908 1432 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:36,428 log 16908 1432 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:36,429 basehttp 16908 1432 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:36,871 log 16908 1464 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:36,872 basehttp 16908 1464 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:37,519 log 16908 1464 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:37,520 basehttp 16908 1464 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:37,974 log 16908 1464 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:37,980 basehttp 16908 1464 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:38,130 log 16908 1464 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:38,131 basehttp 16908 1464 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:28:48,363 basehttp 16908 1464 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-07 15:28:48,438 basehttp 16908 1464 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:28:48,443 log 16908 24276 Not Found: /api/chat/messages/users/
+INFO 2025-06-07 15:28:48,449 basehttp 16908 1464 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:28:48,482 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:51,062 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:51,063 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:51,522 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:51,523 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:51,674 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:51,675 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:51,811 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:51,812 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:51,897 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:51,898 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:52,158 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:52,159 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:52,375 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:52,376 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:52,604 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:52,606 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:52,836 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:52,837 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:52,924 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:52,924 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,050 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,051 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,174 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,176 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,294 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,295 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,498 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,499 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,584 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,585 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:28:53,714 log 16908 24276 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:28:53,714 basehttp 16908 24276 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:30:36,829 autoreload 16908 23772 D:\Software_Project\InnoVest-StartUp-Investment-Platform\Innovest\settings.py changed, reloading.
+INFO 2025-06-07 15:30:37,966 autoreload 24124 12444 Watching for file changes with StatReloader
+WARNING 2025-06-07 15:30:45,725 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:45,725 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:46,573 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:46,574 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,187 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,188 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,318 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,319 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,452 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,453 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,577 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,578 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,693 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,693 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,826 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,827 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:47,939 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:47,940 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,074 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,074 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,196 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,197 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,329 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,330 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,433 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,435 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,580 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,581 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,694 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,695 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:30:48,827 log 24124 12796 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:30:48,827 basehttp 24124 12796 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:31:02,450 basehttp 24124 20936 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:31:02,457 log 24124 24268 Not Found: /api/chat/messages/users/
+INFO 2025-06-07 15:31:02,460 basehttp 24124 20936 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:31:02,461 basehttp 24124 24268 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:31:06,070 log 24124 24268 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:31:06,070 basehttp 24124 24268 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:31:15,265 log 24124 21940 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:31:15,266 basehttp 24124 21940 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:31:16,044 log 24124 21940 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:31:16,045 basehttp 24124 21940 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:32:54,522 autoreload 24124 12444 D:\Software_Project\InnoVest-StartUp-Investment-Platform\Innovest\urls.py changed, reloading.
+INFO 2025-06-07 15:32:55,223 autoreload 18564 24276 Watching for file changes with StatReloader
+WARNING 2025-06-07 15:33:00,520 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:00,522 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:01,365 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:01,366 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:01,724 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:01,726 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:01,837 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:01,838 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:01,974 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:01,975 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,091 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,092 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,225 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,226 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,341 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,342 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,474 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,475 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,595 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,599 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,729 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,730 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,859 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,860 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:02,992 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:02,993 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:03,107 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:03,109 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:03,239 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:03,240 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:03,374 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:03,375 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:03,696 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:03,696 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:03,924 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:03,925 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,056 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,058 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,171 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,172 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,307 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,308 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,456 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,457 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,587 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,588 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:04,791 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:04,791 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:33:15,231 basehttp 18564 2928 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-07 15:33:15,271 basehttp 18564 2928 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-07 15:33:15,276 basehttp 18564 2928 "GET /api/auth/profile/ HTTP/1.1" 200 692
+WARNING 2025-06-07 15:33:15,311 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:15,311 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:19,535 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:19,536 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:19,727 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:19,727 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:19,887 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:19,888 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,119 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,120 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,239 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,240 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,342 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,343 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,591 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,592 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,743 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,744 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:20,831 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:20,831 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:21,054 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:21,055 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:21,294 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:21,295 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:33:22,392 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:33:22,393 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:34:05,448 log 18564 2928 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:34:05,451 basehttp 18564 2928 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:34:29,888 log 18564 10268 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:34:29,889 basehttp 18564 10268 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:37:03,969 log 18564 4808 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:37:03,970 basehttp 18564 4808 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+WARNING 2025-06-07 15:37:04,614 log 18564 4808 Not Found: /api/chat/messages/users/
+WARNING 2025-06-07 15:37:04,614 basehttp 18564 4808 "GET /api/chat/messages/users/ HTTP/1.1" 404 2570
+INFO 2025-06-07 15:48:16,574 autoreload 20532 23480 Watching for file changes with StatReloader
+INFO 2025-06-07 15:49:48,821 basehttp 20532 3828 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:49,510 basehttp 20532 3828 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-07 15:49:49,563 basehttp 20532 3828 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:49,567 basehttp 20532 656 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:49,586 basehttp 20532 656 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-07 15:49:49,591 basehttp 20532 3828 "OPTIONS /api/chat/messages/users/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:49,596 basehttp 20532 656 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-07 15:49:49,604 basehttp 20532 3828 "GET /api/chat/messages/users/ HTTP/1.1" 200 680
+INFO 2025-06-07 15:49:53,274 basehttp 20532 17272 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:53,274 basehttp 20532 21468 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-07 15:49:53,316 basehttp 20532 21468 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:49:53,334 basehttp 20532 21468 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:00,372 basehttp 20532 17272 "OPTIONS /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:00,373 basehttp 20532 21468 "OPTIONS /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:00,401 basehttp 20532 21468 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 2751
+INFO 2025-06-07 15:50:00,422 basehttp 20532 21468 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 2751
+INFO 2025-06-07 15:50:09,898 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:09,899 basehttp 20532 11228 "OPTIONS /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:09,902 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:09,913 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:09,921 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:09,932 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=5 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:11,247 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:11,262 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:12,283 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 2751
+INFO 2025-06-07 15:50:12,304 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 2751
+INFO 2025-06-07 15:50:12,331 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 2751
+INFO 2025-06-07 15:50:19,177 basehttp 20532 11228 "OPTIONS /api/chat/messages/send/ HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:19,263 basehttp 20532 11228 "POST /api/chat/messages/send/ HTTP/1.1" 200 291
+INFO 2025-06-07 15:50:27,815 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:27,998 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:42,726 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:42,740 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:42,875 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:43,389 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:43,623 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:44,412 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:44,434 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:45,892 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:45,906 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
+INFO 2025-06-07 15:50:50,888 basehttp 20532 11228 "OPTIONS /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:50,889 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:51,126 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1256
+INFO 2025-06-07 15:50:51,148 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1256
+INFO 2025-06-07 15:50:54,992 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:55,014 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:50:56,474 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=65 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:56,475 basehttp 20532 11228 "OPTIONS /api/chat/messages/conversation/?user_id=65 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:56,484 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=65 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:56,494 basehttp 20532 11228 "GET /api/chat/messages/conversation/?user_id=65 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:57,408 basehttp 20532 11228 "OPTIONS /api/chat/messages/conversation/?user_id=67 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:57,408 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=67 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:57,416 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=67 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:57,423 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=67 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:58,014 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=67 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:59,034 basehttp 20532 11228 "OPTIONS /api/chat/messages/conversation/?user_id=64 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:59,035 basehttp 20532 23240 "OPTIONS /api/chat/messages/conversation/?user_id=64 HTTP/1.1" 200 0
+INFO 2025-06-07 15:50:59,044 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=64 HTTP/1.1" 200 2
+INFO 2025-06-07 15:50:59,053 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=64 HTTP/1.1" 200 2
+INFO 2025-06-07 15:51:00,831 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1256
+INFO 2025-06-07 15:51:00,845 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1256
+INFO 2025-06-07 15:51:01,479 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:51:01,499 basehttp 20532 23240 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:53:13,137 basehttp 20532 20360 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:53:13,155 basehttp 20532 20360 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:53:13,180 basehttp 20532 20360 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3043
+INFO 2025-06-07 15:55:18,668 basehttp 20532 12212 "POST /api/chat/messages/send/ HTTP/1.1" 200 290

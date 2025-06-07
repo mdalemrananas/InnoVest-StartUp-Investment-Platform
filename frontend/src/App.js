@@ -5,6 +5,8 @@ import Register from './components/auth/Register';
 import VerifyEmail from './components/auth/VerifyEmail';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
+import PrivateRoute from './components/auth/PrivateRoute';
+import Dashboard from './components/Dashboard';
 import Layout from './components/shared/Layout';
 
 function App() {
@@ -16,6 +18,14 @@ function App() {
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute requiredRole="user">
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Layout>
   );
