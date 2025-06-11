@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -199,6 +199,7 @@ const Dashboard = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const messagesContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState(null);
   // Live date and clock state
@@ -335,7 +336,6 @@ const Dashboard = () => {
     
     try {
       setLoading(true);
-      setMessages([]); // Clear existing messages
       console.log('Fetching conversation for user:', userId);
       const conversation = await chatService.getConversation(userId);
       console.log('Fetched conversation:', conversation);
@@ -411,6 +411,12 @@ const Dashboard = () => {
       fetchUsers();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
     <>
@@ -504,11 +510,9 @@ const Dashboard = () => {
             </Tabs>
 
             <Box sx={{ p: 3 }}>
-                
-               
                 {/* Chat Tab */}
                 {tabValue === 6 && (
-                  <Box sx={{ display: 'flex', height: 500, background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
+                  <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
                     {/* Left: Chat List */}
                     <Box sx={{ 
                       width: 300, 
@@ -626,11 +630,11 @@ const Dashboard = () => {
                       </Box>
                     </Box>
                     {/* Right: Chat Window */}
-                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#faf9f7' }}>
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#faf9f7', minHeight: 0 }}>
                       {selectedChat ? (
                         <>
                           {/* Chat Header */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff' }}>
+                          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff' }}>
                             <Avatar 
                               sx={{ 
                                 width: 40, 
@@ -655,16 +659,22 @@ const Dashboard = () => {
                             <IconButton><MoreVertIcon /></IconButton>
                           </Box>
                           {/* Chat Messages */}
-                          <Box sx={{ 
-                            flex: 1, 
-                            p: 3, 
-                            overflowY: 'auto', 
-                            background: '#faf9f7',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2
-                          }}>
-                            {loading ? (
+                          <Box
+                            ref={messagesContainerRef}
+                            sx={{
+                              flex: 1,
+                              p: 3,
+                              overflowY: 'auto',
+                              background: '#faf9f7',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                              minHeight: 0,
+                              maxHeight: '100%'
+                            }}
+                          >
+                            {/* Only show loading spinner when switching chats, not when sending a message */}
+                            {loading && messages.length === 0 ? (
                               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <CircularProgress />
                               </Box>
@@ -681,7 +691,6 @@ const Dashboard = () => {
                                 <Typography variant="body2">Start the conversation!</Typography>
                               </Box>
                             ) : (
-                              // Group messages by date and time
                               (() => {
                                 // Helper to format date header
                                 const formatHeader = (dateObj) => {
@@ -786,6 +795,7 @@ const Dashboard = () => {
                           </Box>
                           {/* Chat Input */}
                           <Box sx={{ 
+                            flex: '0 0 auto',
                             display: 'flex', 
                             alignItems: 'center', 
                             borderTop: '1px solid #eee', 

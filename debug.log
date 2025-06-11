@@ -439,3 +439,19 @@ INFO 2025-06-11 22:26:48,275 basehttp 11332 23724 "GET /api/chat/messages/conver
 INFO 2025-06-11 22:26:48,290 basehttp 11332 23724 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 895
 INFO 2025-06-11 22:26:51,918 basehttp 11332 23724 "OPTIONS /api/chat/messages/send/ HTTP/1.1" 200 0
 INFO 2025-06-11 22:26:52,037 basehttp 11332 23724 "POST /api/chat/messages/send/ HTTP/1.1" 200 287
+INFO 2025-06-12 00:52:15,306 autoreload 30228 26032 Watching for file changes with StatReloader
+INFO 2025-06-12 00:54:36,351 basehttp 30228 27792 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-12 00:54:36,435 basehttp 30228 27792 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-12 00:54:36,444 basehttp 30228 27792 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-12 00:54:36,472 basehttp 30228 27792 "GET /api/chat/messages/users/ HTTP/1.1" 200 680
+INFO 2025-06-12 00:54:41,630 basehttp 30228 30256 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-12 00:54:41,630 basehttp 30228 25104 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-12 00:54:41,677 basehttp 30228 25104 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 1183
+INFO 2025-06-12 00:54:41,696 basehttp 30228 25104 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 1183
+INFO 2025-06-12 00:54:52,569 basehttp 30228 25104 "POST /api/chat/messages/send/ HTTP/1.1" 200 286
+INFO 2025-06-12 00:57:37,587 basehttp 30228 26036 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-12 00:57:37,600 basehttp 30228 23072 "GET /api/chat/messages/users/ HTTP/1.1" 200 680
+INFO 2025-06-12 00:57:37,621 basehttp 30228 29608 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 1470
+INFO 2025-06-12 00:57:37,626 basehttp 30228 23072 "GET /api/chat/messages/users/ HTTP/1.1" 200 680
+INFO 2025-06-12 00:57:44,347 basehttp 30228 22060 "POST /api/chat/messages/send/ HTTP/1.1" 200 286
+INFO 2025-06-12 00:57:48,237 basehttp 30228 22060 "POST /api/chat/messages/send/ HTTP/1.1" 200 286
