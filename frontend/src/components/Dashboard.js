@@ -347,14 +347,26 @@ const Dashboard = () => {
       }
       
       // Map messages to include sender information
-      const formattedMessages = conversation.map(msg => ({
-        id: msg.id,
-        from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
-        text: msg.message,
-        time: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        self: msg.sender.id === user.id,
-        is_read: msg.is_read
-      }));
+      const formattedMessages = conversation.map(msg => {
+        let dateObj;
+        if (msg.timestamp) {
+          dateObj = new Date(msg.timestamp);
+        } else if (msg.time) {
+          // fallback: try to parse from time string (not ideal, but prevents crash)
+          dateObj = new Date();
+        } else {
+          dateObj = new Date();
+        }
+        return {
+          id: msg.id,
+          from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
+          text: msg.message,
+          time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timestamp: dateObj,
+          self: msg.sender.id === user.id,
+          is_read: msg.is_read
+        };
+      });
       
       setMessages(formattedMessages);
       setUsersError(null); // Clear any previous errors
@@ -379,7 +391,8 @@ const Dashboard = () => {
         id: newMessage.id,
         from: 'You',
         text: newMessage.message,
-        time: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: newMessage.timestamp ? new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: newMessage.timestamp ? new Date(newMessage.timestamp) : new Date(),
         self: true,
         is_read: false
       }]);
@@ -492,7 +505,7 @@ const Dashboard = () => {
 
             <Box sx={{ p: 3 }}>
                 
-                
+               
                 {/* Chat Tab */}
                 {tabValue === 6 && (
                   <Box sx={{ display: 'flex', height: 500, background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
@@ -668,84 +681,107 @@ const Dashboard = () => {
                                 <Typography variant="body2">Start the conversation!</Typography>
                               </Box>
                             ) : (
-                              messages.map(msg => (
-                                <Box 
-                                  key={msg.id} 
-                                  sx={{ 
-                                    display: 'flex', 
-                                    justifyContent: msg.self ? 'flex-end' : 'flex-start',
-                                    alignItems: 'flex-end',
-                                    gap: 1
-                                  }}
-                                >
-                                  {!msg.self && (
-                                    <Avatar 
-                                      sx={{ 
-                                        width: 32, 
-                                        height: 32, 
-                                        bgcolor: 'primary.main',
-                                        fontSize: '0.875rem'
-                                      }}
-                                    >
-                                      {selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()}
-                                    </Avatar>
-                                  )}
-                                  <Box sx={{ 
-                                    maxWidth: '70%',
-                                    px: 2, 
-                                    py: 1.5, 
-                                    borderRadius: 2, 
-                                    background: msg.self ? 'primary.main' : 'background.paper',
-                                    color: msg.self ? 'white' : 'text.primary',
-                                    boxShadow: 1,
-                                    position: 'relative'
-                                  }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                                      {msg.text}
-                                    </Typography>
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      justifyContent: 'space-between',
-                                      alignItems: 'center',
-                                      gap: 1
-                                    }}>
-                                      <Typography 
-                                        variant="caption" 
+                              // Group messages by date and time
+                              (() => {
+                                // Helper to format date header
+                                const formatHeader = (dateObj) => {
+                                  if (!(dateObj instanceof Date) || isNaN(dateObj)) return '';
+                                  const now = new Date();
+                                  const isToday = dateObj.getDate() === now.getDate() && dateObj.getMonth() === now.getMonth() && dateObj.getFullYear() === now.getFullYear();
+                                  if (isToday) {
+                                    return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                  } else {
+                                    return `${dateObj.getDate()} ${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} AT ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                                  }
+                                };
+                                // Group messages by header string
+                                const groups = {};
+                                messages.forEach(msg => {
+                                  const header = formatHeader(msg.timestamp);
+                                  if (!groups[header]) groups[header] = [];
+                                  groups[header].push(msg);
+                                });
+                                return Object.entries(groups).map(([header, msgs]) => (
+                                  <React.Fragment key={header}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ px: 2, py: 0.5, borderRadius: 1, background: '#e3e8ef', fontWeight: 600 }}>
+                                        {header}
+                                      </Typography>
+                                    </Box>
+                                    {msgs.map(msg => (
+                                      <Box 
+                                        key={msg.id} 
                                         sx={{ 
-                                          color: msg.self ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                          display: 'flex', 
+                                          justifyContent: msg.self ? 'flex-end' : 'flex-start',
+                                          alignItems: 'flex-end',
+                                          gap: 1
                                         }}
                                       >
-                                        {msg.time}
-                                      </Typography>
-                                      {msg.self && (
-                                        <Typography 
-                                          variant="caption" 
-                                          sx={{ 
-                                            color: 'rgba(255,255,255,0.7)',
-                                            display: 'flex',
+                                        {!msg.self && (
+                                          <Avatar 
+                                            sx={{ 
+                                              width: 32, 
+                                              height: 32, 
+                                              bgcolor: 'primary.main',
+                                              fontSize: '0.875rem'
+                                            }}
+                                          >
+                                            {selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()}
+                                          </Avatar>
+                                        )}
+                                        <Box sx={{ 
+                                          maxWidth: '70%',
+                                          px: 2, 
+                                          py: 1.5, 
+                                          borderRadius: 2, 
+                                          background: msg.self ? 'primary.main' : 'background.paper',
+                                          color: msg.self ? 'black' : 'text.primary',
+                                          boxShadow: 1,
+                                          position: 'relative'
+                                        }}>
+                                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                                            {msg.text}
+                                          </Typography>
+                                          <Box sx={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            gap: 0.5
-                                          }}
-                                        >
-                                          {msg.is_read ? 'Read' : 'Sent'}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  </Box>
-                                  {msg.self && (
-                                    <Avatar 
-                                      sx={{ 
-                                        width: 32, 
-                                        height: 32, 
-                                        bgcolor: 'grey.300',
-                                        fontSize: '0.875rem'
-                                      }}
-                                    >
-                                      {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
-                                    </Avatar>
-                                  )}
-                                </Box>
-                              ))
+                                            gap: 1
+                                          }}>
+                                            {/* Remove per-message time here, since it's above the group */}
+                                            {msg.self && (
+                                              <Typography 
+                                                variant="caption" 
+                                                sx={{ 
+                                                  color: 'rgba(255,255,255,0.7)',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: 0.5
+                                                }}
+                                              >
+                                                {msg.is_read ? 'Read' : 'Sent'}
+                                              </Typography>
+                                            )}
+                                          </Box>
+                                        </Box>
+                                        {msg.self && (
+                                          <Avatar 
+                                            sx={{ 
+                                              width: 32, 
+                                              height: 32, 
+                                              bgcolor: 'grey.300',
+                                              fontSize: '0.875rem'
+                                            }}
+                                          >
+                                            {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
+                                          </Avatar>
+                                        )}
+                                      </Box>
+                                    ))}
+                                  </React.Fragment>
+                                ));
+                              })()
                             )}
                           </Box>
                           {/* Chat Input */}
@@ -813,7 +849,6 @@ const Dashboard = () => {
                     </Box>
                   </Box>
                 )}
-                
             </Box>
           </Paper>
         </Grid>
