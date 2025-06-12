@@ -233,6 +233,10 @@ const Dashboard = () => {
   ]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [lastMessageId, setLastMessageId] = useState(null);
+  const POLLING_INTERVAL = 2000; // Poll every 2 seconds
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -378,21 +382,81 @@ const Dashboard = () => {
     }
   };
 
+  // Add polling effect for messages
+  useEffect(() => {
+    let pollInterval;
+
+    const fetchNewMessages = async () => {
+      if (!selectedChat?.id || !user?.id) return;
+
+      try {
+        const conversation = await chatService.getConversation(selectedChat.id);
+        if (!conversation || !Array.isArray(conversation)) return;
+
+        // Get the latest message ID
+        const latestMessage = conversation[conversation.length - 1];
+        if (!latestMessage) return;
+
+        // If we have a new message
+        if (!lastMessageId || latestMessage.id > lastMessageId) {
+          setLastMessageId(latestMessage.id);
+          
+          // Map messages to include sender information
+          const formattedMessages = conversation.map(msg => {
+            let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+            return {
+              id: msg.id,
+              from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
+              text: msg.message,
+              time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              timestamp: dateObj,
+              self: msg.sender.id === user.id,
+              is_read: msg.is_read
+            };
+          });
+          
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error('Error polling messages:', error);
+      }
+    };
+
+    // Start polling when chat is selected
+    if (selectedChat) {
+      // Initial fetch
+      fetchNewMessages();
+      
+      // Set up polling interval
+      pollInterval = setInterval(fetchNewMessages, POLLING_INTERVAL);
+    }
+
+    // Cleanup interval on unmount or when chat changes
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [selectedChat, user, lastMessageId]);
+
+  // Modify handleSendChat to update lastMessageId
   const handleSendChat = async () => {
     if (!chatInput.trim() || !selectedChat || !user?.id) return;
     
     try {
       setLoading(true);
       const newMessage = await chatService.sendMessage(selectedChat.id, chatInput);
-      console.log('Message sent:', newMessage);
       
+      // Update lastMessageId with the new message
+      setLastMessageId(newMessage.id);
+
       // Add the new message to the messages array
       setMessages(prev => [...prev, {
         id: newMessage.id,
         from: 'You',
         text: newMessage.message,
-        time: newMessage.timestamp ? new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timestamp: newMessage.timestamp ? new Date(newMessage.timestamp) : new Date(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date(),
         self: true,
         is_read: false
       }]);
@@ -417,6 +481,28 @@ const Dashboard = () => {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Add connection status indicator
+  const renderConnectionStatus = () => (
+    <Box sx={{ 
+      position: 'absolute', 
+      top: 8, 
+      right: 8, 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 1 
+    }}>
+      <Box sx={{ 
+        width: 8, 
+        height: 8, 
+        borderRadius: '50%', 
+        bgcolor: wsConnected ? 'success.main' : 'error.main' 
+      }} />
+      <Typography variant="caption" color="text.secondary">
+        {wsConnected ? 'Connected' : 'Disconnected'}
+      </Typography>
+    </Box>
+  );
 
   return (
     <>
@@ -634,7 +720,8 @@ const Dashboard = () => {
                       {selectedChat ? (
                         <>
                           {/* Chat Header */}
-                          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff' }}>
+                          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff', position: 'relative' }}>
+                            {renderConnectionStatus()}
                             <Avatar 
                               sx={{ 
                                 width: 40, 
@@ -864,6 +951,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
     </Container>
+    
     </>
   );
 };
