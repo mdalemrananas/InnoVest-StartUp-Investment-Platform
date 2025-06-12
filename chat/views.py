@@ -3,11 +3,12 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .models import ChatMessage
-from .serializers import ChatMessageSerializer, UserSerializer
+from .models import ChatMessage, ChatRequest
+from .serializers import ChatMessageSerializer, UserSerializer, ChatRequestSerializer
 from django.db import models
 import logging
 from django.db.models import Q
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -100,32 +101,27 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def send(self, request):
+        # Only allow sending if request is accepted
+        receiver_id = request.data.get('receiver')
+        if not receiver_id:
+            return Response({'error': 'Receiver is required'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            logger.info(f"User {request.user.email} sending message to {request.data.get('receiver')}")
-            message = request.data.get('message')
-            receiver_id = request.data.get('receiver')
-            
-            if not message or not receiver_id:
-                return Response(
-                    {'error': 'Message and receiver are required'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            chat_message = ChatMessage.objects.create(
-                sender=request.user,
-                receiver_id=receiver_id,
-                message=message
-            )
-            
-            logger.info(f"Message created with ID: {chat_message.id}")
-            serializer = self.get_serializer(chat_message)
-            return Response(serializer.data)
-        except Exception as e:
-            logger.error(f"Error in send endpoint: {str(e)}")
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            chat_request = ChatRequest.objects.get(from_user=request.user, to_user_id=receiver_id, status='accepted')
+        except ChatRequest.DoesNotExist:
+            try:
+                chat_request = ChatRequest.objects.get(from_user_id=receiver_id, to_user=request.user, status='accepted')
+            except ChatRequest.DoesNotExist:
+                return Response({'error': 'Messaging not allowed. Request not accepted.'}, status=status.HTTP_403_FORBIDDEN)
+        message = request.data.get('message', '')
+        file = request.FILES.get('file')
+        chat_message = ChatMessage.objects.create(
+            sender=request.user,
+            receiver_id=receiver_id,
+            message=message,
+            file=file
+        )
+        serializer = self.get_serializer(chat_message, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
@@ -147,3 +143,54 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    # --- ChatRequest Endpoints ---
+    @action(detail=False, methods=['post'])
+    def send_request(self, request):
+        to_user_id = request.data.get('to_user')
+        if not to_user_id:
+            return Response({'error': 'to_user is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if int(to_user_id) == request.user.id:
+            return Response({'error': 'Cannot send request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check for existing request in either direction
+        obj = ChatRequest.objects.filter(
+            (Q(from_user=request.user, to_user_id=to_user_id) | Q(from_user_id=to_user_id, to_user=request.user))
+        ).first()
+        if obj:
+            if obj.status == 'pending':
+                return Response({'error': 'Request already pending'}, status=status.HTTP_400_BAD_REQUEST)
+            elif obj.status == 'rejected':
+                # Update direction and status
+                obj.from_user = request.user
+                obj.to_user_id = to_user_id
+                obj.status = 'pending'
+                obj.responded_at = None
+                obj.save()
+        else:
+            obj = ChatRequest.objects.create(from_user=request.user, to_user_id=to_user_id, status='pending')
+        serializer = ChatRequestSerializer(obj)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def respond_request(self, request):
+        req_id = request.data.get('request_id')
+        action_type = request.data.get('action')  # 'accept' or 'reject'
+        if not req_id or action_type not in ['accept', 'reject']:
+            return Response({'error': 'request_id and valid action required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            chat_request = ChatRequest.objects.get(id=req_id, to_user=request.user)
+        except ChatRequest.DoesNotExist:
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
+        chat_request.status = 'accepted' if action_type == 'accept' else 'rejected'
+        chat_request.responded_at = timezone.now()
+        chat_request.save()
+        serializer = ChatRequestSerializer(chat_request)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def my_requests(self, request):
+        # Requests sent or received by the user
+        sent = ChatRequest.objects.filter(from_user=request.user)
+        received = ChatRequest.objects.filter(to_user=request.user)
+        serializer = ChatRequestSerializer(list(sent) + list(received), many=True)
+        return Response(serializer.data)

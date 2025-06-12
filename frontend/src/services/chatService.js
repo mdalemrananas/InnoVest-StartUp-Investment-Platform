@@ -67,14 +67,22 @@ class ChatService {
         }
     }
 
-    // Send a message
-    async sendMessage(userId, message) {
+    // Send a message (optionally with file)
+    async sendMessage(userId, message, file = null) {
         try {
             console.log('Sending message to user:', userId);
-            const response = await axiosInstance.post('send/', {
-                receiver: userId,
-                message: message
-            });
+            let data;
+            let headers = {};
+            if (file) {
+                data = new FormData();
+                data.append('receiver', userId);
+                data.append('message', message || '');
+                data.append('file', file);
+                headers['Content-Type'] = 'multipart/form-data';
+            } else {
+                data = { receiver: userId, message: message };
+            }
+            const response = await axiosInstance.post('send/', data, { headers });
             console.log('Message sent response:', response.data);
             return response.data;
         } catch (error) {
@@ -92,6 +100,39 @@ class ChatService {
             return response.data;
         } catch (error) {
             console.error('Error marking message as read:', error);
+            throw error;
+        }
+    }
+
+    // Send a chat request
+    async sendRequest(toUserId) {
+        try {
+            const response = await axiosInstance.post('send_request/', { to_user: toUserId });
+            return response.data;
+        } catch (error) {
+            console.error('Error sending chat request:', error);
+            throw error;
+        }
+    }
+
+    // Respond to a chat request (accept/reject)
+    async respondRequest(requestId, action) {
+        try {
+            const response = await axiosInstance.post('respond_request/', { request_id: requestId, action });
+            return response.data;
+        } catch (error) {
+            console.error('Error responding to chat request:', error);
+            throw error;
+        }
+    }
+
+    // List all chat requests (sent and received)
+    async getMyRequests() {
+        try {
+            const response = await axiosInstance.get('my_requests/');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching chat requests:', error);
             throw error;
         }
     }

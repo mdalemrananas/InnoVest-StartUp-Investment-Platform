@@ -76,6 +76,9 @@ import { format } from 'date-fns';
 import CloseIcon from '@mui/icons-material/Close';
 import chatService from '../services/chatService';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const API_URL = 'http://localhost:8000/api/auth/profile/';
 
@@ -237,6 +240,12 @@ const Dashboard = () => {
   const [wsConnected, setWsConnected] = useState(false);
   const [lastMessageId, setLastMessageId] = useState(null);
   const POLLING_INTERVAL = 2000; // Poll every 2 seconds
+  const [chatRequests, setChatRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestsError, setRequestsError] = useState(null);
+  const [attachmentAnchorEl, setAttachmentAnchorEl] = useState(null);
+  const [attachmentType, setAttachmentType] = useState(null);
+  const attachmentInputRef = useRef();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -262,6 +271,69 @@ const Dashboard = () => {
 
     fetchUserProfile();
   }, []);
+
+  // Fetch chat requests on mount and when user changes
+  useEffect(() => {
+    let pollInterval;
+    const fetchRequests = async () => {
+      if (!user?.id) return;
+      setRequestsLoading(true);
+      try {
+        const requests = await chatService.getMyRequests();
+        setChatRequests(requests);
+        setRequestsError(null);
+      } catch (err) {
+        setRequestsError('Failed to load chat requests');
+      } finally {
+        setRequestsLoading(false);
+      }
+    };
+    fetchRequests();
+    // Poll every 3 seconds
+    pollInterval = setInterval(fetchRequests, 3000);
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [user]);
+
+  // Helper: get request status for a user
+  const getRequestStatus = (otherUserId) => {
+    // Sent by me
+    const sent = chatRequests.find(r => r.from_user.id === user?.id && r.to_user.id === otherUserId);
+    if (sent) return { status: sent.status, direction: 'sent', request: sent };
+    // Received by me
+    const received = chatRequests.find(r => r.from_user.id === otherUserId && r.to_user.id === user?.id);
+    if (received) return { status: received.status, direction: 'received', request: received };
+    return null;
+  };
+
+  // Handlers for sending/responding to requests
+  const handleSendRequest = async (toUserId) => {
+    try {
+      setRequestsLoading(true);
+      await chatService.sendRequest(toUserId);
+      // Refresh requests
+      const requests = await chatService.getMyRequests();
+      setChatRequests(requests);
+    } catch (err) {
+      setRequestsError('Failed to send request');
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+  const handleRespondRequest = async (requestId, action) => {
+    try {
+      setRequestsLoading(true);
+      await chatService.respondRequest(requestId, action);
+      // Refresh requests
+      const requests = await chatService.getMyRequests();
+      setChatRequests(requests);
+    } catch (err) {
+      setRequestsError('Failed to respond to request');
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setValue(newValue);
@@ -340,42 +412,29 @@ const Dashboard = () => {
     
     try {
       setLoading(true);
-      console.log('Fetching conversation for user:', userId);
       const conversation = await chatService.getConversation(userId);
-      console.log('Fetched conversation:', conversation);
-      
       if (!conversation || !Array.isArray(conversation)) {
-        console.error('Invalid conversation data:', conversation);
         setUsersError('Invalid conversation data received');
         return;
       }
-      
-      // Map messages to include sender information
+      // Map messages to include sender information and file
       const formattedMessages = conversation.map(msg => {
-        let dateObj;
-        if (msg.timestamp) {
-          dateObj = new Date(msg.timestamp);
-        } else if (msg.time) {
-          // fallback: try to parse from time string (not ideal, but prevents crash)
-          dateObj = new Date();
-        } else {
-          dateObj = new Date();
-        }
+        let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
         return {
           id: msg.id,
           from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
           text: msg.message,
+          file: msg.file_url || null,
+          fileName: msg.file ? msg.file.split('/').pop() : (msg.file_url ? msg.file_url.split('/').pop() : undefined),
           time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           timestamp: dateObj,
           self: msg.sender.id === user.id,
           is_read: msg.is_read
         };
       });
-      
       setMessages(formattedMessages);
-      setUsersError(null); // Clear any previous errors
+      setUsersError(null);
     } catch (error) {
-      console.error('Error fetching conversation:', error);
       setUsersError(error.response?.data?.error || 'Failed to load conversation. Please try again.');
     } finally {
       setLoading(false);
@@ -401,13 +460,15 @@ const Dashboard = () => {
         if (!lastMessageId || latestMessage.id > lastMessageId) {
           setLastMessageId(latestMessage.id);
           
-          // Map messages to include sender information
+          // Map messages to include sender information and file
           const formattedMessages = conversation.map(msg => {
             let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
             return {
               id: msg.id,
               from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
               text: msg.message,
+              file: msg.file_url || null,
+              fileName: msg.file ? msg.file.split('/').pop() : (msg.file_url ? msg.file_url.split('/').pop() : undefined),
               time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               timestamp: dateObj,
               self: msg.sender.id === user.id,
@@ -503,6 +564,60 @@ const Dashboard = () => {
       </Typography>
     </Box>
   );
+
+  const handleAttachmentClick = (event) => {
+    setAttachmentAnchorEl(event.currentTarget);
+  };
+  const handleAttachmentClose = () => {
+    setAttachmentAnchorEl(null);
+  };
+  const handleAttachmentOption = (type) => {
+    setAttachmentType(type);
+    setAttachmentAnchorEl(null);
+    setTimeout(() => {
+      if (attachmentInputRef.current) attachmentInputRef.current.click();
+    }, 100);
+  };
+  const handleAttachmentChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedChat || !user?.id) return;
+    try {
+      setLoading(true);
+      // Send file as a chat message (no text)
+      const newMessage = await chatService.sendMessage(selectedChat.id, '', file);
+      setMessages(prev => [...prev, {
+        id: newMessage.id,
+        from: 'You',
+        text: '',
+        file: newMessage.file_url,
+        fileName: file.name,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date(),
+        self: true,
+        is_read: false
+      }]);
+    } catch (error) {
+      setUsersError('Failed to send attachment. Please try again.');
+    } finally {
+      setLoading(false);
+      setAttachmentType(null);
+      e.target.value = '';
+    }
+  };
+
+  // Add this function near the top of the component
+  const handleImageDownload = (url, fileName) => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName || 'image';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+  };
 
   return (
     <>
@@ -656,62 +771,82 @@ const Dashboard = () => {
                             </Typography>
                           </Box>
                         ) : (
-                          chatUsers.map((user) => (
-                            <Box
-                              key={user.id}
-                              onClick={() => {
-                                setSelectedChat(user);
-                                fetchConversation(user.id); // Always fetch messages when clicking
-                              }}
-                              sx={{
-                                p: 2,
-                                cursor: 'pointer',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
-                                bgcolor: selectedChat?.id === user.id ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                                borderRadius: 1,
-                                mb: 0.5
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Avatar 
-                                  sx={{ 
-                                    width: 40, 
-                                    height: 40, 
-                                    bgcolor: 'primary.main',
-                                    fontSize: '1rem'
-                                  }}
-                                >
-                                  {user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()}
-                                </Avatar>
-                                <Box sx={{ ml: 2, minWidth: 0 }}>
-                                  <Typography 
-                                    variant="subtitle1" 
+                          chatUsers.map((userItem) => {
+                            const req = getRequestStatus(userItem.id);
+                            return (
+                              <Box
+                                key={userItem.id}
+                                onClick={() => {
+                                  if (req && req.status === 'accepted') setSelectedChat(userItem);
+                                }}
+                                sx={{
+                                  p: 2,
+                                  cursor: req && req.status === 'accepted' ? 'pointer' : 'default',
+                                  '&:hover': { bgcolor: req && req.status === 'accepted' ? 'rgba(0, 0, 0, 0.04)' : 'transparent' },
+                                  bgcolor: selectedChat?.id === userItem.id ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
+                                  borderRadius: 1,
+                                  mb: 0.5
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <Avatar 
                                     sx={{ 
-                                      fontWeight: 600,
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis'
+                                      width: 40, 
+                                      height: 40, 
+                                      bgcolor: 'primary.main',
+                                      fontSize: '1rem'
                                     }}
                                   >
-                                    {user.first_name && user.last_name 
-                                      ? `${user.first_name} ${user.last_name}`
-                                      : user.email.split('@')[0]}
-                                  </Typography>
-                                  <Typography 
-                                    variant="body2" 
-                                    color="text.secondary"
-                                    sx={{
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis'
-                                    }}
-                                  >
-                                    {user.title || 'User'}
-                                  </Typography>
+                                    {userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()}
+                                  </Avatar>
+                                  <Box sx={{ ml: 2, minWidth: 0 }}>
+                                    <Typography 
+                                      variant="subtitle1" 
+                                      sx={{ 
+                                        fontWeight: 600
+                                        // Removed whiteSpace, overflow, textOverflow to allow full name display
+                                      }}
+                                    >
+                                      {userItem.first_name && userItem.last_name 
+                                        ? `${userItem.first_name} ${userItem.last_name}`
+                                        : userItem.email.split('@')[0]}
+                                    </Typography>
+                                    <Typography 
+                                      variant="body2" 
+                                      color="text.secondary"
+                                      sx={{
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                      }}
+                                    >
+                                      {userItem.title || 'User'}
+                                    </Typography>
+                                  </Box>
+                                  {/* Request logic UI */}
+                                  <Box sx={{ ml: 'auto' }}>
+                                    {req ? (
+                                      req.status === 'pending' && req.direction === 'sent' ? (
+                                        <Button size="small" disabled>Pending Approval</Button>
+                                      ) : req.status === 'pending' && req.direction === 'received' ? (
+                                        <>
+                                          <Button size="small" color="success" variant="contained" sx={{ mb: 1 }} onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'accept'); }}>Accept</Button>
+                                          <Button size="small" color="error" variant="contained" onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'reject'); }}>Reject</Button>
+                                        </>
+                                      ) : req.status === 'rejected' ? (
+                                        <Stack direction="column" spacing={1} alignItems="flex-end">
+                                          <Button size="small" disabled>Rejected</Button>
+                                          <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message Again</Button>
+                                        </Stack>
+                                      ) : req.status === 'accepted' ? null : null
+                                    ) : (
+                                      <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message</Button>
+                                    )}
+                                  </Box>
                                 </Box>
                               </Box>
-                            </Box>
-                          ))
+                            );
+                          })
                         )}
                       </Box>
                     </Box>
@@ -720,8 +855,7 @@ const Dashboard = () => {
                       {selectedChat ? (
                         <>
                           {/* Chat Header */}
-                          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff', position: 'relative' }}>
-                            {renderConnectionStatus()}
+                          <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff' }}>
                             <Avatar 
                               sx={{ 
                                 width: 40, 
@@ -742,8 +876,7 @@ const Dashboard = () => {
                                 {selectedChat.title || 'User'}
                               </Typography>
                             </Box>
-                            <IconButton><SearchIcon /></IconButton>
-                            <IconButton><MoreVertIcon /></IconButton>
+                            {/* Removed connection status, search, and more options icons */}
                           </Box>
                           {/* Chat Messages */}
                           <Box
@@ -836,9 +969,78 @@ const Dashboard = () => {
                                           boxShadow: 1,
                                           position: 'relative'
                                         }}>
-                                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                                            {msg.text}
-                                          </Typography>
+                                          {/* Message text */}
+                                          {msg.text && (
+                                            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                                              {msg.text}
+                                            </Typography>
+                                          )}
+                                          {/* File preview or download */}
+                                          {msg.file && (
+                                            msg.file.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) ? (
+                                              <Box
+                                                sx={{
+                                                  mt: 1,
+                                                  mb: 1,
+                                                  display: 'flex',
+                                                  flexDirection: msg.self ? 'row' : 'row-reverse',
+                                                  alignItems: 'center'
+                                                }}
+                                              >
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: msg.self ? 1 : 0, ml: msg.self ? 0 : 1 }}>
+                                                  <IconButton
+                                                    component="a"
+                                                    href={msg.file}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    sx={{
+                                                      color: 'primary.main',
+                                                      border: '1px solid',
+                                                      borderColor: 'primary.main',
+                                                      borderRadius: 1,
+                                                      p: 0.5,
+                                                      mb: 1
+                                                    }}
+                                                  >
+                                                    <VisibilityIcon />
+                                                  </IconButton>
+                                                  <IconButton
+                                                    onClick={() => handleImageDownload(msg.file, msg.fileName)}
+                                                    sx={{
+                                                      color: 'primary.main',
+                                                      border: '1px solid',
+                                                      borderColor: 'primary.main',
+                                                      borderRadius: 1,
+                                                      p: 0.5
+                                                    }}
+                                                  >
+                                                    <DownloadIcon />
+                                                  </IconButton>
+                                                </Box>
+                                                <img
+                                                  src={msg.file}
+                                                  alt="attachment"
+                                                  style={{ maxWidth: 180, maxHeight: 180, borderRadius: 8, display: 'block' }}
+                                                />
+                                              </Box>
+                                            ) : (
+                                              <Box sx={{ mt: 1, mb: 1 }}>
+                                                <Button
+                                                  component="a"
+                                                  href={msg.file}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  variant="outlined"
+                                                  size="small"
+                                                  startIcon={<AttachFileIcon />}
+                                                  sx={{ color: 'primary.main', borderColor: 'primary.main' }}
+                                                  download
+                                                >
+                                                  Download {msg.fileName || 'Attachment'}
+                                                </Button>
+                                              </Box>
+                                            )
+                                          )}
                                           <Box sx={{ 
                                             display: 'flex', 
                                             justifyContent: 'space-between',
@@ -890,19 +1092,41 @@ const Dashboard = () => {
                             background: '#fff',
                             gap: 1
                           }}>
+                            {/* Attachment Icon */}
+                            <>
+                              <IconButton onClick={handleAttachmentClick} sx={{ mr: 1 }}>
+                                <AttachFileIcon />
+                              </IconButton>
+                              <Menu
+                                anchorEl={attachmentAnchorEl}
+                                open={Boolean(attachmentAnchorEl)}
+                                onClose={handleAttachmentClose}
+                              >
+                                <MenuItem onClick={() => handleAttachmentOption('photo')}><InsertPhotoIcon sx={{ mr: 1 }} />Send Photo</MenuItem>
+                                <MenuItem onClick={() => handleAttachmentOption('document')}><AttachFileIcon sx={{ mr: 1 }} />Send Document</MenuItem>
+                              </Menu>
+                              <input
+                                ref={attachmentInputRef}
+                                type="file"
+                                accept={attachmentType === 'photo' ? 'image/*' : attachmentType === 'document' ? '.pdf,.doc,.docx,.xls,.xlsx,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain' : '*/*'}
+                                style={{ display: 'none' }}
+                                onChange={handleAttachmentChange}
+                              />
+                            </>
                             <TextField
                               fullWidth
-                              placeholder="Type your message..."
+                              placeholder={selectedChat && getRequestStatus(selectedChat.id)?.status === 'accepted' ? 'Type your message...' : 'Request not accepted yet'}
                               value={chatInput}
                               onChange={e => setChatInput(e.target.value)}
                               onKeyDown={e => { 
-                                if (e.key === 'Enter' && !e.shiftKey) {
+                                if (e.key === 'Enter' && !e.shiftKey && getRequestStatus(selectedChat.id)?.status === 'accepted') {
                                   e.preventDefault();
                                   handleSendChat();
                                 }
                               }}
                               multiline
                               maxRows={4}
+                              disabled={!selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted'}
                               sx={{ 
                                 '& .MuiOutlinedInput-root': {
                                   borderRadius: 2,
@@ -951,7 +1175,6 @@ const Dashboard = () => {
         </Grid>
       </Grid>
     </Container>
-    
     </>
   );
 };
