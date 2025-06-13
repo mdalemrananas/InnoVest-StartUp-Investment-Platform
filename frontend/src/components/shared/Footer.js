@@ -153,7 +153,7 @@ const Footer = () => {
                             LEGAL
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            <Link component={RouterLink} to="/privacy" sx={{ 
+                            <Link component={RouterLink} to="/privacy-policy" sx={{ 
                                 color: '#9E9E9E', 
                                 textDecoration: 'none', 
                                 fontSize: '0.875rem',
