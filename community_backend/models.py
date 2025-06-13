@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 # Create your models here.
 
@@ -15,6 +18,7 @@ class CommunityPost(models.Model):
         ('public', 'Public'),
         ('private', 'Private'),
     ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='community_posts', null=True, blank=True)
     title = models.CharField(max_length=200)
     type = models.CharField(max_length=32, choices=POST_TYPES)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')

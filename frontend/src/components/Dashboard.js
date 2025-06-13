@@ -104,13 +104,25 @@ async function submitCommunityPost(formData) {
   if (formData.attachment) {
     data.append('attachment', formData.attachment);
   }
+  const currentUser = authService.getCurrentUser();
   const response = await axios.post('http://localhost:8000/api/community/posts/', data, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${currentUser?.access}`
     }
   });
   return response.data;
 }
+
+// Add fetchCommunityPosts function
+const fetchCommunityPosts = async (accessToken) => {
+  const response = await axios.get('http://localhost:8000/api/community/posts/', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+  return response.data;
+};
 
 const Dashboard = () => {
   const [value, setValue] = useState(0);
@@ -240,10 +252,7 @@ const Dashboard = () => {
   const [ideaSearch, setIdeaSearch] = useState('');
   const [ideaStatusFilter, setIdeaStatusFilter] = useState('');
   const [selectedIdeas, setSelectedIdeas] = useState([]);
-  const [sharedIdeas, setSharedIdeas] = useState([
-    { id: 1, title: 'Improve Dashboard UI', author: 'Mohen Khan', status: 'Pending', postAt: '2024-06-01' },
-    { id: 2, title: 'Add Dark Mode', author: 'Innovest Admin', status: 'Approved', postAt: '2024-06-02' },
-  ]);
+  const [communityPosts, setCommunityPosts] = useState([]);
   // Share Idea Dialog state
   const [openShareIdea, setOpenShareIdea] = useState(false);
   const [shareIdeaForm, setShareIdeaForm] = useState({
@@ -297,6 +306,12 @@ const Dashboard = () => {
   const [postLoading, setPostLoading] = useState(false);
   const [postSuccess, setPostSuccess] = useState(null);
   const [postError, setPostError] = useState(null);
+  // State for post actions
+  const [viewPost, setViewPost] = useState(null);
+  const [editPost, setEditPost] = useState(null);
+  const [deletePost, setDeletePost] = useState(null);
+  const [editForm, setEditForm] = useState({ title: '', type: '', description: '' });
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -804,6 +819,145 @@ const Dashboard = () => {
     }
   };
 
+  // Fetch posts from backend on mount and after post
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (currentUser?.access) {
+          const posts = await fetchCommunityPosts(currentUser.access);
+          console.log('Fetched posts:', posts); // Debug: see API response
+          setCommunityPosts(posts);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    loadPosts();
+  }, [user, postSuccess]);
+
+  // API handlers
+  const handleDeletePost = async (postId) => {
+    setActionLoading(true);
+    try {
+      const currentUser = authService.getCurrentUser();
+      await axios.delete(`http://localhost:8000/api/community/posts/${postId}/`, {
+        headers: { 'Authorization': `Bearer ${currentUser?.access}` }
+      });
+      setDeletePost(null);
+      // Refresh posts
+      const posts = await fetchCommunityPosts(currentUser.access);
+      setCommunityPosts(posts);
+    } catch (err) {
+      // Optionally show error
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEditPost = async () => {
+    if (!editPost) return;
+    setActionLoading(true);
+    try {
+      const currentUser = authService.getCurrentUser();
+      const data = new FormData();
+      // Prepare tags as string
+      const tagsString = Array.isArray(editForm.tags) ? editForm.tags.join(',') : (editForm.tags || '');
+      data.append('title', editForm.title);
+      data.append('visibility', editForm.visibility);
+      data.append('type', editForm.type);
+      data.append('tags', tagsString);
+      data.append('description', editForm.description);
+      if (editForm.type === 'Event') {
+        data.append('eventLocation', editForm.eventLocation || '');
+        data.append('eventLocationLink', editForm.eventLocationLink || '');
+        data.append('eventStartDateTime', editForm.eventStartDateTime || '');
+        data.append('eventEndDateTime', editForm.eventEndDateTime || '');
+      }
+      // Only include attachment if a new file is selected
+      if (editForm.attachment && editForm.attachment instanceof File) {
+        data.append('attachment', editForm.attachment);
+      }
+      await axios.patch(`http://localhost:8000/api/community/posts/${editPost.id}/`, data, {
+        headers: {
+          'Authorization': `Bearer ${currentUser?.access}`,
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+      setEditPost(null);
+      // Refresh posts
+      const posts = await fetchCommunityPosts(currentUser.access);
+      setCommunityPosts(posts);
+    } catch (err) {
+      // Optionally show error
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // When opening the Edit dialog, prefill all fields including tags and event fields
+  useEffect(() => {
+    if (editPost) {
+      let tags = editPost.tags;
+      if (typeof tags === 'string') {
+        tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(tags)) tags = [];
+
+      // Helper to format datetime for input type="datetime-local"
+      const formatDateTimeLocal = (dt) => {
+        if (!dt) return '';
+        // If already in 'YYYY-MM-DDTHH:MM' format, return as is
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dt)) return dt;
+        // If ISO string, convert to 'YYYY-MM-DDTHH:MM'
+        const d = new Date(dt);
+        if (isNaN(d)) return '';
+        const pad = n => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
+      setEditForm({
+        title: editPost.title || '',
+        type: editPost.type || '',
+        visibility: editPost.visibility || 'public',
+        tags,
+        tagInput: '',
+        description: editPost.description || '',
+        eventLocation: editPost.eventLocation || '',
+        eventLocationLink: editPost.eventLocationLink || '',
+        eventStartDateTime: formatDateTimeLocal(editPost.eventStartDateTime),
+        eventEndDateTime: formatDateTimeLocal(editPost.eventEndDateTime),
+        attachment: editPost.attachment || null,
+      });
+    }
+  }, [editPost]);
+
+  // Download handler for attachments (guaranteed download)
+  const handleDownloadAttachment = async (fileUrl, fileName) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      const headers = {};
+      if (currentUser?.access) {
+        headers['Authorization'] = `Bearer ${currentUser.access}`;
+      }
+      const response = await fetch(fileUrl, { credentials: 'include', headers });
+      if (!response.ok) throw new Error('Failed to fetch file');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+    } catch (err) {
+      alert('Failed to download file.');
+    }
+  };
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -955,66 +1109,55 @@ const Dashboard = () => {
                         Filters
                     </Button>
                   </Box>
-                    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: '1px solid #f0f1f3' }}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                indeterminate={selectedIdeas.length > 0 && selectedIdeas.length < sharedIdeas.length}
-                                checked={sharedIdeas.length > 0 && selectedIdeas.length === sharedIdeas.length}
-                                onChange={e => {
-                                  if (e.target.checked) setSelectedIdeas(sharedIdeas.map(idea => idea.id));
-                                  else setSelectedIdeas([]);
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>Title & Description</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Interested</TableCell>
-                            <TableCell>Post At</TableCell>
-                            <TableCell>Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {sharedIdeas.filter(idea => {
-                            const matchesSearch = idea.title.toLowerCase().includes(ideaSearch.toLowerCase()) || idea.author.toLowerCase().includes(ideaSearch.toLowerCase());
-                            const matchesStatus = !ideaStatusFilter || idea.status === ideaStatusFilter;
-                            return matchesSearch && matchesStatus;
-                          }).map(idea => (
-                            <TableRow key={idea.id}>
-                              <TableCell padding="checkbox">
-                                <Checkbox
-                                  checked={selectedIdeas.includes(idea.id)}
-                                  onChange={() => {
-                                    setSelectedIdeas(prev => prev.includes(idea.id) ? prev.filter(id => id !== idea.id) : [...prev, idea.id]);
-                                  }}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{idea.title}</Typography>
-                                <Typography variant="body2" color="text.secondary">{idea.description || 'No description.'}</Typography>
-                              </TableCell>
-                              <TableCell>{idea.status}</TableCell>
-                              <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                  <FavoriteIcon color="error" fontSize="small" />
-                                  <Typography variant="body2">{idea.interested || 0}</Typography>
+                  {/* My Posts Section (moved directly under search/filter) */}
+                  {userProfile && (() => {
+                    const myPosts = communityPosts.filter(post => {
+                      if (post.user && typeof post.user === 'object' && post.user !== null) {
+                        return post.user.id === userProfile.id;
+                      }
+                      return String(post.user) === String(userProfile.id);
+                    });
+                    return (
+                      <Box sx={{ mb: 3, background: '#f7f9fb', borderRadius: 2, p: 2, border: '1px solid #e3e8ef' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>
+                        <TableContainer>
+                          <Table size="small">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Title</TableCell>
+                                <TableCell>Post Type</TableCell>
+                                <TableCell>Post At</TableCell>
+                                <TableCell>Actions</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {myPosts.length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={4} align="center" style={{ color: '#999' }}>No posts found for this user.</TableCell>
+                                </TableRow>
+                              ) : myPosts.map(post => (
+                                <TableRow key={post.id}>
+                                  <TableCell>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{post.title}</Typography>
+                                  </TableCell>
+                                  <TableCell>{post.type}</TableCell>
+                                  <TableCell>{post.created_at ? post.created_at.split('T')[0] : ''}</TableCell>
+                                  <TableCell>
+                                    <IconButton color="primary" onClick={() => setViewPost(post)}><VisibilityIcon /></IconButton>
+                                    <IconButton color="primary" onClick={() => { setEditPost(post); setEditForm({ title: post.title, type: post.type, description: post.description }); }}><EditIcon /></IconButton>
+                                    <IconButton color="error" onClick={() => setDeletePost(post)}><DeleteIcon /></IconButton>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
                       </Box>
-                              </TableCell>
-                              <TableCell>{idea.postAt}</TableCell>
-                              <TableCell>
-                                <IconButton color="primary"><VisibilityIcon /></IconButton>
-                                <IconButton color="primary"><EditIcon /></IconButton>
-                                <IconButton color="error"><DeleteIcon /></IconButton>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Box>
+                    );
+                  })()}
+                </Box>
                 )}
+               
                 {/* Chat Tab */}
                 {tabValue === 6 && (
                   <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
@@ -1377,7 +1520,7 @@ const Dashboard = () => {
                                           py: 1.5, 
                                           borderRadius: 2, 
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'white' : 'text.primary',
+                                          color: msg.self ? 'black' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
@@ -1888,6 +2031,308 @@ const Dashboard = () => {
         <Alert severity="error" onClose={() => setPostError(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>{typeof postError === 'string' ? postError : JSON.stringify(postError)}</Alert>
       </Box>
     )}
+    {/* View Post Dialog */}
+    <Dialog open={!!viewPost} onClose={() => setViewPost(null)} maxWidth="sm" fullWidth
+      PaperProps={{ sx: { borderRadius: 4, boxShadow: 12, p: 0, background: '#fafdff' } }}>
+      <DialogTitle sx={{ fontWeight: 800, fontSize: 26, pb: 1.5, borderBottom: '1.5px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#f5faff' }}>
+        <VisibilityIcon color="primary" sx={{ fontSize: 32, mr: 1 }} /> View Post
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3, pb: 2, px: 3 }}>
+        {viewPost && (
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, mb: 0 }}>{viewPost.title}</Typography>
+              <Chip label={viewPost.type} color="primary" sx={{ fontWeight: 700, fontSize: 15, borderRadius: 1, bgcolor: '#e3f2fd', color: '#1976d2', ml: 1 }} />
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Visibility</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.visibility}</Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Created At</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.created_at ? viewPost.created_at.split('T')[0] : ''}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Tags</Typography>
+                <Box sx={{ mt: 0.5 }}>
+                  {(() => {
+                    let tags = viewPost.tags;
+                    if (typeof tags === 'string') {
+                      tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+                    }
+                    if (!Array.isArray(tags)) tags = [];
+                    return tags.length > 0 ? (
+                      tags.map((tag, idx) => (
+                        <Chip key={idx} label={`#${tag}`} size="small" sx={{ mr: 0.5, mt: 0.5, bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 700 }} />
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No tags</Typography>
+                    );
+                  })()}
+                </Box>
+              </Grid>
+            </Grid>
+            <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1976d2' }}>Description</Typography>
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: 16 }}>{viewPost.description}</Typography>
+            </Box>
+            {viewPost.type === 'Event' && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: '#f0f7fa', borderRadius: 2, border: '1px solid #b3e5fc', boxShadow: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0288d1', mb: 1 }}><EventIcon sx={{ mr: 1, verticalAlign: 'middle' }} />Event Details</Typography>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}><RoomIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocation || 'N/A'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}><LinkIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocationLink || 'N/A'}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />Start: {(() => {
+                    const dt = viewPost.eventStartDateTime;
+                    if (!dt) return 'N/A';
+                    const d = new Date(dt);
+                    if (isNaN(d)) return dt;
+                    return format(d, 'MMM dd, yyyy, hh:mm a');
+                  })()}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />End: {(() => {
+                    const dt = viewPost.eventEndDateTime;
+                    if (!dt) return 'N/A';
+                    const d = new Date(dt);
+                    if (isNaN(d)) return dt;
+                    return format(d, 'MMM dd, yyyy, hh:mm a');
+                  })()}</Typography>
+                </Box>
+              </Box>
+            )}
+            {viewPost.attachment && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box>
+                  {(() => {
+                    let fileUrl = '';
+                    let fileName = '';
+                    if (typeof viewPost.attachment === 'string') {
+                      fileUrl = viewPost.attachment;
+                      fileName = viewPost.attachment.split('/').pop();
+                    } else if (viewPost.attachment && viewPost.attachment.url) {
+                      fileUrl = viewPost.attachment.url;
+                      fileName = viewPost.attachment.name || viewPost.attachment.url.split('/').pop();
+                    } else if (viewPost.attachment && viewPost.attachment.name) {
+                      fileName = viewPost.attachment.name;
+                    }
+                    if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                      fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                      fileUrl = `http://localhost:8000/media/${fileUrl}`;
+                    }
+                    if (fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i)) {
+                      return (
+                        <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
+                          <img src={fileUrl} alt={fileName} style={{ maxWidth: 90, maxHeight: 90, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer', background: '#fff' }} />
+                        </a>
+                      );
+                    } else if (fileUrl) {
+                      return (
+                        <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 700 }}>{fileName || 'View Attachment'}</a>
+                      );
+                    } else if (fileName) {
+                      return <Typography variant="body2">{fileName}</Typography>;
+                    } else {
+                      return <Typography variant="body2">File attached</Typography>;
+                    }
+                  })()}
+                </Box>
+                {(() => {
+                  let fileUrl = '';
+                  if (typeof viewPost.attachment === 'string') {
+                    fileUrl = viewPost.attachment;
+                  } else if (viewPost.attachment && viewPost.attachment.url) {
+                    fileUrl = viewPost.attachment.url;
+                  }
+                  if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                    fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                    fileUrl = `http://localhost:8000/media/${fileUrl}`;
+                  }
+                  return (
+                    <IconButton
+                      color="primary"
+                      component="a"
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ ml: 1 }}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  );
+                })()}
+              </Box>
+            )}
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#f5faff' }}>
+        <Button onClick={() => setViewPost(null)} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Close</Button>
+      </DialogActions>
+    </Dialog>
+    {/* Edit Post Dialog */}
+    <Dialog open={!!editPost} onClose={() => setEditPost(null)} maxWidth="sm" fullWidth
+      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+      <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <EditIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Edit Post
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3, pb: 2 }}>
+        {/* Attachment preview and upload */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Attachment:</Typography>
+          {(() => {
+            let fileUrl = '';
+            let fileName = '';
+            let showOld = false;
+            if (editPost && editPost.attachment && (!editForm.attachment || typeof editForm.attachment === 'string')) {
+              // Show previous attachment if no new file selected or if new is a string (old value)
+              fileUrl = editPost.attachment;
+              fileName = typeof editPost.attachment === 'string' ? editPost.attachment.split('/').pop() : '';
+              showOld = true;
+              if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                fileUrl = `http://localhost:8000/media/${fileUrl}`;
+              }
+            } else if (editForm.attachment && typeof editForm.attachment === 'string') {
+              fileUrl = editForm.attachment;
+              fileName = editForm.attachment.split('/').pop();
+              showOld = true;
+              if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                fileUrl = `http://localhost:8000/media/${fileUrl}`;
+              }
+            } else if (editForm.attachment && editForm.attachment.name) {
+              fileName = editForm.attachment.name;
+            }
+            return (
+              <>
+                {showOld && fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
+                  <Box sx={{ mt: 1 }}>
+                    <a href={fileUrl} download={fileName} style={{ display: 'inline-block' }}>
+                      <img src={fileUrl} alt={fileName} style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer' }} />
+                    </a>
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+                      <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName}</a>
+                    </Typography>
+                  </Box>
+                )}
+                {showOld && fileUrl && !fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
+                  <Box sx={{ mt: 1 }}>
+                    <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName || 'Download Attachment'}</a>
+                  </Box>
+                )}
+                {editForm.attachment && editForm.attachment.name && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body2">New file: {editForm.attachment.name}</Typography>
+                    <IconButton size="small" color="error" onClick={() => setEditForm(f => ({ ...f, attachment: null }))}><DeleteIcon /></IconButton>
+                  </Box>
+                )}
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<AttachFileIcon />}
+                  sx={{ mt: 2, borderRadius: 2, textTransform: 'none', borderColor: 'rgba(0, 0, 0, 0.12)', bgcolor: '#f7f9fb', fontWeight: 600, color: 'primary.main', borderWidth: 2, borderStyle: 'dashed', borderColor: '#90caf9', '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' } }}
+                >
+                  {editForm.attachment ? 'Change Media or File' : 'Add Media or File'}
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    hidden
+                    onChange={e => setEditForm(f => ({ ...f, attachment: e.target.files[0] }))}
+                  />
+                </Button>
+              </>
+            );
+          })()}
+        </Box>
+        <TextField fullWidth label="Title" sx={{ my: 2 }} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 18 } }} />
+        {/* Type: read-only */}
+        <TextField fullWidth label="Type" sx={{ my: 2 }} value={editForm.type} InputProps={{ readOnly: true, sx: { borderRadius: 2, fontWeight: 600, fontSize: 16, bgcolor: '#f7f9fb' } }} />
+        {/* Visibility: select dropdown */}
+        <FormControl fullWidth sx={{ my: 2 }}>
+          <TextField
+            select
+            label="Visibility"
+            value={editForm.visibility || 'public'}
+            onChange={e => setEditForm(f => ({ ...f, visibility: e.target.value }))}
+            sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+          >
+            <MenuItem value="public">🌍 Public</MenuItem>
+            <MenuItem value="private">🔒 Private</MenuItem>
+          </TextField>
+        </FormControl>
+        {/* Tags: chips input, pre-filled and editable */}
+        <TextField
+          fullWidth
+          label="Tags"
+          value={editForm.tagInput || ''}
+          onChange={e => setEditForm(f => ({ ...f, tagInput: e.target.value.replace(/\s/g, '') }))}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+              const value = (editForm.tagInput || '').trim().replace(/^#/, '');
+              if (value && !(editForm.tags || []).includes(value)) {
+                setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
+              } else {
+                setEditForm(f => ({ ...f, tagInput: '' }));
+              }
+              e.preventDefault();
+            }
+          }}
+          onBlur={e => {
+            const value = (editForm.tagInput || '').trim().replace(/^#/, '');
+            if (value && !(editForm.tags || []).includes(value)) {
+              setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
+            } else {
+              setEditForm(f => ({ ...f, tagInput: '' }));
+            }
+          }}
+          placeholder="Add tags (e.g. #Fintech, #Startup)"
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          helperText="Press Enter or comma to add a tag."
+          InputProps={{
+            startAdornment: (editForm.tags || []).map((tag, idx) => (
+              <Chip
+                key={tag}
+                label={`#${tag}`}
+                onDelete={() => setEditForm(f => ({ ...f, tags: (f.tags || []).filter(t => t !== tag) }))}
+                sx={{ mx: 0.25 }}
+              />
+            ))
+          }}
+        />
+        <TextField fullWidth label="Description" sx={{ my: 2 }} multiline rows={4} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontSize: 16 } }} />
+        {/* Event fields if type is Event, always shown and pre-filled */}
+        {editForm.type === 'Event' && (
+          <>
+            <TextField fullWidth label="Event Location" sx={{ my: 2 }} value={editForm.eventLocation || ''} onChange={e => setEditForm(f => ({ ...f, eventLocation: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
+            <TextField fullWidth label="Event Location Link" sx={{ my: 2 }} value={editForm.eventLocationLink || ''} onChange={e => setEditForm(f => ({ ...f, eventLocationLink: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
+            <TextField fullWidth label="Event Start Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventStartDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventStartDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
+            <TextField fullWidth label="Event End Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventEndDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventEndDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
+          </>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={() => setEditPost(null)} variant="outlined" color="error" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
+        <Button onClick={handleEditPost} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Saving...' : 'Save'}</Button>
+      </DialogActions>
+    </Dialog>
+    {/* Delete Post Dialog */}
+    <Dialog open={!!deletePost} onClose={() => setDeletePost(null)} maxWidth="xs"
+      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+      <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DeleteIcon color="error" sx={{ fontSize: 28, mr: 1 }} /> Delete Post
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3, pb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>Are you sure you want to delete this post?</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>{deletePost?.title}</Typography>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={() => setDeletePost(null)} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
+        <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
+      </DialogActions>
+    </Dialog>
     </>
   );
 };

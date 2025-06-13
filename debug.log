@@ -2115,3 +2115,1143 @@ INFO 2025-06-13 22:58:52,483 basehttp 15912 20892 "GET /api/chat/messages/my_req
 INFO 2025-06-13 22:58:53,484 basehttp 15912 20892 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
 INFO 2025-06-13 22:58:54,475 basehttp 15912 20892 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
 INFO 2025-06-13 22:58:55,489 basehttp 15912 20892 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 22:59:37,483 basehttp 15912 20892 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:00:37,781 basehttp 15912 24856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:01:39,762 basehttp 15912 23368 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:02:38,402 basehttp 15912 25388 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:03:38,065 basehttp 15912 19768 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:04:37,836 basehttp 15912 24108 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:05:38,059 basehttp 15912 17940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:06:37,953 basehttp 15912 7688 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:07:37,994 basehttp 15912 21076 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:08:38,014 basehttp 15912 27736 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:09:37,962 basehttp 15912 14660 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:10:37,891 basehttp 15912 5364 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:11:38,054 basehttp 15912 12420 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:12:38,020 basehttp 15912 22760 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:13:37,916 basehttp 15912 12852 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:14:37,887 basehttp 15912 10692 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:15:37,840 basehttp 15912 27784 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:16:37,778 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:17:37,467 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:18:21,636 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:18:21,741 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:18:22,727 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:18:23,727 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-13 23:18:24,742 basehttp 15912 5956 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:14:08,638 autoreload 27176 22136 Watching for file changes with StatReloader
+INFO 2025-06-14 01:16:22,356 basehttp 27176 25236 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:23,091 basehttp 27176 25236 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 01:16:23,155 basehttp 27176 25236 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:23,165 basehttp 27176 25236 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 01:16:23,172 basehttp 27176 25236 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 01:16:23,178 basehttp 27176 25236 "OPTIONS /api/chat/messages/my_requests/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:23,183 basehttp 27176 25236 "OPTIONS /api/chat/messages/users/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:23,206 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:23,217 basehttp 27176 25236 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 01:16:23,234 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:24,187 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:25,206 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:26,203 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:26,463 basehttp 27176 25236 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:26,463 basehttp 27176 29996 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:26,496 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:26,518 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:26,997 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:27,204 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:27,481 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:27,999 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:28,195 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:28,485 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:28,994 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:29,196 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:29,488 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:29,996 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:30,201 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:30,518 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:30,991 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:16:31,199 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:31,241 basehttp 27176 29996 "OPTIONS /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:31,241 basehttp 27176 25236 "OPTIONS /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 0
+INFO 2025-06-14 01:16:31,264 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:31,279 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:31,759 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:32,206 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:32,254 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:32,762 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:33,188 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:33,254 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:33,774 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:34,190 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:34,254 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:34,766 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:35,191 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:35,250 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:36,491 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:36,495 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:37,487 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:37,487 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:38,480 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:38,482 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:39,495 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:39,495 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:40,494 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:40,500 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:41,490 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:41,493 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:42,496 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:42,499 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:43,491 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:43,495 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:44,493 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:44,494 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:45,485 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:45,496 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:46,496 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:46,496 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:47,487 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:47,487 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:48,491 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:48,493 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:49,480 basehttp 27176 25236 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:49,480 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:50,479 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:50,482 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:51,486 basehttp 27176 25236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:51,487 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:52,143 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:52,194 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:52,259 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:52,765 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:53,196 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:53,255 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:53,755 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:54,197 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:54,254 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:54,762 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:55,189 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:55,257 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:55,757 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:56,204 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:56,254 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:56,760 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:57,195 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:57,253 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:57,758 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:58,194 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:58,257 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:58,767 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:59,195 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:16:59,255 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:16:59,764 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:00,195 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:00,254 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:00,769 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:01,199 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:01,252 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:01,758 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:02,193 basehttp 27176 29996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:02,263 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:02,760 basehttp 27176 29996 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:03,523 basehttp 27176 3608 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:03,541 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:03,763 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:04,200 basehttp 27176 3608 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:04,255 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:04,769 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:05,195 basehttp 27176 3608 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:05,255 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:05,761 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:06,191 basehttp 27176 3608 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:06,264 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:06,760 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:07,229 basehttp 27176 3608 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:07,306 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:07,762 basehttp 27176 3608 "GET /api/chat/messages/conversation/?user_id=59 HTTP/1.1" 200 1368
+INFO 2025-06-14 01:17:08,073 basehttp 27176 28924 "OPTIONS /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 0
+INFO 2025-06-14 01:17:08,073 basehttp 27176 3608 "OPTIONS /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 0
+INFO 2025-06-14 01:17:08,126 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:08,149 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:08,226 basehttp 27176 28924 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:08,606 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:09,112 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:09,203 basehttp 27176 28924 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:09,607 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:10,109 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:10,191 basehttp 27176 28924 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:10,602 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:11,115 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:11,205 basehttp 27176 28924 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:11,609 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:12,109 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:12,197 basehttp 27176 28924 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:12,606 basehttp 27176 28924 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:13,406 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:13,420 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:13,601 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:14,097 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 01:17:14,190 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:14,311 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:14,327 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:14,836 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:15,198 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:15,314 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:15,833 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:16,200 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:16,317 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:16,818 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:17,204 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:17,319 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:17,816 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:18,194 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:18,316 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:18,832 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:19,188 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:19,322 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:19,816 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:20,200 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:20,317 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:20,823 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:21,216 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:21,318 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:21,819 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:22,191 basehttp 27176 29056 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:22,320 basehttp 27176 29056 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:23,146 basehttp 27176 27352 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:23,188 basehttp 27176 27352 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:23,332 basehttp 27176 27352 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:23,819 basehttp 27176 27352 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:24,214 basehttp 27176 27352 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:17:24,319 basehttp 27176 27352 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:24,824 basehttp 27176 27352 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:17:25,191 basehttp 27176 27352 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:20:38,239 autoreload 15260 7804 Watching for file changes with StatReloader
+WARNING 2025-06-14 01:21:57,223 log 15260 19820 Not Found: /
+WARNING 2025-06-14 01:21:57,286 basehttp 15260 19820 "GET / HTTP/1.1" 404 2789
+WARNING 2025-06-14 01:21:57,484 log 15260 19820 Not Found: /favicon.ico
+WARNING 2025-06-14 01:21:57,484 basehttp 15260 19820 "GET /favicon.ico HTTP/1.1" 404 2840
+INFO 2025-06-14 01:22:55,032 basehttp 15260 29856 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:55,711 basehttp 15260 29856 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 01:22:55,775 basehttp 15260 29856 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:55,776 basehttp 15260 6196 "OPTIONS /api/community/posts/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:55,798 basehttp 15260 6196 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 01:22:55,807 basehttp 15260 6196 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 01:22:55,813 basehttp 15260 6196 "OPTIONS /api/chat/messages/my_requests/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:55,814 basehttp 15260 29856 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 01:22:55,816 basehttp 15260 6196 "OPTIONS /api/chat/messages/users/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:55,826 basehttp 15260 6196 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 01:22:55,848 basehttp 15260 29856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:55,854 basehttp 15260 29856 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 01:22:55,862 basehttp 15260 6196 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 01:22:55,889 basehttp 15260 6196 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:56,813 basehttp 15260 6196 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:57,811 basehttp 15260 6196 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:59,134 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:59,331 basehttp 15260 28256 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:59,334 basehttp 15260 28256 "OPTIONS /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 0
+INFO 2025-06-14 01:22:59,359 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:22:59,382 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:22:59,822 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:22:59,887 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:00,361 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:00,821 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:00,891 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:01,360 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:01,812 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:01,876 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:02,364 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:02,819 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:02,881 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:03,359 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:03,816 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:03,865 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:04,401 basehttp 15260 28256 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:04,836 basehttp 15260 28256 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:04,860 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:05,373 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:05,828 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:05,852 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:06,365 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:06,810 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:06,850 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:07,369 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:07,827 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:07,874 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:08,366 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:08,819 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:08,863 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:09,364 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:09,823 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:09,868 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:10,357 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:10,810 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:10,851 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:11,425 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:11,834 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:11,892 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:12,354 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:12,829 basehttp 15260 26020 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:12,881 basehttp 15260 26020 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:13,669 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:13,833 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:13,895 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:14,365 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:14,582 basehttp 15260 30564 "OPTIONS /api/community/posts/4/ HTTP/1.1" 200 0
+WARNING 2025-06-14 01:23:14,592 log 15260 30564 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:14,593 basehttp 15260 30564 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:14,829 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:14,887 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:15,368 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:15,817 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:15,896 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:15,956 log 15260 30564 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:15,957 basehttp 15260 30564 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 01:23:16,234 log 15260 30564 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:16,235 basehttp 15260 30564 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:16,362 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:16,540 log 15260 30564 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:16,541 basehttp 15260 30564 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:16,827 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:16,895 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:17,360 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:17,817 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:17,854 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:18,361 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:18,817 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:18,859 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:19,357 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:19,812 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:19,858 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:20,362 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:20,827 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:20,860 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:21,366 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:21,817 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:21,853 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:22,365 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:22,809 basehttp 15260 30564 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:22,850 basehttp 15260 30564 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:23,678 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:23,816 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:23,849 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:24,366 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:24,816 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:24,861 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:24,967 basehttp 15260 19336 "OPTIONS /api/community/posts/19/ HTTP/1.1" 200 0
+INFO 2025-06-14 01:23:25,355 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+ERROR 2025-06-14 01:23:25,395 log 15260 19336 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:25,405 basehttp 15260 19336 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+INFO 2025-06-14 01:23:25,818 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:25,861 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:26,358 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:26,814 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:26,853 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:27,361 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+ERROR 2025-06-14 01:23:27,594 log 15260 19336 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:27,599 basehttp 15260 19336 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+INFO 2025-06-14 01:23:27,812 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:27,856 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+ERROR 2025-06-14 01:23:28,344 log 15260 19336 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:28,352 basehttp 15260 19336 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+INFO 2025-06-14 01:23:28,370 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:28,822 basehttp 15260 16524 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:28,890 basehttp 15260 19336 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+ERROR 2025-06-14 01:23:28,922 log 15260 16524 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:28,926 basehttp 15260 16524 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+ERROR 2025-06-14 01:23:29,097 log 15260 16524 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:29,104 basehttp 15260 16524 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+ERROR 2025-06-14 01:23:29,319 log 15260 16524 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:29,324 basehttp 15260 16524 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+INFO 2025-06-14 01:23:29,363 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+ERROR 2025-06-14 01:23:29,664 log 15260 16524 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:29,670 basehttp 15260 16524 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+ERROR 2025-06-14 01:23:29,852 log 15260 16524 Internal Server Error: /api/community/posts/19/
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\rest_framework\views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "D:\Software_Project\InnoVest-StartUp-Investment-Platform\community_backend\views.py", line 36, in delete
+    post.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\base.py", line 1273, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\deletion.py", line 449, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Ananna Saha\AppData\Roaming\Python\Python313\site-packages\django\db\backends\sqlite3\base.py", line 354, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: FOREIGN KEY constraint failed
+ERROR 2025-06-14 01:23:29,862 basehttp 15260 16524 "DELETE /api/community/posts/19/ HTTP/1.1" 500 166788
+INFO 2025-06-14 01:23:29,875 basehttp 15260 19336 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:29,894 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:30,364 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:30,812 basehttp 15260 16524 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:30,847 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:31,349 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:31,817 basehttp 15260 16524 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:31,848 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:32,373 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:32,826 basehttp 15260 16524 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:32,862 basehttp 15260 16524 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:33,661 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:33,809 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:33,847 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:34,361 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:34,828 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:34,858 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:35,370 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:35,819 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:35,848 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:36,359 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:36,812 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:36,847 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:37,369 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:37,810 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:37,848 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:38,353 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:38,810 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:38,851 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:39,361 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:39,814 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:39,849 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:40,357 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:40,817 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:40,878 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:41,361 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:41,819 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:41,882 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:42,346 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:42,815 basehttp 15260 11168 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:42,871 basehttp 15260 11168 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:43,666 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:43,809 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:43,867 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:44,359 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:44,819 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:44,872 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:45,359 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:45,816 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:45,882 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:46,362 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:46,815 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:46,872 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:47,368 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:47,821 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:47,882 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:48,357 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:48,764 log 15260 22208 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:48,765 basehttp 15260 22208 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:48,829 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:48,886 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:49,300 log 15260 22208 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:49,301 basehttp 15260 22208 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:49,373 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:49,459 log 15260 22208 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:49,460 basehttp 15260 22208 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:49,819 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+WARNING 2025-06-14 01:23:49,844 log 15260 22208 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:49,845 basehttp 15260 22208 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:49,915 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+WARNING 2025-06-14 01:23:50,099 log 15260 22208 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 01:23:50,099 basehttp 15260 22208 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 01:23:50,372 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:50,814 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:50,872 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:51,359 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:51,818 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:51,872 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:52,370 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:52,811 basehttp 15260 22208 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:52,845 basehttp 15260 22208 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:53,676 basehttp 15260 14856 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:53,817 basehttp 15260 14856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:53,859 basehttp 15260 14856 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:54,368 basehttp 15260 14856 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:55,497 basehttp 15260 14856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:55,506 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:55,815 basehttp 15260 6996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:55,850 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:56,363 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:56,819 basehttp 15260 6996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:56,854 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:57,359 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:57,822 basehttp 15260 6996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:57,860 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:58,363 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:58,815 basehttp 15260 6996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:23:58,853 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:23:59,482 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:00,477 basehttp 15260 6996 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:00,482 basehttp 15260 14856 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:01,471 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:01,476 basehttp 15260 14856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:02,478 basehttp 15260 14856 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:02,485 basehttp 15260 6996 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:03,792 basehttp 15260 19940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:03,801 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:04,476 basehttp 15260 544 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:04,482 basehttp 15260 19940 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:05,478 basehttp 15260 19940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:05,492 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:06,933 basehttp 15260 544 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:06,959 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:08,813 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:08,815 basehttp 15260 19940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:09,473 basehttp 15260 19940 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:10,477 basehttp 15260 19940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:10,486 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:11,480 basehttp 15260 544 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:11,483 basehttp 15260 19940 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:12,480 basehttp 15260 19940 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:12,484 basehttp 15260 544 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:13,774 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:13,782 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:14,469 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:14,476 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:15,479 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:15,483 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:16,471 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:16,476 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:17,470 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:17,477 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:18,473 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:18,482 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:19,483 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:19,487 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:20,475 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:20,481 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:21,484 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:21,489 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:22,483 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:22,491 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:23,474 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:23,479 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:24,477 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:24,481 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:25,473 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:25,479 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:26,480 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:26,481 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:27,474 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:27,479 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:28,483 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:28,491 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:29,477 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:29,494 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:30,495 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:30,502 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:31,477 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:31,486 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:32,470 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:32,486 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:33,489 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:33,496 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:34,484 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:34,490 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:35,538 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:35,539 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:36,485 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:36,491 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:37,470 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:37,472 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:38,480 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:38,486 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:39,467 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:39,473 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:40,470 basehttp 15260 26412 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:40,480 basehttp 15260 16248 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
+INFO 2025-06-14 01:24:41,501 basehttp 15260 16248 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 01:24:41,505 basehttp 15260 26412 "GET /api/chat/messages/conversation/?user_id=6 HTTP/1.1" 200 2240
