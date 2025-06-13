@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authentication',
     'chat.apps.ChatConfig',
+    'community_backend',
   ]
 
 MIDDLEWARE = [

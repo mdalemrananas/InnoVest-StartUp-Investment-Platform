@@ -79,8 +79,38 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import DownloadIcon from '@mui/icons-material/Download';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import RoomIcon from '@mui/icons-material/Room';
 
 const API_URL = 'http://localhost:8000/api/auth/profile/';
+
+// Backend handler for posting community posts
+async function submitCommunityPost(formData) {
+  const data = new FormData();
+  data.append('title', formData.title);
+  data.append('type', formData.type);
+  data.append('visibility', formData.visibility || 'public');
+  data.append('description', formData.description);
+  if (formData.tags && Array.isArray(formData.tags)) {
+    data.append('tags', formData.tags.join(','));
+  }
+  if (formData.type === 'Event') {
+    data.append('eventLocation', formData.eventLocation || '');
+    data.append('eventLocationLink', formData.eventLocationLink || '');
+    data.append('eventStartDateTime', formData.eventStartDateTime || '');
+    data.append('eventEndDateTime', formData.eventEndDateTime || '');
+  }
+  if (formData.attachment) {
+    data.append('attachment', formData.attachment);
+  }
+  const response = await axios.post('http://localhost:8000/api/community/posts/', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
+  return response.data;
+}
 
 const Dashboard = () => {
   const [value, setValue] = useState(0);
@@ -218,9 +248,15 @@ const Dashboard = () => {
   const [openShareIdea, setOpenShareIdea] = useState(false);
   const [shareIdeaForm, setShareIdeaForm] = useState({
     title: '',
-    category: '',
+    type: '',
+    visibility: 'public',
+    tags: [],
     description: '',
     attachment: null,
+    eventLocation: '',
+    eventLocationLink: '',
+    eventStartDateTime: '',
+    eventEndDateTime: '',
   });
   const ideaCategories = ['Business', 'Technology', 'Design', 'Other'];
   const [openCreateCompanyDialog, setOpenCreateCompanyDialog] = useState(false);
@@ -255,6 +291,12 @@ const Dashboard = () => {
   const [chatFilter, setChatFilter] = useState('accepted'); // 'accepted' or 'other'
   // Store refs for each message row
   const messageRefs = useRef({});
+  // Tag input state for chip input
+  const [tagInput, setTagInput] = useState('');
+  // State for post submission feedback
+  const [postLoading, setPostLoading] = useState(false);
+  const [postSuccess, setPostSuccess] = useState(null);
+  const [postError, setPostError] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -717,6 +759,51 @@ const Dashboard = () => {
     return () => clearTimeout(timer);
   }, [selectedChat, messages.length]);
 
+  // Helper to add tag
+  const handleTagAdd = (e) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ' ' || e.type === 'blur') {
+      const value = tagInput.trim().replace(/^#/, '');
+      if (value && !(shareIdeaForm.tags || []).includes(value)) {
+        setShareIdeaForm(prev => ({ ...prev, tags: [...(prev.tags || []), value] }));
+      }
+      setTagInput('');
+      e.preventDefault && e.preventDefault();
+    }
+  };
+  // Remove tag
+  const handleTagDelete = (tagToDelete) => {
+    setShareIdeaForm(prev => ({ ...prev, tags: (prev.tags || []).filter(tag => tag !== tagToDelete) }));
+  };
+
+  // Handler for Share Post dialog submit
+  const handleSharePost = async () => {
+    setPostLoading(true);
+    setPostSuccess(null);
+    setPostError(null);
+    try {
+      await submitCommunityPost(shareIdeaForm);
+      setPostSuccess('Post created successfully!');
+      setShareIdeaForm({
+        title: '',
+        type: '',
+        visibility: 'public',
+        tags: [],
+        description: '',
+        attachment: null,
+        eventLocation: '',
+        eventLocationLink: '',
+        eventStartDateTime: '',
+        eventEndDateTime: '',
+      });
+      setTagInput('');
+      setOpenShareIdea(false);
+    } catch (error) {
+      setPostError(error.response?.data || 'Failed to create post.');
+    } finally {
+      setPostLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -795,9 +882,9 @@ const Dashboard = () => {
                 label="Following" 
               />
               <Tab 
-                icon={<LightbulbIcon sx={{ fontSize: 20 }} />}
+                icon={<GroupsIcon sx={{ fontSize: 20 }} />}
                 iconPosition="start"
-                label="Idea Sharing" 
+                label="Community" 
               />
               <Tab 
                 icon={<BarChartIcon sx={{ fontSize: 20 }} />}
@@ -809,6 +896,125 @@ const Dashboard = () => {
             </Tabs>
 
             <Box sx={{ p: 3 }}>
+                {/* Community Tab */}
+                {tabValue === 4 && (
+                <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6">Community</Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddIcon sx={{ fontSize: 22 }} />}
+                      sx={{
+                        fontWeight: 800,
+                        borderRadius: 2,
+                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
+                        px: 2.5,
+                        py: 0.7,
+                        fontSize: '0.98rem',
+                        letterSpacing: 0.5,
+                        background: 'linear-gradient(90deg, #2196f3 0%, #21cbf3 100%)',
+                        textTransform: 'uppercase',
+                        minWidth: 0,
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)',
+                          boxShadow: '0 4px 16px rgba(25, 118, 210, 0.18)'
+                        }
+                      }}
+                      onClick={() => setOpenShareIdea(true)}
+                    >
+                      Share Post
+                    </Button>
+                  </Box>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                      <TextField
+                        size="small"
+                        placeholder="Search by title or author..."
+                        value={ideaSearch}
+                        onChange={e => setIdeaSearch(e.target.value)}
+                        sx={{ width: 400, background: '#f7f9fb', borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                        InputProps={{ sx: { background: '#f7f9fb', borderRadius: 2 } }}
+                      />
+                      <FormControl size="small" sx={{ minWidth: 180 }}>
+                        <Select
+                          value={ideaStatusFilter}
+                          displayEmpty
+                          onChange={e => setIdeaStatusFilter(e.target.value)}
+                          sx={{ borderRadius: 2, background: '#fff' }}
+                        >
+                          <MenuItem value="">Select Status</MenuItem>
+                          <MenuItem value="Pending">Pending</MenuItem>
+                          <MenuItem value="Approved">Approved</MenuItem>
+                          <MenuItem value="Rejected">Rejected</MenuItem>
+                        </Select>
+                      </FormControl>
+                    <Button
+                      variant="contained"
+                        sx={{ background: '#233876', color: '#fff', borderRadius: 2, fontWeight: 700, px: 3, '&:hover': { background: '#1a285a' } }}
+                      >
+                        Filters
+                    </Button>
+                  </Box>
+                    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: '1px solid #f0f1f3' }}>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                indeterminate={selectedIdeas.length > 0 && selectedIdeas.length < sharedIdeas.length}
+                                checked={sharedIdeas.length > 0 && selectedIdeas.length === sharedIdeas.length}
+                                onChange={e => {
+                                  if (e.target.checked) setSelectedIdeas(sharedIdeas.map(idea => idea.id));
+                                  else setSelectedIdeas([]);
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>Title & Description</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Interested</TableCell>
+                            <TableCell>Post At</TableCell>
+                            <TableCell>Actions</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {sharedIdeas.filter(idea => {
+                            const matchesSearch = idea.title.toLowerCase().includes(ideaSearch.toLowerCase()) || idea.author.toLowerCase().includes(ideaSearch.toLowerCase());
+                            const matchesStatus = !ideaStatusFilter || idea.status === ideaStatusFilter;
+                            return matchesSearch && matchesStatus;
+                          }).map(idea => (
+                            <TableRow key={idea.id}>
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={selectedIdeas.includes(idea.id)}
+                                  onChange={() => {
+                                    setSelectedIdeas(prev => prev.includes(idea.id) ? prev.filter(id => id !== idea.id) : [...prev, idea.id]);
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{idea.title}</Typography>
+                                <Typography variant="body2" color="text.secondary">{idea.description || 'No description.'}</Typography>
+                              </TableCell>
+                              <TableCell>{idea.status}</TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <FavoriteIcon color="error" fontSize="small" />
+                                  <Typography variant="body2">{idea.interested || 0}</Typography>
+                      </Box>
+                              </TableCell>
+                              <TableCell>{idea.postAt}</TableCell>
+                              <TableCell>
+                                <IconButton color="primary"><VisibilityIcon /></IconButton>
+                                <IconButton color="primary"><EditIcon /></IconButton>
+                                <IconButton color="error"><DeleteIcon /></IconButton>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Box>
+                )}
                 {/* Chat Tab */}
                 {tabValue === 6 && (
                   <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
@@ -1171,7 +1377,7 @@ const Dashboard = () => {
                                           py: 1.5, 
                                           borderRadius: 2, 
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'black' : 'text.primary',
+                                          color: msg.self ? 'white' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
@@ -1405,6 +1611,255 @@ const Dashboard = () => {
         </Grid>
       </Grid>
     </Container>
+    {/* Share Idea Dialog */}
+    <Dialog open={openShareIdea} onClose={() => setOpenShareIdea(false)} maxWidth="sm" fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(80,80,180,0.10)',
+          background: '#fff',
+        }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem', pb: 1, borderBottom: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+        Share Post
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Box component="form" sx={{ mt: 1 }}>
+          <Grid container spacing={2} justifyContent="center">
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Avatar sx={{ width: 44, height: 44, bgcolor: 'primary.main', fontWeight: 700 }} src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : undefined}>
+                  {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
+                </Avatar>
+                <Box>
+                  <Typography sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'User'} {userProfile?.last_name || ''}</Typography>
+                  <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Member'}</Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <TextField
+                  select
+                  label="Type"
+                  value={shareIdeaForm.type || ''}
+                  onChange={e => setShareIdeaForm(prev => ({ ...prev, type: e.target.value }))}
+                  sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                  helperText="What kind of post is this?"
+                >
+                  <MenuItem value="Discussion">💬 Discussion</MenuItem>
+                  <MenuItem value="Project Update">📢 Project Update</MenuItem>
+                  <MenuItem value="Question">❓ Question</MenuItem>
+                  <MenuItem value="Idea">🧠 Idea</MenuItem>
+                  <MenuItem value="Other">🗂️ Other</MenuItem>
+                  <MenuItem value="Event"><EventIcon sx={{ fontSize: 18, mr: 1, verticalAlign: 'middle' }} />Event</MenuItem>
+                </TextField>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <TextField
+                  select
+                  label="Visibility"
+                  value={shareIdeaForm.visibility || 'public'}
+                  onChange={e => setShareIdeaForm(prev => ({ ...prev, visibility: e.target.value }))}
+                  sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                  helperText="Who can see this post?"
+                >
+                  <MenuItem value="public">🌍 Public</MenuItem>
+                  <MenuItem value="private">🔒 Private</MenuItem>
+                </TextField>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Title"
+                value={shareIdeaForm.title}
+                onChange={e => setShareIdeaForm(prev => ({ ...prev, title: e.target.value }))}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontWeight: 600, fontSize: '1.15rem' } }}
+                inputProps={{ maxLength: 100 }}
+                helperText="Give your post a clear, descriptive title."
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Tags"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value.replace(/\s/g, ''))}
+                onKeyDown={handleTagAdd}
+                onBlur={handleTagAdd}
+                placeholder="Add tags (e.g. #Fintech, #Africa, #StartupFunding)"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                helperText="Press Enter or comma to add a tag."
+                InputProps={{
+                  startAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
+                    <Chip
+                      key={tag}
+                      label={`#${tag}`}
+                      onDelete={() => handleTagDelete(tag)}
+                      sx={{ mx: 0.25 }}
+                    />
+                  ))
+                }}
+              />
+            </Grid>
+            {shareIdeaForm.type === 'Event' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Location"
+                    value={shareIdeaForm.eventLocation || ''}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocation: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><RoomIcon color="action" /></InputAdornment> }}
+                    helperText="Where will the event take place? (e.g. Convention Center, City)"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Location Link"
+                    value={shareIdeaForm.eventLocationLink || ''}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocationLink: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    type="url"
+                    placeholder="https://maps.example.com/..."
+                    InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
+                    helperText="Paste a Google Maps or website link for the location."
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Start Date & Time"
+                    type="datetime-local"
+                    value={shareIdeaForm.eventStartDateTime || ''}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventStartDateTime: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                    helperText="When does the event start?"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="End Date & Time"
+                    type="datetime-local"
+                    value={shareIdeaForm.eventEndDateTime || ''}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventEndDateTime: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    InputLabelProps={{ shrink: true }}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                    helperText="When does the event end?"
+                  />
+                </Grid>
+              </>
+            )}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Description"
+                multiline
+                rows={4}
+                value={shareIdeaForm.description}
+                onChange={e => setShareIdeaForm(prev => ({ ...prev, description: e.target.value }))}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                placeholder="What's on your mind? Share your thoughts..."
+                helperText="Describe your post in detail."
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<AttachFileIcon />}
+                sx={{
+                  flexShrink: 0,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                  mb: 1,
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  bgcolor: '#f7f9fb',
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  borderWidth: 2,
+                  borderStyle: 'dashed',
+                  borderColor: '#90caf9',
+                  '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' }
+                }}
+              >
+                {shareIdeaForm.attachment ? 'Change Media or File' : 'Add Media or File'}
+                <input
+                  type="file"
+                  accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                  hidden
+                  onChange={e => setShareIdeaForm(prev => ({ ...prev, attachment: e.target.files[0] }))}
+                />
+              </Button>
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                Share an image, PDF, or document with your post.
+              </Typography>
+              {shareIdeaForm.attachment && (
+                <Box sx={{
+                  mt: 2, mb: 1, p: 2, display: 'flex', alignItems: 'center', gap: 2,
+                  border: '1.5px solid #1976d2', borderRadius: 2, bgcolor: '#f3f8fd',
+                  boxShadow: 1, position: 'relative',
+                  minHeight: 56
+                 }}>
+                   {shareIdeaForm.attachment.type && shareIdeaForm.attachment.type.startsWith('image/') ? (
+                     <img
+                       src={URL.createObjectURL(shareIdeaForm.attachment)}
+                       alt="preview"
+                       style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                     />
+                   ) : (
+                     <AttachFileIcon sx={{ fontSize: 36, color: '#1976d2' }} />
+                   )}
+                   <Box sx={{ flex: 1, minWidth: 0 }}>
+                     <Typography variant="body2" sx={{ fontWeight: 600, color: '#233876', wordBreak: 'break-all' }}>{shareIdeaForm.attachment.name}</Typography>
+                     <Typography variant="caption" color="text.secondary">
+                       {shareIdeaForm.attachment.type || 'File'}
+                     </Typography>
+                   </Box>
+                   <IconButton
+                     size="small"
+                     color="error"
+                     onClick={() => setShareIdeaForm(prev => ({ ...prev, attachment: null }))}
+                     sx={{ ml: 1 }}
+                   >
+                     <DeleteIcon />
+                   </IconButton>
+                 </Box>
+              )}
+            </Grid>
+          </Grid>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button
+          onClick={() => setOpenShareIdea(false)}
+          sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ borderRadius: 2, textTransform: 'none', px: 3, fontWeight: 700, boxShadow: 'none', background: '#1976d2', '&:hover': { background: '#115293' } }}
+          onClick={handleSharePost}
+          disabled={postLoading}
+        >
+          {postLoading ? 'Posting...' : 'Post'}
+        </Button>
+      </DialogActions>
+    </Dialog>
     {/* Chat user menu */}
     <Menu
       anchorEl={chatMenuAnchorEl}
@@ -1422,6 +1877,17 @@ const Dashboard = () => {
         Delete from Chat
       </MenuItem>
     </Menu>
+    {/* Show post success/error message */}
+    {postSuccess && (
+      <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
+        <Alert severity="success" onClose={() => setPostSuccess(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>{postSuccess}</Alert>
+      </Box>
+    )}
+    {postError && (
+      <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
+        <Alert severity="error" onClose={() => setPostError(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>{typeof postError === 'string' ? postError : JSON.stringify(postError)}</Alert>
+      </Box>
+    )}
     </>
   );
 };
