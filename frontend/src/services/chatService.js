@@ -136,6 +136,17 @@ class ChatService {
             throw error;
         }
     }
+
+    // Delete a message
+    async deleteMessage(messageId) {
+        try {
+            const response = await axiosInstance.delete(`${messageId}/delete_message/`);
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            throw error;
+        }
+    }
 }
 
 export default new ChatService(); 

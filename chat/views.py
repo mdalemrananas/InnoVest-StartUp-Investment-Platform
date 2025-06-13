@@ -41,7 +41,12 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'title': user.title if hasattr(user, 'title') else None
+                'title': user.title if hasattr(user, 'title') else None,
+                'profile_picture': (
+                    user.profile_picture.url if hasattr(user, 'profile_picture') and user.profile_picture else
+                    user.profile_pic.url if hasattr(user, 'profile_pic') and user.profile_pic else
+                    None
+                )
             } for user in users])
         except Exception as e:
             logger.error(f"Error in users endpoint: {str(e)}")
@@ -194,3 +199,29 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         received = ChatRequest.objects.filter(to_user=request.user)
         serializer = ChatRequestSerializer(list(sent) + list(received), many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['delete'])
+    def delete_message(self, request, pk=None):
+        try:
+            message = self.get_object()
+            # Only allow sender to delete the message
+            if message.sender != request.user:
+                return Response(
+                    {'error': 'Only the sender can delete this message'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Update message instead of deleting
+            message.message = f'This message was deleted by {request.user.first_name or request.user.email.split("@")[0]}'
+            # Remove file reference
+            message.file = None
+            message.save()
+            
+            serializer = self.get_serializer(message)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error in delete_message endpoint: {str(e)}")
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

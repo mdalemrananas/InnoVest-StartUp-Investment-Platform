@@ -239,7 +239,7 @@ const Dashboard = () => {
   const [socket, setSocket] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [lastMessageId, setLastMessageId] = useState(null);
-  const POLLING_INTERVAL = 2000; // Poll every 2 seconds
+  const POLLING_INTERVAL = 500; // Poll every 0.5 seconds for near real-time
   const [chatRequests, setChatRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [requestsError, setRequestsError] = useState(null);
@@ -253,6 +253,8 @@ const Dashboard = () => {
   const [chatMenuAnchorEl, setChatMenuAnchorEl] = useState(null);
   const [chatMenuUser, setChatMenuUser] = useState(null);
   const [chatFilter, setChatFilter] = useState('accepted'); // 'accepted' or 'other'
+  // Store refs for each message row
+  const messageRefs = useRef({});
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -296,8 +298,8 @@ const Dashboard = () => {
       }
     };
     fetchRequests();
-    // Poll every 3 seconds
-    pollInterval = setInterval(fetchRequests, 3000);
+    // Poll every 1 second for near real-time
+    pollInterval = setInterval(fetchRequests, 1000);
     return () => {
       if (pollInterval) clearInterval(pollInterval);
     };
@@ -462,32 +464,22 @@ const Dashboard = () => {
         const conversation = await chatService.getConversation(selectedChat.id);
         if (!conversation || !Array.isArray(conversation)) return;
 
-        // Get the latest message ID
-        const latestMessage = conversation[conversation.length - 1];
-        if (!latestMessage) return;
-
-        // If we have a new message
-        if (!lastMessageId || latestMessage.id > lastMessageId) {
-          setLastMessageId(latestMessage.id);
-          
-          // Map messages to include sender information and file
-          const formattedMessages = conversation.map(msg => {
-            let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
-            return {
-              id: msg.id,
-              from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
-              text: msg.message,
-              file: msg.file_url || null,
-              fileName: msg.file ? msg.file.split('/').pop() : (msg.file_url ? msg.file_url.split('/').pop() : undefined),
-              time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              timestamp: dateObj,
-              self: msg.sender.id === user.id,
-              is_read: msg.is_read
-            };
-          });
-          
-          setMessages(formattedMessages);
-        }
+        // Always update messages state with latest conversation
+        const formattedMessages = conversation.map(msg => {
+          let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+          return {
+            id: msg.id,
+            from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
+            text: msg.message,
+            file: msg.file_url || null,
+            fileName: msg.file ? msg.file.split('/').pop() : (msg.file_url ? msg.file_url.split('/').pop() : undefined),
+            time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: dateObj,
+            self: msg.sender.id === user.id,
+            is_read: msg.is_read
+          };
+        });
+        setMessages(formattedMessages);
       } catch (error) {
         console.error('Error polling messages:', error);
       }
@@ -547,10 +539,16 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Only auto-scroll to bottom if user is already near the bottom
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const threshold = 80; // px from bottom to consider as "at bottom"
+    const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - threshold;
+    if (isAtBottom) {
+      container.scrollTop = container.scrollHeight;
     }
+    // Otherwise, do not auto-scroll
   }, [messages]);
 
   // Add connection status indicator
@@ -623,6 +621,48 @@ const Dashboard = () => {
     setPendingAttachment(null);
   };
 
+  // Add message deletion handler
+  const handleDeleteMessage = async (messageId) => {
+    // Find the message DOM node and its offsetTop
+    const container = messagesContainerRef.current;
+    const msgNode = messageRefs.current[messageId];
+    const msgOffset = msgNode && container ? msgNode.offsetTop - container.scrollTop : null;
+
+    // Optimistically update UI
+    setMessages(prev => prev.map(msg =>
+      msg.id === messageId
+        ? {
+            ...msg,
+            text: `This message was deleted by ${userProfile?.first_name || userProfile?.email?.split('@')[0] || 'You'}`,
+            file: null
+          }
+        : msg
+    ));
+    try {
+      setLoading(true);
+      await chatService.deleteMessage(messageId);
+      // Immediately refresh conversation
+      if (selectedChat) {
+        await fetchConversation(selectedChat.id);
+      }
+      // Restore scroll so the deleted message stays at the same place
+      if (container && msgOffset !== null) {
+        // Wait for DOM update
+        setTimeout(() => {
+          const newMsgNode = messageRefs.current[messageId];
+          if (newMsgNode) {
+            container.scrollTop = newMsgNode.offsetTop - msgOffset;
+          }
+        }, 50);
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      setUsersError('Failed to delete message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Add this function near the top of the component
   const handleImageDownload = (url, fileName) => {
     fetch(url)
@@ -663,6 +703,19 @@ const Dashboard = () => {
     setChatSearch('');
     setChatSuggestions([]);
   };
+
+  // Scroll to bottom when opening a chat (on selectedChat change)
+  useEffect(() => {
+    if (!selectedChat) return;
+    // Wait for messages to load
+    const timer = setTimeout(() => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [selectedChat, messages.length]);
 
   return (
     <>
@@ -787,8 +840,11 @@ const Dashboard = () => {
                                 sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: '#f0f4fa' }, display: 'flex', alignItems: 'center', gap: 2 }}
                                 onClick={() => handleChatSuggestionClick(user)}
                               >
-                                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}>
-                                  {user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()}
+                                <Avatar
+                                  sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}
+                                  src={user.profile_picture ? `/images/profile_pic/${user.profile_picture}` : undefined}
+                                >
+                                  {(!user.profile_picture && (user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()))}
                                 </Avatar>
                                 <Box>
                                   <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
@@ -882,15 +938,16 @@ const Dashboard = () => {
                                   }}
                                 >
                                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Avatar 
-                                      sx={{ 
-                                        width: 40, 
-                                        height: 40, 
+                                    <Avatar
+                                      sx={{
+                                        width: 40,
+                                        height: 40,
                                         bgcolor: 'primary.main',
                                         fontSize: '1rem'
                                       }}
+                                      src={userItem.profile_picture ? `/images/profile_pic/${userItem.profile_picture}` : undefined}
                                     >
-                                      {userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()}
+                                      {(!userItem.profile_picture && (userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()))}
                                     </Avatar>
                                     <Box sx={{ ml: 2, minWidth: 0 }}>
                                       <Typography 
@@ -922,12 +979,12 @@ const Dashboard = () => {
                                         req.status === 'pending' && req.direction === 'sent' ? (
                                           <Button size="small" disabled>Pending Approval</Button>
                                         ) : req.status === 'pending' && req.direction === 'received' ? (
-                                          <>
-                                            <Button size="small" color="success" variant="contained" sx={{ mb: 1 }} onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'accept'); }}>Accept</Button>
+                                          <Stack direction="column" spacing={1} alignItems="flex-end" sx={{ ml: 2 }}>
+                                            <Button size="small" color="success" variant="contained" onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'accept'); }}>Accept</Button>
                                             <Button size="small" color="error" variant="contained" onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'reject'); }}>Reject</Button>
-                                          </>
+                                          </Stack>
                                         ) : req.status === 'rejected' ? (
-                                          <Stack direction="column" spacing={1} alignItems="flex-end">
+                                          <Stack direction="column" spacing={1} alignItems="flex-end" sx={{ ml: 2 }}>
                                             <Button size="small" disabled>Rejected</Button>
                                             <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message Again</Button>
                                           </Stack>
@@ -960,15 +1017,16 @@ const Dashboard = () => {
                         <>
                           {/* Chat Header */}
                           <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2, background: '#fff' }}>
-                            <Avatar 
-                              sx={{ 
-                                width: 40, 
-                                height: 40, 
+                            <Avatar
+                              sx={{
+                                width: 40,
+                                height: 40,
                                 bgcolor: 'primary.main',
                                 fontSize: '1rem'
                               }}
+                              src={selectedChat.profile_picture ? `/images/profile_pic/${selectedChat.profile_picture}` : undefined}
                             >
-                              {selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()}
+                              {(!selectedChat.profile_picture && (selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()))}
                             </Avatar>
                             <Box sx={{ flex: 1, ml: 2 }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
@@ -979,19 +1037,7 @@ const Dashboard = () => {
                               <Typography variant="caption" color="success.main">
                                 {selectedChat.title || 'User'}
                               </Typography>
-                              {/* User active status */}
-                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                                <Box sx={{
-                                  width: 10,
-                                  height: 10,
-                                  borderRadius: '50%',
-                                  bgcolor: 'success.main', // Always green for demo
-                                  mr: 1
-                                }} />
-                                <Typography variant="caption" color={'success.main'}>
-                                  {'Active now'}
-                                </Typography>
-                              </Box>
+                              {/* Removed active status indicator */}
                             </Box>
                             {/* Removed connection status, search, and more options icons */}
                           </Box>
@@ -1068,36 +1114,68 @@ const Dashboard = () => {
                                       </Typography>
                                     </Box>
                                     {msgs.map(msg => (
-                                      <Box 
-                                        key={msg.id} 
-                                        sx={{ 
-                                          display: 'flex', 
+                                      <Box
+                                        key={msg.id}
+                                        ref={el => { messageRefs.current[msg.id] = el; }}
+                                        sx={{
+                                          display: 'flex',
+                                          flexDirection: 'row',
                                           justifyContent: msg.self ? 'flex-end' : 'flex-start',
                                           alignItems: 'flex-end',
-                                          gap: 1
+                                          width: '100%',
+                                          mb: 0.5,
+                                          position: 'relative',
                                         }}
                                       >
+                                        {/* For received messages: avatar (left) */}
                                         {!msg.self && (
-                                          <Avatar 
-                                            sx={{ 
-                                              width: 32, 
-                                              height: 32, 
+                                          <Avatar
+                                            sx={{
+                                              width: 32,
+                                              height: 32,
                                               bgcolor: 'primary.main',
-                                              fontSize: '0.875rem'
+                                              fontSize: '0.875rem',
+                                              mr: 1,
+                                              flexShrink: 0
                                             }}
+                                            src={selectedChat.profile_picture ? `/images/profile_pic/${selectedChat.profile_picture}` : undefined}
                                           >
-                                            {selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()}
+                                            {(!selectedChat.profile_picture && (selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()))}
                                           </Avatar>
                                         )}
+                                        {/* For sent messages: delete icon (left) */}
+                                        {msg.self && !msg.text.includes('This message was deleted by') && (
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => handleDeleteMessage(msg.id)}
+                                            sx={{
+                                              color: 'error.main',
+                                              mr: 1,
+                                              alignSelf: 'center',
+                                              transition: 'color 0.2s, background 0.2s',
+                                              '&:hover': {
+                                                color: 'white',
+                                                background: 'error.main',
+                                              },
+                                              flexShrink: 0
+                                            }}
+                                          >
+                                            <DeleteIcon sx={{ fontSize: '1.2rem' }} />
+                                          </IconButton>
+                                        )}
+                                        {/* Message bubble */}
                                         <Box sx={{ 
-                                          maxWidth: '70%',
+                                          flex: '0 1 auto',
+                                          maxWidth: { xs: '80%', sm: '60%', md: '420px' },
                                           px: 2, 
                                           py: 1.5, 
                                           borderRadius: 2, 
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'white' : 'text.primary',
+                                          color: msg.self ? 'black' : 'text.primary',
                                           boxShadow: 1,
-                                          position: 'relative'
+                                          position: 'relative',
+                                          wordBreak: 'break-word',
+                                          overflow: 'hidden',
                                         }}>
                                           {/* Message text */}
                                           {msg.text && (
@@ -1105,8 +1183,8 @@ const Dashboard = () => {
                                               {msg.text}
                                             </Typography>
                                           )}
-                                          {/* File preview or download */}
-                                          {msg.file && (
+                                          {/* File preview or download (only if not deleted) */}
+                                          {msg.file && !msg.text.includes('This message was deleted by') && (
                                             msg.file.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) ? (
                                               <Box
                                                 sx={{
@@ -1150,7 +1228,7 @@ const Dashboard = () => {
                                                 <img
                                                   src={msg.file}
                                                   alt="attachment"
-                                                  style={{ maxWidth: 180, maxHeight: 180, borderRadius: 8, display: 'block' }}
+                                                  style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, display: 'block' }}
                                                 />
                                               </Box>
                                             ) : (
@@ -1175,31 +1253,36 @@ const Dashboard = () => {
                                             display: 'flex', 
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            gap: 1
+                                            gap: 1,
+                                            mt: 1
                                           }}>
-                                            {/* Remove per-message time here, since it's above the group */}
                                             {msg.self && (
-                                              <Typography 
-                                                variant="caption" 
-                                                sx={{ 
-                                                  color: 'rgba(255,255,255,0.7)',
-                                                  display: 'flex',
-                                                  alignItems: 'center',
-                                                  gap: 0.5
-                                                }}
-                                              >
-                                                {msg.is_read ? 'Read' : 'Sent'}
-                                              </Typography>
+                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography 
+                                                  variant="caption" 
+                                                  sx={{ 
+                                                    color: msg.self ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 0.5
+                                                  }}
+                                                >
+                                                  {msg.is_read ? 'Read' : 'Sent'}
+                                                </Typography>
+                                              </Box>
                                             )}
                                           </Box>
                                         </Box>
+                                        {/* For sent messages: avatar (right) */}
                                         {msg.self && (
                                           <Avatar 
                                             sx={{ 
                                               width: 32, 
                                               height: 32, 
                                               bgcolor: 'grey.300',
-                                              fontSize: '0.875rem'
+                                              fontSize: '0.875rem',
+                                              ml: 1,
+                                              flexShrink: 0
                                             }}
                                           >
                                             {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
