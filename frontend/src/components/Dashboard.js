@@ -246,6 +246,13 @@ const Dashboard = () => {
   const [attachmentAnchorEl, setAttachmentAnchorEl] = useState(null);
   const [attachmentType, setAttachmentType] = useState(null);
   const attachmentInputRef = useRef();
+  const [pendingAttachment, setPendingAttachment] = useState(null);
+  const [chatSearch, setChatSearch] = useState('');
+  const [chatSuggestions, setChatSuggestions] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [chatMenuAnchorEl, setChatMenuAnchorEl] = useState(null);
+  const [chatMenuUser, setChatMenuUser] = useState(null);
+  const [chatFilter, setChatFilter] = useState('accepted'); // 'accepted' or 'other'
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -377,17 +384,20 @@ const Dashboard = () => {
     try {
       setUsersLoading(true);
       setUsersError(null);
-      console.log('Fetching users...');
-      const response = await chatService.getUsers();
-      console.log('Users response:', response);
-      if (Array.isArray(response)) {
-        setChatUsers(response);
-      } else {
-        console.error('Invalid response format:', response);
-        setUsersError('Received invalid data format from server');
-      }
+      // Fetch all users (for search suggestions)
+      const allUsersFetched = await chatService.getUsers();
+      setAllUsers(allUsersFetched);
+      // Fetch chat requests
+      const requests = await chatService.getMyRequests();
+      // Only include users with a chat request (pending, accepted, rejected)
+      const relevantUserIds = new Set();
+      requests.forEach(r => {
+        relevantUserIds.add(r.from_user.id);
+        relevantUserIds.add(r.to_user.id);
+      });
+      const filteredUsers = allUsersFetched.filter(u => relevantUserIds.has(u.id));
+      setChatUsers(filteredUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
       setUsersError(
         error.response?.data?.error || 
         error.message || 
@@ -578,31 +588,39 @@ const Dashboard = () => {
       if (attachmentInputRef.current) attachmentInputRef.current.click();
     }, 100);
   };
-  const handleAttachmentChange = async (e) => {
+  const handleAttachmentChange = (e) => {
     const file = e.target.files[0];
-    if (!file || !selectedChat || !user?.id) return;
+    if (!file) return;
+    setPendingAttachment(file);
+    setAttachmentType(null);
+    e.target.value = '';
+  };
+
+  const handleSendAttachment = async () => {
+    if (!pendingAttachment || !selectedChat || !user?.id) return;
     try {
       setLoading(true);
-      // Send file as a chat message (no text)
-      const newMessage = await chatService.sendMessage(selectedChat.id, '', file);
+      const newMessage = await chatService.sendMessage(selectedChat.id, '', pendingAttachment);
       setMessages(prev => [...prev, {
         id: newMessage.id,
         from: 'You',
         text: '',
         file: newMessage.file_url,
-        fileName: file.name,
+        fileName: pendingAttachment.name,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         timestamp: new Date(),
         self: true,
         is_read: false
       }]);
+      setPendingAttachment(null);
     } catch (error) {
       setUsersError('Failed to send attachment. Please try again.');
     } finally {
       setLoading(false);
-      setAttachmentType(null);
-      e.target.value = '';
     }
+  };
+  const handleCancelAttachment = () => {
+    setPendingAttachment(null);
   };
 
   // Add this function near the top of the component
@@ -617,6 +635,33 @@ const Dashboard = () => {
         link.click();
         document.body.removeChild(link);
       });
+  };
+
+  // Update search bar logic
+  const handleChatSearchChange = (e) => {
+    const value = e.target.value;
+    setChatSearch(value);
+    if (!value) {
+      setChatSuggestions([]);
+      return;
+    }
+    // Filter all registered users
+    const lower = value.toLowerCase();
+    const suggestions = allUsers.filter(u =>
+      (u.first_name && u.first_name.toLowerCase().includes(lower)) ||
+      (u.last_name && u.last_name.toLowerCase().includes(lower)) ||
+      (u.email && u.email.toLowerCase().includes(lower))
+    );
+    setChatSuggestions(suggestions);
+  };
+  const handleChatSuggestionClick = (user) => {
+    // If not already in chatUsers, add
+    if (!chatUsers.find(u => u.id === user.id)) {
+      setChatUsers(prev => [...prev, user]);
+    }
+    setSelectedChat(user);
+    setChatSearch('');
+    setChatSuggestions([]);
   };
 
   return (
@@ -725,22 +770,61 @@ const Dashboard = () => {
                       height: '100%' 
                     }}>
                       <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Chats</Typography>
-                      <TextField 
-                        size="small" 
-                        placeholder="Search here..." 
-                        sx={{ mb: 2, background: '#fff', borderRadius: 2 }} 
-                        fullWidth 
-                      />
+                      <Box sx={{ position: 'relative' }}>
+                        <TextField
+                          size="small"
+                          placeholder="Search here..."
+                          value={chatSearch}
+                          onChange={handleChatSearchChange}
+                          sx={{ mb: 2, background: '#fff', borderRadius: 2 }}
+                          fullWidth
+                        />
+                        {chatSuggestions.length > 0 && (
+                          <Paper sx={{ position: 'absolute', zIndex: 10, width: '90%', left: '5%', mt: '-8px', maxHeight: 200, overflowY: 'auto' }}>
+                            {chatSuggestions.map(user => (
+                              <Box
+                                key={user.id}
+                                sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: '#f0f4fa' }, display: 'flex', alignItems: 'center', gap: 2 }}
+                                onClick={() => handleChatSuggestionClick(user)}
+                              >
+                                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}>
+                                  {user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()}
+                                </Avatar>
+                                <Box>
+                                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                    {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email.split('@')[0]}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {user.title || 'User'}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            ))}
+                          </Paper>
+                        )}
+                      </Box>
                       <Tabs value={chatTab} onChange={(_, v) => setChatTab(v)} sx={{ mb: 2 }}>
                         <Tab label="CHATS" value="chats" sx={{ fontWeight: 700 }} />
                       </Tabs>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, mt: 1 }}>DIRECT MESSAGES</Typography>
-                      <Box sx={{ 
-                        flex: 1, 
-                        overflowY: 'auto', 
-                        '&::-webkit-scrollbar': { width: '6px' }, 
-                        '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '3px' } 
-                      }}>
+                      <Box sx={{ display: 'flex', gap: 1, mb: 1, mt: 1 }}>
+                        <Button
+                          variant={chatFilter === 'accepted' ? 'contained' : 'outlined'}
+                          size="small"
+                          sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none', flex: 1 }}
+                          onClick={() => setChatFilter('accepted')}
+                        >
+                          Accepted
+                        </Button>
+                        <Button
+                          variant={chatFilter === 'other' ? 'contained' : 'outlined'}
+                          size="small"
+                          sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none', flex: 1 }}
+                          onClick={() => setChatFilter('other')}
+                        >
+                          Other Requests
+                        </Button>
+                      </Box>
+                      <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '3px' } }}>
                         {usersLoading ? (
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                             <CircularProgress size={24} />
@@ -771,82 +855,102 @@ const Dashboard = () => {
                             </Typography>
                           </Box>
                         ) : (
-                          chatUsers.map((userItem) => {
-                            const req = getRequestStatus(userItem.id);
-                            return (
-                              <Box
-                                key={userItem.id}
-                                onClick={() => {
-                                  if (req && req.status === 'accepted') setSelectedChat(userItem);
-                                }}
-                                sx={{
-                                  p: 2,
-                                  cursor: req && req.status === 'accepted' ? 'pointer' : 'default',
-                                  '&:hover': { bgcolor: req && req.status === 'accepted' ? 'rgba(0, 0, 0, 0.04)' : 'transparent' },
-                                  bgcolor: selectedChat?.id === userItem.id ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                                  borderRadius: 1,
-                                  mb: 0.5
-                                }}
-                              >
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                  <Avatar 
-                                    sx={{ 
-                                      width: 40, 
-                                      height: 40, 
-                                      bgcolor: 'primary.main',
-                                      fontSize: '1rem'
-                                    }}
-                                  >
-                                    {userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()}
-                                  </Avatar>
-                                  <Box sx={{ ml: 2, minWidth: 0 }}>
-                                    <Typography 
-                                      variant="subtitle1" 
+                          chatUsers
+                            .filter(userItem => {
+                              const req = getRequestStatus(userItem.id);
+                              if (chatFilter === 'accepted') {
+                                return req && req.status === 'accepted';
+                              } else {
+                                return !req || req.status !== 'accepted';
+                              }
+                            })
+                            .map((userItem) => {
+                              const req = getRequestStatus(userItem.id);
+                              return (
+                                <Box
+                                  key={userItem.id}
+                                  onClick={() => {
+                                    if (req && req.status === 'accepted') setSelectedChat(userItem);
+                                  }}
+                                  sx={{
+                                    p: 2,
+                                    cursor: req && req.status === 'accepted' ? 'pointer' : 'default',
+                                    '&:hover': { bgcolor: req && req.status === 'accepted' ? 'rgba(0, 0, 0, 0.04)' : 'transparent' },
+                                    bgcolor: selectedChat?.id === userItem.id ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
+                                    borderRadius: 1,
+                                    mb: 0.5
+                                  }}
+                                >
+                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <Avatar 
                                       sx={{ 
-                                        fontWeight: 600
-                                        // Removed whiteSpace, overflow, textOverflow to allow full name display
+                                        width: 40, 
+                                        height: 40, 
+                                        bgcolor: 'primary.main',
+                                        fontSize: '1rem'
                                       }}
                                     >
-                                      {userItem.first_name && userItem.last_name 
-                                        ? `${userItem.first_name} ${userItem.last_name}`
-                                        : userItem.email.split('@')[0]}
-                                    </Typography>
-                                    <Typography 
-                                      variant="body2" 
-                                      color="text.secondary"
-                                      sx={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                      }}
-                                    >
-                                      {userItem.title || 'User'}
-                                    </Typography>
-                                  </Box>
-                                  {/* Request logic UI */}
-                                  <Box sx={{ ml: 'auto' }}>
-                                    {req ? (
-                                      req.status === 'pending' && req.direction === 'sent' ? (
-                                        <Button size="small" disabled>Pending Approval</Button>
-                                      ) : req.status === 'pending' && req.direction === 'received' ? (
-                                        <>
-                                          <Button size="small" color="success" variant="contained" sx={{ mb: 1 }} onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'accept'); }}>Accept</Button>
-                                          <Button size="small" color="error" variant="contained" onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'reject'); }}>Reject</Button>
-                                        </>
-                                      ) : req.status === 'rejected' ? (
-                                        <Stack direction="column" spacing={1} alignItems="flex-end">
-                                          <Button size="small" disabled>Rejected</Button>
-                                          <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message Again</Button>
-                                        </Stack>
-                                      ) : req.status === 'accepted' ? null : null
-                                    ) : (
-                                      <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message</Button>
-                                    )}
+                                      {userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()}
+                                    </Avatar>
+                                    <Box sx={{ ml: 2, minWidth: 0 }}>
+                                      <Typography 
+                                        variant="subtitle1" 
+                                        sx={{ 
+                                          fontWeight: 600
+                                          // Removed whiteSpace, overflow, textOverflow to allow full name display
+                                        }}
+                                      >
+                                        {userItem.first_name && userItem.last_name 
+                                          ? `${userItem.first_name} ${userItem.last_name}`
+                                          : userItem.email.split('@')[0]}
+                                      </Typography>
+                                      <Typography 
+                                        variant="body2" 
+                                        color="text.secondary"
+                                        sx={{
+                                          whiteSpace: 'nowrap',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis'
+                                        }}
+                                      >
+                                        {userItem.title || 'User'}
+                                      </Typography>
+                                    </Box>
+                                    {/* Request logic UI */}
+                                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {req ? (
+                                        req.status === 'pending' && req.direction === 'sent' ? (
+                                          <Button size="small" disabled>Pending Approval</Button>
+                                        ) : req.status === 'pending' && req.direction === 'received' ? (
+                                          <>
+                                            <Button size="small" color="success" variant="contained" sx={{ mb: 1 }} onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'accept'); }}>Accept</Button>
+                                            <Button size="small" color="error" variant="contained" onClick={e => { e.stopPropagation(); handleRespondRequest(req.request.id, 'reject'); }}>Reject</Button>
+                                          </>
+                                        ) : req.status === 'rejected' ? (
+                                          <Stack direction="column" spacing={1} alignItems="flex-end">
+                                            <Button size="small" disabled>Rejected</Button>
+                                            <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message Again</Button>
+                                          </Stack>
+                                        ) : req.status === 'accepted' ? null : null
+                                      ) : (
+                                        <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message</Button>
+                                      )}
+                                      {/* Three-dot menu icon */}
+                                      <IconButton
+                                        size="small"
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setChatMenuAnchorEl(e.currentTarget);
+                                          setChatMenuUser(userItem);
+                                        }}
+                                      >
+                                        <MoreVertIcon />
+                                      </IconButton>
+                                    </Box>
                                   </Box>
                                 </Box>
-                              </Box>
-                            );
-                          })
+                              );
+                            })
                         )}
                       </Box>
                     </Box>
@@ -875,9 +979,35 @@ const Dashboard = () => {
                               <Typography variant="caption" color="success.main">
                                 {selectedChat.title || 'User'}
                               </Typography>
+                              {/* User active status */}
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Box sx={{
+                                  width: 10,
+                                  height: 10,
+                                  borderRadius: '50%',
+                                  bgcolor: 'success.main', // Always green for demo
+                                  mr: 1
+                                }} />
+                                <Typography variant="caption" color={'success.main'}>
+                                  {'Active now'}
+                                </Typography>
+                              </Box>
                             </Box>
                             {/* Removed connection status, search, and more options icons */}
                           </Box>
+                          {/* Show request status message above chat messages if not accepted */}
+                          {selectedChat && getRequestStatus(selectedChat.id)?.status !== 'accepted' && (
+                            <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary', fontStyle: 'italic' }}>
+                              {(() => {
+                                const req = getRequestStatus(selectedChat.id);
+                                if (!req) return 'You need to send a request to start messaging.';
+                                if (req.status === 'pending' && req.direction === 'sent') return 'Your request is pending approval.';
+                                if (req.status === 'pending' && req.direction === 'received') return 'This user wants to message you. Accept or reject the request.';
+                                if (req.status === 'rejected') return 'Request was rejected. You can request again.';
+                                return null;
+                              })()}
+                            </Box>
+                          )}
                           {/* Chat Messages */}
                           <Box
                             ref={messagesContainerRef}
@@ -965,7 +1095,7 @@ const Dashboard = () => {
                                           py: 1.5, 
                                           borderRadius: 2, 
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'black' : 'text.primary',
+                                          color: msg.self ? 'white' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative'
                                         }}>
@@ -1093,52 +1223,69 @@ const Dashboard = () => {
                             gap: 1
                           }}>
                             {/* Attachment Icon */}
-                            <>
-                              <IconButton onClick={handleAttachmentClick} sx={{ mr: 1 }}>
-                                <AttachFileIcon />
-                              </IconButton>
-                              <Menu
-                                anchorEl={attachmentAnchorEl}
-                                open={Boolean(attachmentAnchorEl)}
-                                onClose={handleAttachmentClose}
-                              >
-                                <MenuItem onClick={() => handleAttachmentOption('photo')}><InsertPhotoIcon sx={{ mr: 1 }} />Send Photo</MenuItem>
-                                <MenuItem onClick={() => handleAttachmentOption('document')}><AttachFileIcon sx={{ mr: 1 }} />Send Document</MenuItem>
-                              </Menu>
-                              <input
-                                ref={attachmentInputRef}
-                                type="file"
-                                accept={attachmentType === 'photo' ? 'image/*' : attachmentType === 'document' ? '.pdf,.doc,.docx,.xls,.xlsx,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain' : '*/*'}
-                                style={{ display: 'none' }}
-                                onChange={handleAttachmentChange}
-                              />
-                            </>
+                            {selectedChat && getRequestStatus(selectedChat.id)?.status === 'accepted' && !pendingAttachment && (
+                              <>
+                                <IconButton onClick={handleAttachmentClick} sx={{ mr: 1 }}>
+                                  <AttachFileIcon />
+                                </IconButton>
+                                <Menu
+                                  anchorEl={attachmentAnchorEl}
+                                  open={Boolean(attachmentAnchorEl)}
+                                  onClose={handleAttachmentClose}
+                                >
+                                  <MenuItem onClick={() => handleAttachmentOption('photo')}><InsertPhotoIcon sx={{ mr: 1 }} />Send Photo</MenuItem>
+                                  <MenuItem onClick={() => handleAttachmentOption('document')}><AttachFileIcon sx={{ mr: 1 }} />Send Document</MenuItem>
+                                </Menu>
+                                <input
+                                  ref={attachmentInputRef}
+                                  type="file"
+                                  accept={attachmentType === 'photo' ? 'image/*' : attachmentType === 'document' ? '.pdf,.doc,.docx,.xls,.xlsx,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain' : '*/*'}
+                                  style={{ display: 'none' }}
+                                  onChange={handleAttachmentChange}
+                                />
+                              </>
+                            )}
+                            {pendingAttachment && (
+                              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                {pendingAttachment.type.startsWith('image/') ? (
+                                  <img
+                                    src={URL.createObjectURL(pendingAttachment)}
+                                    alt="preview"
+                                    style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8, border: '1px solid #eee' }}
+                                  />
+                                ) : (
+                                  <Typography variant="body2">{pendingAttachment.name}</Typography>
+                                )}
+                                <Button variant="contained" color="primary" size="small" onClick={handleSendAttachment}>Send</Button>
+                                <Button variant="outlined" color="error" size="small" onClick={handleCancelAttachment}>Cancel</Button>
+                              </Box>
+                            )}
                             <TextField
                               fullWidth
                               placeholder={selectedChat && getRequestStatus(selectedChat.id)?.status === 'accepted' ? 'Type your message...' : 'Request not accepted yet'}
                               value={chatInput}
                               onChange={e => setChatInput(e.target.value)}
-                              onKeyDown={e => { 
-                                if (e.key === 'Enter' && !e.shiftKey && getRequestStatus(selectedChat.id)?.status === 'accepted') {
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey && getRequestStatus(selectedChat.id)?.status === 'accepted' && !pendingAttachment) {
                                   e.preventDefault();
                                   handleSendChat();
                                 }
                               }}
                               multiline
                               maxRows={4}
-                              disabled={!selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted'}
-                              sx={{ 
+                              disabled={!selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted' || !!pendingAttachment}
+                              sx={{
                                 '& .MuiOutlinedInput-root': {
                                   borderRadius: 2,
                                   background: '#f7f9fb'
                                 }
                               }}
                             />
-                            <IconButton 
-                              color="primary" 
+                            <IconButton
+                              color="primary"
                               onClick={handleSendChat}
-                              disabled={!chatInput.trim() || loading}
-                              sx={{ 
+                              disabled={!chatInput.trim() || loading || !selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted' || !!pendingAttachment}
+                              sx={{
                                 bgcolor: 'primary.main',
                                 color: 'white',
                                 '&:hover': {
@@ -1175,6 +1322,23 @@ const Dashboard = () => {
         </Grid>
       </Grid>
     </Container>
+    {/* Chat user menu */}
+    <Menu
+      anchorEl={chatMenuAnchorEl}
+      open={Boolean(chatMenuAnchorEl)}
+      onClose={() => setChatMenuAnchorEl(null)}
+    >
+      <MenuItem
+        onClick={() => {
+          // Delete from chat
+          setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
+          setChatMenuAnchorEl(null);
+          if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
+        }}
+      >
+        Delete from Chat
+      </MenuItem>
+    </Menu>
     </>
   );
 };
