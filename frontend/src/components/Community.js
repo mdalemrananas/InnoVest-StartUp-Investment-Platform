@@ -18,6 +18,7 @@ import {
   Alert,
   Snackbar,
   Divider,
+  InputAdornment,
 } from '@mui/material';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
@@ -34,12 +35,12 @@ import { Link as RouterLink } from 'react-router-dom';
 import authService from '../services/authService';
 import communityService from '../services/communityService';
 import chatService from '../services/chatService';
+import CloseIcon from '@mui/icons-material/Close';
 
 const bannerImage = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80'; // Same as Events.js
 
 const Community = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('');
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,11 +58,17 @@ const Community = () => {
     : currentUser?.first_name || currentUser?.user?.first_name || currentUser?.email?.split('@')[0] || 'User';
   const [loadingMore, setLoadingMore] = useState(false);
   const [users, setUsers] = useState({});
+  const [filteredPosts, setFilteredPosts] = useState([]);
 
   useEffect(() => {
     fetchUsers();
     fetchPosts();
   }, []);
+
+  // Add effect to update filteredPosts when posts or search changes
+  useEffect(() => {
+    handleSearch();
+  }, [posts, searchQuery]);
 
   const fetchUsers = async () => {
     try {
@@ -178,11 +185,20 @@ const Community = () => {
   };
 
   const handleSearch = () => {
-    fetchPosts();
-  };
+    const search = searchQuery.trim().toLowerCase();
+    const filtered = posts.filter(post => {
+      // Get the user data for this post
+      const postUserId = String(post.user);
+      const userData = users[postUserId] || { name: 'Unknown User' };
+      const posterName = userData.name.toLowerCase();
 
-  const handleCategoryChange = (event) => {
-    setCategory(event.target.value);
+      return !search || 
+        (post.title && post.title.toLowerCase().includes(search)) ||
+        (post.type && post.type.toLowerCase().includes(search)) ||
+        (post.description && post.description.toLowerCase().includes(search)) ||
+        (posterName && posterName.includes(search));
+    });
+    setFilteredPosts(filtered);
   };
 
   const handleReaction = async (postId, type) => {
@@ -460,62 +476,49 @@ const Community = () => {
             boxShadow: '0 2px 12px 0 rgba(80, 80, 180, 0.08)',
             p: 2,
             display: 'flex',
-            gap: 2,
+            justifyContent: 'center',
             alignItems: 'center',
-            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            minHeight: 64,
           }}
         >
           <TextField
             size="small"
-            placeholder="Search by Idea name or Keyword..."
+            placeholder="Search by title, type or poster's name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            variant="outlined"
             sx={{
-              flex: 2,
-              background: '#f7f9fb',
-              borderRadius: 2,
-              '& .MuiOutlinedInput-root': {
-                background: 'transparent',
-                borderRadius: 2,
-                border: '1px solid #e0e3ea',
-                boxShadow: 'none',
-                '& fieldset': { border: 'none' },
+              maxWidth: 500,
+              width: '100%',
+              background: '#fff',
+              borderRadius: 8,
+              boxShadow: '0 2px 8px rgba(60,64,67,0.15)',
+              '& .MuiOutlinedInput-root': { 
+                borderRadius: 8, 
+                fontSize: 18, 
+                pl: 1,
+                background: '#fff'
               },
-              '& .MuiInputBase-input': {
-                background: 'transparent',
-                border: 'none',
-                boxShadow: 'none',
-              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  {searchQuery && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchQuery('')}
+                      sx={{ mr: 0.5 }}
+                      aria-label="Clear search"
+                    >
+                      <CloseIcon sx={{ color: '#888', fontSize: 22 }} />
+                    </IconButton>
+                  )}
+                  <IconButton onClick={handleSearch} edge="end" size="large">
+                    <SearchIcon sx={{ color: '#4285F4', fontSize: 28 }} />
+                  </IconButton>
+                </InputAdornment>
+              )
             }}
           />
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Select Category</InputLabel>
-            <Select label="Select Category" value={category} onChange={handleCategoryChange}>
-              <MenuItem value="">All Categories</MenuItem>
-              <MenuItem value="Food">Food</MenuItem>
-              <MenuItem value="Technology">Technology</MenuItem>
-              <MenuItem value="Business">Business</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
-            variant="contained"
-            startIcon={<FilterListIcon />}
-            onClick={handleSearch}
-            sx={{
-              background: '#2d3e70',
-              color: '#fff',
-              borderRadius: 2,
-              px: 3,
-              fontWeight: 700,
-              boxShadow: 'none',
-              textTransform: 'none',
-              height: 40,
-              '&:hover': { background: '#1a2650' },
-            }}
-          >
-            Filters
-          </Button>
         </Box>
       </Container>
 
@@ -532,8 +535,8 @@ const Community = () => {
           </Box>
         ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {posts
-              .filter(post => post.visibility === 'public') // Only show public posts
+            {filteredPosts
+              .filter(post => post.visibility === 'public')
               .map((post) => {
                 // Convert both IDs to strings for comparison
                 const postUserId = String(post.user);
@@ -1213,4 +1216,5 @@ const Community = () => {
     </Box>
   );
 };
+
 export default Community; 
