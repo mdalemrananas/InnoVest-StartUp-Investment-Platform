@@ -312,6 +312,7 @@ const Dashboard = () => {
   const [deletePost, setDeletePost] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', type: '', description: '' });
   const [actionLoading, setActionLoading] = useState(false);
+  const [filteredPosts, setFilteredPosts] = useState([]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -958,6 +959,31 @@ const Dashboard = () => {
     }
   };
 
+  // Add effect to update filteredPosts when posts, search, or filter changes
+  useEffect(() => {
+    handleCommunitySearch();
+    // eslint-disable-next-line
+  }, [communityPosts, ideaSearch, ideaStatusFilter, userProfile]);
+
+  const handleCommunitySearch = () => {
+    const search = ideaSearch.trim().toLowerCase();
+    const status = ideaStatusFilter;
+    const myPosts = communityPosts.filter(post => {
+      // Only show current user's posts
+      const isMine = post.user && typeof post.user === 'object'
+        ? post.user.id === userProfile?.id
+        : String(post.user) === String(userProfile?.id);
+      // Filter by search (title or type)
+      const matchesSearch = !search ||
+        (post.title && post.title.toLowerCase().includes(search)) ||
+        (post.type && post.type.toLowerCase().includes(search));
+      // Filter by status
+      const matchesStatus = !status || (post.status && post.status === status);
+      return isMine && matchesSearch && matchesStatus;
+    });
+    setFilteredPosts(myPosts);
+  };
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -1053,8 +1079,8 @@ const Dashboard = () => {
                 {/* Community Tab */}
                 {tabValue === 4 && (
                 <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">Community</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Community</Typography>
                     <Button
                       variant="contained"
                       color="primary"
@@ -1080,43 +1106,47 @@ const Dashboard = () => {
                       Share Post
                     </Button>
                   </Box>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-                      <TextField
-                        size="small"
-                        placeholder="Search by title or author..."
-                        value={ideaSearch}
-                        onChange={e => setIdeaSearch(e.target.value)}
-                        sx={{ width: 400, background: '#f7f9fb', borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        InputProps={{ sx: { background: '#f7f9fb', borderRadius: 2 } }}
-                      />
-                      <FormControl size="small" sx={{ minWidth: 180 }}>
-                        <Select
-                          value={ideaStatusFilter}
-                          displayEmpty
-                          onChange={e => setIdeaStatusFilter(e.target.value)}
-                          sx={{ borderRadius: 2, background: '#fff' }}
-                        >
-                          <MenuItem value="">Select Status</MenuItem>
-                          <MenuItem value="Pending">Pending</MenuItem>
-                          <MenuItem value="Approved">Approved</MenuItem>
-                          <MenuItem value="Rejected">Rejected</MenuItem>
-                        </Select>
-                      </FormControl>
-                    <Button
-                      variant="contained"
-                        sx={{ background: '#233876', color: '#fff', borderRadius: 2, fontWeight: 700, px: 3, '&:hover': { background: '#1a285a' } }}
-                      >
-                        Filters
-                    </Button>
+                  {/* Search box with clear (cross) icon */}
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                    <TextField
+                      size="small"
+                      placeholder="Search by title or type..."
+                      value={ideaSearch}
+                      onChange={e => setIdeaSearch(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCommunitySearch(); }}
+                      sx={{
+                        width: 400,
+                        background: '#fff',
+                        borderRadius: 8,
+                        boxShadow: '0 2px 8px rgba(60,64,67,0.15)',
+                        '& .MuiOutlinedInput-root': { borderRadius: 8, fontSize: 18, pl: 1 },
+                      }}
+                      InputProps={{
+                        sx: { background: '#fff', borderRadius: 8, fontSize: 18 },
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {ideaSearch && (
+                              <IconButton
+                                size="small"
+                                onClick={() => { setIdeaSearch(''); handleCommunitySearch(); }}
+                                sx={{ mr: 0.5 }}
+                                aria-label="Clear search"
+                              >
+                                <CloseIcon sx={{ color: '#888', fontSize: 22 }} />
+                              </IconButton>
+                            )}
+                            <IconButton onClick={handleCommunitySearch} edge="end" size="large">
+                              <SearchIcon sx={{ color: '#4285F4', fontSize: 28 }} />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
                   </Box>
                   {/* My Posts Section (moved directly under search/filter) */}
                   {userProfile && (() => {
-                    const myPosts = communityPosts.filter(post => {
-                      if (post.user && typeof post.user === 'object' && post.user !== null) {
-                        return post.user.id === userProfile.id;
-                      }
-                      return String(post.user) === String(userProfile.id);
-                    });
+                    // Use filteredPosts instead of myPosts
+                    const myPosts = filteredPosts;
                     return (
                       <Box sx={{ mb: 3, background: '#f7f9fb', borderRadius: 2, p: 2, border: '1px solid #e3e8ef' }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>
@@ -1157,7 +1187,6 @@ const Dashboard = () => {
                   })()}
                 </Box>
                 )}
-               
                 {/* Chat Tab */}
                 {tabValue === 6 && (
                   <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
