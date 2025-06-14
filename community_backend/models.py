@@ -45,3 +45,15 @@ class CommunityComment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.user.username} on {self.post.title}'
+
+class CommunityInterest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='community_interests')
+    post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='interests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} interested in {self.post.title}"

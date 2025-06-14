@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import CommunityPost, CommunityComment
+from rest_framework.decorators import api_view, permission_classes
+from .models import CommunityPost, CommunityComment, CommunityInterest
 from .serializers import CommunityPostSerializer, CommunityCommentSerializer
 
 # Create your views here.
@@ -15,7 +16,7 @@ class CommunityPostCreateView(APIView):
         # To return all posts, use the next line. To return only the current user's posts, uncomment the filter line below.
         posts = CommunityPost.objects.all()
         # posts = CommunityPost.objects.filter(user=request.user)
-        serializer = CommunityPostSerializer(posts, many=True)
+        serializer = CommunityPostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data)
 
     def get_object(self, pk):
@@ -112,3 +113,36 @@ class CommunityCommentView(APIView):
             )
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_interest(request, post_id):
+    try:
+        post = get_object_or_404(CommunityPost, id=post_id)
+        user = request.user
+        
+        # Check if interest already exists
+        interest = CommunityInterest.objects.filter(user=user, post=post).first()
+        
+        if interest:
+            # If interest exists, remove it
+            interest.delete()
+            is_interested = False
+        else:
+            # If interest doesn't exist, create it
+            CommunityInterest.objects.create(user=user, post=post)
+            is_interested = True
+            
+        # Get updated interest count
+        interest_count = CommunityInterest.objects.filter(post=post).count()
+        
+        return Response({
+            'is_interested': is_interested,
+            'interest_count': interest_count
+        })
+        
+    except CommunityPost.DoesNotExist:
+        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"Error in toggle_interest: {str(e)}")  # Add logging
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

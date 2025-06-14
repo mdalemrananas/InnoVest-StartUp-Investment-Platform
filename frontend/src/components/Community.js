@@ -46,6 +46,7 @@ const Community = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [commentInputs, setCommentInputs] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [userInterests, setUserInterests] = useState({});
   const commentRefs = {};
   const currentUser = authService.getCurrentUser();
   const currentUserId = currentUser?.id || currentUser?.user?.id;
@@ -327,6 +328,71 @@ const Community = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const handleToggleInterest = async (postId) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        setSnackbar({
+          open: true,
+          message: 'You must be logged in to show interest.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      console.log('Toggling interest for post:', postId); // Debug log
+
+      const response = await fetch(`http://localhost:8000/api/community/posts/${postId}/toggle-interest/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Response status:', response.status); // Debug log
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData); // Debug log
+        throw new Error(errorData.error || 'Failed to update interest');
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data); // Debug log
+      
+      // Update the posts state with new interest count (always use interest_count)
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            interest_count: data.interest_count // always update this field
+          };
+        }
+        return post;
+      }));
+
+      // Update user interests state
+      setUserInterests(prev => ({
+        ...prev,
+        [postId]: data.is_interested
+      }));
+
+      setSnackbar({
+        open: true,
+        message: data.is_interested ? 'You are now interested in this event!' : 'You are no longer interested in this event.',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error in handleToggleInterest:', err); // Debug log
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to update interest. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
   return (
     <Box>
       {/* Banner Section */}
@@ -497,6 +563,8 @@ const Community = () => {
                 } else {
                   userData = users[postUserId] || { name: 'Unknown User', avatar: 'https://placehold.co/40x40' };
                 }
+
+                const isInterested = typeof userInterests[post.id] !== 'undefined' ? userInterests[post.id] : post.is_interested;
 
                 return (
                   <Card
@@ -830,32 +898,33 @@ const Community = () => {
                         <Button
                           variant="contained"
                           startIcon={<span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#f7b928" stroke="#f7b928" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill={isInterested ? "#4caf50" : "#f7b928"} stroke={isInterested ? "#4caf50" : "#f7b928"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'middle' }}>
                               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                             </svg>
                           </span>}
+                          onClick={() => handleToggleInterest(post.id)}
                           sx={{
-                            background: '#fffbe6',
-                            color: '#f7b928',
+                            background: isInterested ? '#e8f5e9' : '#fffbe6',
+                            color: isInterested ? '#4caf50' : '#f7b928',
                             borderRadius: 2,
                             px: 3,
                             fontWeight: 700,
                             boxShadow: 'none',
                             textTransform: 'none',
-                            border: '1.5px solid #f7b928',
+                            border: `1.5px solid ${isInterested ? '#4caf50' : '#f7b928'}`,
                             fontSize: '1.08rem',
                             '&:hover': {
-                              background: '#fff3cd',
-                              borderColor: '#f7b928',
-                              color: '#c49000',
+                              background: isInterested ? '#c8e6c9' : '#fff3cd',
+                              borderColor: isInterested ? '#4caf50' : '#f7b928',
+                              color: isInterested ? '#2e7d32' : '#c49000',
                             },
                           }}
                         >
-                          Interested
+                          {isInterested ? 'Interested' : 'Show Interest'}
                         </Button>
-                        <Typography sx={{ ml: 2, color: '#f7b928', fontWeight: 700, fontSize: '1.08rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <PeopleAltOutlinedIcon sx={{ fontSize: 22, color: '#f7b928', verticalAlign: 'middle' }} />
-                          {post.interested_count || 0}
+                        <Typography sx={{ ml: 2, color: isInterested ? '#4caf50' : '#f7b928', fontWeight: 700, fontSize: '1.08rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <PeopleAltOutlinedIcon sx={{ fontSize: 22, color: isInterested ? '#4caf50' : '#f7b928', verticalAlign: 'middle' }} />
+                          {typeof post.interest_count === 'number' ? post.interest_count : 0}
                         </Typography>
                       </Box>
                     ) : (
@@ -1144,5 +1213,4 @@ const Community = () => {
     </Box>
   );
 };
-
 export default Community; 

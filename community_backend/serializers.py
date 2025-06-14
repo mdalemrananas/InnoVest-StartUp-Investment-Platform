@@ -2,9 +2,22 @@ from rest_framework import serializers
 from .models import CommunityPost, CommunityComment
 
 class CommunityPostSerializer(serializers.ModelSerializer):
+    interest_count = serializers.SerializerMethodField()
+    is_interested = serializers.SerializerMethodField()
+
     class Meta:
         model = CommunityPost
         fields = '__all__'
+
+    def get_interest_count(self, obj):
+        return obj.interests.count()
+
+    def get_is_interested(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            return obj.interests.filter(user=user).exists()
+        return False
 
 class CommunityCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
