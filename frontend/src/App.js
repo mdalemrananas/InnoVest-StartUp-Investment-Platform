@@ -7,6 +7,7 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Dashboard from './components/Dashboard';
+import Community from './components/Community';
 import Layout from './components/shared/Layout';
 
 function App() {
@@ -18,11 +19,20 @@ function App() {
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/community" element={<Community />} />
         <Route
           path="/dashboard"
           element={
             <PrivateRoute requiredRole="user">
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+         <Route
+          path="/ideas/share"
+          element={
+            <PrivateRoute>
+              <Community />
             </PrivateRoute>
           }
         />

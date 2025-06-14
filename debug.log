@@ -4632,3 +4632,138 @@ INFO 2025-06-14 12:23:22,401 basehttp 20536 29180 "GET /api/chat/messages/conver
 INFO 2025-06-14 12:23:22,570 basehttp 20536 29180 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
 INFO 2025-06-14 12:23:22,918 basehttp 20536 29180 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
 INFO 2025-06-14 12:23:23,397 basehttp 20536 29180 "GET /api/chat/messages/conversation/?user_id=58 HTTP/1.1" 200 3642
+INFO 2025-06-14 13:23:26,014 autoreload 20124 19832 Watching for file changes with StatReloader
+INFO 2025-06-14 13:24:44,008 basehttp 20124 22820 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,655 basehttp 20124 22820 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 13:24:44,722 basehttp 20124 22820 "OPTIONS /api/auth/profile/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,726 basehttp 20124 2156 "OPTIONS /api/community/posts/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,728 basehttp 20124 22820 "OPTIONS /api/community/posts/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,741 basehttp 20124 22820 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:24:44,757 basehttp 20124 22820 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:24:44,760 basehttp 20124 22820 "OPTIONS /api/chat/messages/my_requests/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,764 basehttp 20124 2156 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:24:44,765 basehttp 20124 22820 "OPTIONS /api/chat/messages/users/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:24:44,775 basehttp 20124 2156 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:24:44,792 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:44,803 basehttp 20124 2156 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:24:44,810 basehttp 20124 22820 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:24:44,830 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:45,760 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:46,773 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:47,759 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:48,760 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:49,772 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:50,770 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:51,765 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:52,770 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:53,772 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:54,772 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:55,023 basehttp 20124 22820 "OPTIONS /api/community/posts/4/ HTTP/1.1" 200 0
+WARNING 2025-06-14 13:24:55,040 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:55,042 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:55,762 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:55,764 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 13:24:55,806 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+WARNING 2025-06-14 13:24:56,008 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,009 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,140 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,143 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,257 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,258 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,392 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,394 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,504 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,505 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,639 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,640 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+WARNING 2025-06-14 13:24:56,759 log 20124 22820 Bad Request: /api/community/posts/4/
+WARNING 2025-06-14 13:24:56,761 basehttp 20124 22820 "PATCH /api/community/posts/4/ HTTP/1.1" 400 45
+INFO 2025-06-14 13:24:56,802 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:57,774 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:24:58,763 basehttp 20124 22820 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:28:45,309 basehttp 20124 4440 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:28:45,323 basehttp 20124 23540 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:28:45,324 basehttp 20124 24200 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:28:45,342 basehttp 20124 11580 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:28:45,342 basehttp 20124 4440 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:28:45,352 basehttp 20124 23540 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:28:45,364 basehttp 20124 23540 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:28:45,367 basehttp 20124 4440 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:28:45,975 basehttp 20124 4440 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:28:46,970 basehttp 20124 4440 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:28:47,976 basehttp 20124 4440 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:29:16,754 basehttp 20124 15796 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 13:29:16,816 basehttp 20124 15796 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:29:16,819 basehttp 20124 25220 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:29:16,830 basehttp 20124 15796 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:29:16,836 basehttp 20124 25220 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:29:16,854 basehttp 20124 25220 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:29:16,854 basehttp 20124 15796 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:29:16,865 basehttp 20124 25220 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:29:16,875 basehttp 20124 15796 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:29:17,834 basehttp 20124 15796 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:29:55,050 basehttp 20124 27276 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:29:55,054 basehttp 20124 15380 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:29:55,063 basehttp 20124 27276 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:29:55,077 basehttp 20124 15380 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:29:55,209 basehttp 20124 15380 "OPTIONS /api/community/posts/1/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,209 basehttp 20124 27276 "OPTIONS /api/community/posts/3/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,219 basehttp 20124 15380 "OPTIONS /api/community/posts/4/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,322 basehttp 20124 27276 "OPTIONS /api/community/posts/14/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,323 basehttp 20124 15380 "OPTIONS /api/community/posts/19/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,332 basehttp 20124 27276 "OPTIONS /api/community/posts/22/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,362 basehttp 20124 27276 "OPTIONS /api/community/posts/19/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,358 basehttp 20124 15380 "OPTIONS /api/community/posts/4/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,357 basehttp 20124 27496 "OPTIONS /api/community/posts/14/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:29:55,384 basehttp 20124 27496 "OPTIONS /api/community/posts/22/comments/ HTTP/1.1" 200 0
+WARNING 2025-06-14 13:29:55,448 log 20124 27276 Not Found: /api/community/posts/3/comments/
+WARNING 2025-06-14 13:29:55,450 log 20124 27496 Not Found: /api/community/posts/4/comments/
+WARNING 2025-06-14 13:29:55,453 log 20124 15380 Not Found: /api/community/posts/1/comments/
+WARNING 2025-06-14 13:29:55,453 basehttp 20124 27276 "GET /api/community/posts/3/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,453 basehttp 20124 27496 "GET /api/community/posts/4/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,453 basehttp 20124 15380 "GET /api/community/posts/1/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,461 log 20124 27276 Not Found: /api/community/posts/22/comments/
+WARNING 2025-06-14 13:29:55,464 log 20124 27496 Not Found: /api/community/posts/14/comments/
+WARNING 2025-06-14 13:29:55,467 log 20124 15380 Not Found: /api/community/posts/19/comments/
+WARNING 2025-06-14 13:29:55,467 basehttp 20124 27276 "GET /api/community/posts/22/comments/ HTTP/1.1" 404 3325
+WARNING 2025-06-14 13:29:55,468 basehttp 20124 27496 "GET /api/community/posts/14/comments/ HTTP/1.1" 404 3325
+WARNING 2025-06-14 13:29:55,468 basehttp 20124 15380 "GET /api/community/posts/19/comments/ HTTP/1.1" 404 3325
+WARNING 2025-06-14 13:29:55,476 log 20124 27276 Not Found: /api/community/posts/3/comments/
+WARNING 2025-06-14 13:29:55,480 log 20124 27496 Not Found: /api/community/posts/4/comments/
+WARNING 2025-06-14 13:29:55,482 log 20124 15380 Not Found: /api/community/posts/1/comments/
+WARNING 2025-06-14 13:29:55,483 basehttp 20124 27276 "GET /api/community/posts/3/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,483 basehttp 20124 27496 "GET /api/community/posts/4/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,484 basehttp 20124 15380 "GET /api/community/posts/1/comments/ HTTP/1.1" 404 3322
+WARNING 2025-06-14 13:29:55,489 log 20124 27276 Not Found: /api/community/posts/22/comments/
+WARNING 2025-06-14 13:29:55,495 log 20124 15380 Not Found: /api/community/posts/19/comments/
+WARNING 2025-06-14 13:29:55,498 log 20124 27496 Not Found: /api/community/posts/14/comments/
+WARNING 2025-06-14 13:29:55,499 basehttp 20124 27276 "GET /api/community/posts/22/comments/ HTTP/1.1" 404 3325
+WARNING 2025-06-14 13:29:55,499 basehttp 20124 15380 "GET /api/community/posts/19/comments/ HTTP/1.1" 404 3325
+WARNING 2025-06-14 13:29:55,499 basehttp 20124 27496 "GET /api/community/posts/14/comments/ HTTP/1.1" 404 3325
+INFO 2025-06-14 13:42:52,798 autoreload 16528 8328 Watching for file changes with StatReloader
+INFO 2025-06-14 13:43:56,026 basehttp 16528 7468 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 13:43:56,119 basehttp 16528 68 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:43:56,145 basehttp 16528 7468 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:43:56,149 basehttp 16528 68 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:43:56,160 basehttp 16528 7468 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:43:56,178 basehttp 16528 7468 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 13:43:56,184 basehttp 16528 68 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:43:56,193 basehttp 16528 7468 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:43:56,211 basehttp 16528 68 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:43:57,136 basehttp 16528 68 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 13:43:57,934 basehttp 16528 7468 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:43:57,945 basehttp 16528 7468 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:43:57,947 basehttp 16528 68 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:43:57,969 basehttp 16528 7468 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:44:05,406 basehttp 16528 23324 "OPTIONS /api/community/posts/1/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 13:44:05,409 basehttp 16528 23324 "OPTIONS /api/community/posts/1/comments/ HTTP/1.1" 200 0
+WARNING 2025-06-14 13:44:05,740 log 16528 24064 Not Found: /api/community/posts/1/comments/
+WARNING 2025-06-14 13:44:05,743 log 16528 6208 Not Found: /api/community/posts/1/comments/
+WARNING 2025-06-14 13:44:05,744 basehttp 16528 24064 "POST /api/community/posts/1/comments/ HTTP/1.1" 404 3323
+WARNING 2025-06-14 13:44:05,744 basehttp 16528 6208 "POST /api/community/posts/1/comments/ HTTP/1.1" 404 3323
+INFO 2025-06-14 13:44:19,709 basehttp 16528 16524 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:44:55,774 basehttp 16528 12228 "GET /media/community_attachments/1._Introduction.pdf HTTP/1.1" 200 1596036
+INFO 2025-06-14 13:45:35,020 basehttp 16528 22288 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:45:35,025 basehttp 16528 20300 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 13:46:45,128 basehttp 16528 7956 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 13:46:45,128 basehttp 16528 10188 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
