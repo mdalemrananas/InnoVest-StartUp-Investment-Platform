@@ -4767,3 +4767,124 @@ INFO 2025-06-14 13:45:35,020 basehttp 16528 22288 "GET /api/community/posts/ HTT
 INFO 2025-06-14 13:45:35,025 basehttp 16528 20300 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
 INFO 2025-06-14 13:46:45,128 basehttp 16528 7956 "GET /api/community/posts/ HTTP/1.1" 200 3573
 INFO 2025-06-14 13:46:45,128 basehttp 16528 10188 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 18:52:28,406 autoreload 7736 21160 Watching for file changes with StatReloader
+INFO 2025-06-14 18:53:44,424 basehttp 7736 22836 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 18:53:44,509 basehttp 7736 30384 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 18:53:44,516 basehttp 7736 30384 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 18:53:44,529 basehttp 7736 22836 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 18:53:44,552 basehttp 7736 22836 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 18:53:44,555 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:44,561 basehttp 7736 22836 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 18:53:44,571 basehttp 7736 22836 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 18:53:44,589 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:45,532 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:46,534 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:47,547 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:48,539 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:49,534 basehttp 7736 30384 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 18:53:50,192 basehttp 7736 15656 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 18:53:50,199 basehttp 7736 29300 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 18:53:50,204 basehttp 7736 29300 "OPTIONS /api/community/posts/4/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 18:53:50,209 basehttp 7736 29300 "OPTIONS /api/community/posts/14/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 18:53:50,209 basehttp 7736 15656 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 18:53:50,215 basehttp 7736 29300 "OPTIONS /api/community/posts/19/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 18:53:50,217 basehttp 7736 15656 "OPTIONS /api/community/posts/22/comments/ HTTP/1.1" 200 0
+INFO 2025-06-14 18:53:50,227 basehttp 7736 29300 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,228 basehttp 7736 15656 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,239 basehttp 7736 15656 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,242 basehttp 7736 29300 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 18:53:50,253 basehttp 7736 15656 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,257 basehttp 7736 29300 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+INFO 2025-06-14 18:53:50,264 basehttp 7736 29300 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,266 basehttp 7736 15656 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,274 basehttp 7736 29300 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,277 basehttp 7736 15656 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,290 basehttp 7736 29300 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 18:53:50,297 basehttp 7736 15656 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+INFO 2025-06-14 18:53:50,302 basehttp 7736 29300 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2
+ERROR 2025-06-14 18:54:54,929 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:54:54,932 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:02,823 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:02,827 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:10,066 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:10,066 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:13,513 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:13,515 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:17,577 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:17,578 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:18,332 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:18,334 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:18,543 log 7736 29848 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:18,543 basehttp 7736 29848 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:26,727 log 7736 27268 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:26,728 basehttp 7736 27268 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:37,139 log 7736 28864 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:37,140 basehttp 7736 28864 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:37,164 log 7736 28864 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 18:55:37,166 basehttp 7736 28864 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+ERROR 2025-06-14 18:55:50,602 log 7736 19196 Internal Server Error: /api/community/posts/4/comments/
+ERROR 2025-06-14 18:55:50,602 basehttp 7736 19196 "POST /api/community/posts/4/comments/ HTTP/1.1" 500 104
+INFO 2025-06-14 19:07:43,682 autoreload 27800 18784 Watching for file changes with StatReloader
+INFO 2025-06-14 20:32:12,873 autoreload 26024 22184 Watching for file changes with StatReloader
+WARNING 2025-06-14 20:42:23,717 log 26024 3276 Unauthorized: /api/community/posts/
+WARNING 2025-06-14 20:42:23,718 log 26024 10612 Unauthorized: /api/chat/messages/users/
+WARNING 2025-06-14 20:42:23,719 log 26024 2236 Unauthorized: /api/chat/messages/my_requests/
+WARNING 2025-06-14 20:42:23,719 log 26024 27160 Unauthorized: /api/auth/profile/
+WARNING 2025-06-14 20:42:23,795 basehttp 26024 3276 "GET /api/community/posts/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,796 basehttp 26024 10612 "GET /api/chat/messages/users/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,796 basehttp 26024 27160 "GET /api/auth/profile/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,796 basehttp 26024 2236 "GET /api/chat/messages/my_requests/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,799 log 26024 3276 Unauthorized: /api/community/posts/
+WARNING 2025-06-14 20:42:23,800 log 26024 2236 Unauthorized: /api/auth/profile/
+WARNING 2025-06-14 20:42:23,801 basehttp 26024 3276 "GET /api/community/posts/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,803 basehttp 26024 2236 "GET /api/auth/profile/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:23,805 log 26024 3276 Unauthorized: /api/community/posts/
+WARNING 2025-06-14 20:42:23,807 basehttp 26024 3276 "GET /api/community/posts/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:24,214 log 26024 3276 Unauthorized: /api/chat/messages/my_requests/
+WARNING 2025-06-14 20:42:24,223 basehttp 26024 3276 "GET /api/chat/messages/my_requests/ HTTP/1.1" 401 172
+WARNING 2025-06-14 20:42:25,217 log 26024 3276 Unauthorized: /api/chat/messages/my_requests/
+WARNING 2025-06-14 20:42:25,217 basehttp 26024 3276 "GET /api/chat/messages/my_requests/ HTTP/1.1" 401 172
+INFO 2025-06-14 20:42:32,814 basehttp 26024 22928 "POST /api/auth/login/ HTTP/1.1" 200 1165
+INFO 2025-06-14 20:42:32,911 basehttp 26024 22928 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 20:42:32,949 basehttp 26024 11928 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:42:32,988 basehttp 26024 11928 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 20:42:32,992 basehttp 26024 22928 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 20:42:33,013 basehttp 26024 11928 "GET /api/auth/profile/ HTTP/1.1" 200 692
+INFO 2025-06-14 20:42:33,019 basehttp 26024 22928 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:42:33,036 basehttp 26024 22928 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:42:33,071 basehttp 26024 11928 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 20:42:33,941 basehttp 26024 11928 "GET /api/chat/messages/my_requests/ HTTP/1.1" 200 1327
+INFO 2025-06-14 20:42:34,940 basehttp 26024 11928 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:42:34,946 basehttp 26024 22928 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 20:42:34,954 basehttp 26024 11928 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:42:34,968 basehttp 26024 22928 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 20:42:34,999 basehttp 26024 11928 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:34,999 basehttp 26024 22928 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,000 basehttp 26024 29452 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,004 basehttp 26024 16428 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,007 basehttp 26024 5296 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,015 basehttp 26024 16780 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+INFO 2025-06-14 20:42:35,022 basehttp 26024 11928 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,030 basehttp 26024 29452 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,034 basehttp 26024 16428 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,034 basehttp 26024 22928 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,034 basehttp 26024 5296 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:42:35,039 basehttp 26024 16780 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+ERROR 2025-06-14 20:42:47,137 log 26024 16780 Internal Server Error: /api/community/posts/1/comments/
+ERROR 2025-06-14 20:42:47,140 basehttp 26024 16780 "POST /api/community/posts/1/comments/ HTTP/1.1" 500 104
+INFO 2025-06-14 20:43:46,317 basehttp 26024 29412 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:43:46,322 basehttp 26024 8672 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 20:43:46,330 basehttp 26024 29412 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:43:46,336 basehttp 26024 8672 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:43:46,340 basehttp 26024 29412 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:43:46,349 basehttp 26024 29412 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+INFO 2025-06-14 20:43:46,349 basehttp 26024 8672 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:43:46,357 basehttp 26024 29412 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:44:20,309 basehttp 26024 11432 "GET /api/community/posts/ HTTP/1.1" 200 3573
+INFO 2025-06-14 20:44:20,312 basehttp 26024 13896 "GET /api/chat/messages/users/ HTTP/1.1" 200 945
+INFO 2025-06-14 20:44:20,322 basehttp 26024 11432 "GET /api/community/posts/3/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:44:20,322 basehttp 26024 13896 "GET /api/community/posts/1/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:44:20,331 basehttp 26024 11432 "GET /api/community/posts/4/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:44:20,332 basehttp 26024 13896 "GET /api/community/posts/14/comments/ HTTP/1.1" 200 2
+INFO 2025-06-14 20:44:20,339 basehttp 26024 11432 "GET /api/community/posts/19/comments/ HTTP/1.1" 200 229
+INFO 2025-06-14 20:44:20,340 basehttp 26024 13896 "GET /api/community/posts/22/comments/ HTTP/1.1" 200 2

@@ -45,8 +45,6 @@ const Community = () => {
   const [error, setError] = useState(null);
   const [visibleCount, setVisibleCount] = useState(5);
   const [commentInputs, setCommentInputs] = useState({});
-  const [replyInputs, setReplyInputs] = useState({});
-  const [showReplyBox, setShowReplyBox] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const commentRefs = {};
   const currentUser = authService.getCurrentUser();
@@ -142,17 +140,33 @@ const Community = () => {
         }
         return post;
       });
-      console.log('First post example:', mappedPosts[0]);
-      console.log('Current user ID:', currentUser.user?.id);
-      console.log('Posts with user IDs:', mappedPosts.map(post => ({ 
-        id: post.id, 
-        user: post.user,
-        userType: typeof post.user,
-        currentUserId: currentUser.user?.id,
-        currentUserType: typeof currentUser.user?.id,
-        isCurrentUserPost: String(post.user) === String(currentUser.user?.id)
-      })));
-      setPosts(mappedPosts);
+
+      // Fetch comments for each post
+      const postsWithComments = await Promise.all(
+        mappedPosts.map(async (post) => {
+          try {
+            const commentsResponse = await fetch(`http://localhost:8000/api/community/posts/${post.id}/comments/`, {
+              headers: {
+                'Authorization': `Bearer ${currentUser.access}`,
+              },
+            });
+            if (commentsResponse.ok) {
+              const commentsData = await commentsResponse.json();
+              return {
+                ...post,
+                comments: commentsData
+              };
+            }
+            return post;
+          } catch (err) {
+            console.error(`Error fetching comments for post ${post.id}:`, err);
+            return post;
+          }
+        })
+      );
+
+      console.log('Posts with comments:', postsWithComments);
+      setPosts(postsWithComments);
       setError(null);
     } catch (err) {
       setError('Failed to fetch posts. Please try again later.');
@@ -194,58 +208,57 @@ const Community = () => {
     if (!text) return;
 
     try {
-      await communityService.addComment(postId, { content: text });
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        setSnackbar({
+          open: true,
+          message: 'You must be logged in to comment.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/community/posts/${postId}/comments/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentUser.access}`,
+        },
+        body: JSON.stringify({ 
+          content: text,
+          post: parseInt(postId)
+        }),
+      });
+
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (e) {}
+
+      if (!response.ok) {
+        throw new Error(responseData?.detail || responseData?.message || 'Failed to add comment');
+      }
+
       setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
-      fetchPosts(); // Refresh posts to get the new comment
-    } catch (err) {
+      // Update only the comments for this post in the posts state
+      setPosts((prevPosts) => prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [...(post.comments || []), responseData]
+          };
+        }
+        return post;
+      }));
       setSnackbar({
         open: true,
-        message: 'Failed to add comment. Please try again.',
-        severity: 'error'
+        message: 'Comment added successfully!',
+        severity: 'success'
       });
-    }
-  };
-
-  const handleSendReply = async (postId, commentId) => {
-    const key = `${postId}_${commentId}`;
-    const text = (replyInputs[key] || '').trim();
-    if (!text) return;
-
-    try {
-      await communityService.addReply(postId, commentId, { content: text });
-    setReplyInputs((prev) => ({ ...prev, [key]: '' }));
-    setShowReplyBox((prev) => ({ ...prev, [key]: false }));
-      fetchPosts(); // Refresh posts to get the new reply
     } catch (err) {
       setSnackbar({
         open: true,
-        message: 'Failed to add reply. Please try again.',
-        severity: 'error'
-      });
-    }
-  };
-
-  const handleDeleteComment = async (postId, commentId) => {
-    try {
-      await communityService.deleteComment(postId, commentId);
-      fetchPosts(); // Refresh posts to update comments
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete comment. Please try again.',
-        severity: 'error'
-      });
-    }
-  };
-
-  const handleDeleteReply = async (postId, commentId, replyId) => {
-    try {
-      await communityService.deleteReply(postId, commentId, replyId);
-      fetchPosts(); // Refresh posts to update replies
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete reply. Please try again.',
+        message: err.message || 'Failed to add comment. Please try again.',
         severity: 'error'
       });
     }
@@ -258,6 +271,55 @@ const Community = () => {
       await fetchPosts();
     } finally {
       setLoadingMore(false);
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        setSnackbar({
+          open: true,
+          message: 'You must be logged in to delete comments.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/community/comments/${commentId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+        },
+      });
+
+      if (!response.ok) {
+        let errorData = {};
+        try { errorData = await response.json(); } catch {}
+        throw new Error(errorData.detail || 'Failed to delete comment');
+      }
+
+      // Remove the comment from the comments array for this post in the posts state
+      setPosts((prevPosts) => prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: (post.comments || []).filter(comment => comment.id !== commentId)
+          };
+        }
+        return post;
+      }));
+      setSnackbar({
+        open: true,
+        message: 'Comment deleted successfully!',
+        severity: 'success'
+      });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete comment. Please try again.',
+        severity: 'error'
+      });
     }
   };
 
@@ -824,22 +886,6 @@ const Community = () => {
                         }}>
                           {post.reactions?.love || 0}
                         </Typography>
-                        <Button
-                          size="small"
-                          sx={{ 
-                            color: '#1a2650', 
-                            textTransform: 'none', 
-                            fontWeight: 500, 
-                            ml: 0,
-                            '&:hover': {
-                              backgroundColor: 'rgba(26, 38, 80, 0.08)'
-                            }
-                          }}
-                          onClick={() => handleCommentButton(post.id)}
-                          startIcon={<EmojiEmotionsOutlinedIcon />}
-                        >
-                          Comment
-                        </Button>
                       </Box>
                     )}
 
@@ -849,17 +895,19 @@ const Community = () => {
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: 1.5, 
-                        bgcolor: '#f7f9fb', 
-                        borderRadius: 2, 
-                        p: 1.5, 
+                        bgcolor: '#f8faff', 
+                        borderRadius: 3, 
+                        p: 2, 
                         mx: 2.5, 
-                        my: 1.5 
+                        my: 2,
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                        border: '1px solid #e8f0fe'
                       }}>
                         <Avatar 
                           src={currentUser?.profile_picture || currentUser?.user?.profile_picture || 'https://placehold.co/40x40'} 
                           sx={{ 
-                            width: 36, 
-                            height: 36,
+                            width: 40, 
+                            height: 40,
                             border: '2px solid #fff',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
                           }} 
@@ -886,6 +934,12 @@ const Community = () => {
                                   borderColor: '#1976d2',
                                 },
                               },
+                              '&.Mui-focused': {
+                                '& > fieldset': {
+                                  borderColor: '#1976d2',
+                                  borderWidth: '1px',
+                                },
+                              },
                             },
                           }}
                           InputProps={{
@@ -895,12 +949,15 @@ const Community = () => {
                                 color="primary"
                                 sx={{ 
                                   minWidth: 0, 
-                                  px: 2, 
+                                  px: 2.5, 
                                   textTransform: 'none', 
                                   fontWeight: 600,
                                   borderRadius: 1.5,
+                                  height: 36,
+                                  background: '#1976d2',
+                                  color: '#fff',
                                   '&:hover': {
-                                    backgroundColor: 'rgba(25, 118, 210, 0.08)'
+                                    backgroundColor: '#1565c0'
                                   }
                                 }}
                                 onClick={() => handleSendComment(post.id)}
@@ -916,222 +973,115 @@ const Community = () => {
                     {/* Comments List */}
                     {post.type && post.type.toLowerCase() !== 'event' && (
                       <Box sx={{ pl: 4, pr: 2.5, mb: 2 }}>
-                        {(post.comments || []).map((comment) => (
-                          <Box key={comment.id} sx={{ mb: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                              <Avatar
-                                src={comment.user?.avatar || 'https://placehold.co/40x40'}
-                                sx={{ 
-                                  width: 32, 
-                                  height: 32, 
-                                  mt: 0.5,
-                                  border: '2px solid #fff',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                                }}
-                              />
-                              <Box sx={{ flex: 1 }}>
-                                <Typography sx={{ 
-                                  fontWeight: 600, 
-                                  fontSize: '1rem', 
-                                  color: '#232946',
-                                  mb: 0.5
-                                }}>
-                                  {comment.user?.username || 'Anonymous'}{' '}
-                                  <span style={{ 
-                                    color: '#666', 
-                                    fontWeight: 400, 
-                                    fontSize: '0.9rem',
-                                    marginLeft: 8
-                                  }}>
-                                    {new Date(comment.created_at).toLocaleDateString()}
-                                  </span>
-                                </Typography>
-                                <Typography sx={{ 
-                                  color: '#232946', 
-                                  fontSize: '1rem', 
-                                  mb: 1,
-                                  lineHeight: 1.5
-                                }}>
-                                  {comment.content}
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                  <Button
-                                    size="small"
-                                    sx={{ 
-                                      color: '#1a2650', 
-                                      textTransform: 'none', 
-                                      fontSize: '0.95rem', 
-                                      p: 0,
-                                      '&:hover': {
-                                        backgroundColor: 'transparent',
-                                        color: '#1976d2'
-                                      }
-                                    }}
-                                    onClick={() =>
-                                      setShowReplyBox((prev) => ({
-                                        ...prev,
-                                        [`${post.id}_${comment.id}`]: !prev[`${post.id}_${comment.id}`],
-                                      }))
-                                    }
-                                  >
-                                    Reply
-                                  </Button>
-                                  {comment.user_id === currentUserId && (
-                                    <Button
-                                      size="small"
-                                      sx={{ 
-                                        color: '#b0b3c7', 
-                                        textTransform: 'none', 
-                                        fontSize: '0.95rem', 
-                                        p: 0,
-                                        '&:hover': {
-                                          backgroundColor: 'transparent',
-                                          color: '#f44336'
-                                        }
-                                      }}
-                                      onClick={() => handleDeleteComment(post.id, comment.id)}
-                                    >
-                                      Delete
-                                    </Button>
-                                  )}
-                                </Box>
-                                {/* Reply input */}
-                                {showReplyBox[`${post.id}_${comment.id}`] && (
+                        {(post.comments || []).map((comment) => {
+                          const commentUserId = comment.user?.id || comment.user_id;
+                          const currentUserId = currentUser?.user?.id || currentUser?.id;
+                          const isCommentOwner = String(commentUserId) === String(currentUserId);
+
+                          return (
+                            <Box 
+                              key={comment.id} 
+                              sx={{ 
+                                mb: 2.5,
+                                position: 'relative',
+                                '&:hover': {
+                                  '& .comment-actions': {
+                                    opacity: 1
+                                  }
+                                }
+                              }}
+                            >
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'flex-start', 
+                                gap: 1.5,
+                                p: 1.5,
+                                borderRadius: 2,
+                                transition: 'background-color 0.2s ease',
+                                '&:hover': {
+                                  bgcolor: '#f8faff'
+                                }
+                              }}>
+                                <Avatar
+                                  src={comment.user?.profile_picture || 'https://placehold.co/40x40'}
+                                  sx={{ 
+                                    width: 36, 
+                                    height: 36, 
+                                    mt: 0.5,
+                                    border: '2px solid #fff',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                                  }}
+                                />
+                                <Box sx={{ flex: 1 }}>
                                   <Box sx={{ 
                                     display: 'flex', 
                                     alignItems: 'center', 
-                                    gap: 1.5, 
-                                    mt: 1.5,
-                                    bgcolor: '#f7f9fb',
-                                    borderRadius: 2,
-                                    p: 1.5
+                                    justifyContent: 'space-between',
+                                    mb: 0.5
                                   }}>
-                                    <TextField
-                                      fullWidth
-                                      size="small"
-                                      placeholder="Write a reply..."
-                                      value={replyInputs[`${post.id}_${comment.id}`] || ''}
-                                      onChange={(e) =>
-                                        setReplyInputs((prev) => ({
-                                          ...prev,
-                                          [`${post.id}_${comment.id}`]: e.target.value,
-                                        }))
-                                      }
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSendReply(post.id, comment.id);
-                                      }}
-                                      sx={{ 
-                                        bgcolor: '#fff', 
-                                        borderRadius: 2,
-                                        '& .MuiOutlinedInput-root': {
-                                          borderRadius: 2,
-                                          backgroundColor: '#fff',
-                                          '&:hover': {
-                                            '& > fieldset': {
-                                              borderColor: '#1976d2',
-                                            },
-                                          },
-                                        },
-                                      }}
-                                      InputProps={{
-                                        endAdornment: (
-                                          <Button
-                                            size="small"
-                                            color="primary"
-                                            sx={{ 
-                                              minWidth: 0, 
-                                              px: 2, 
-                                              textTransform: 'none', 
-                                              fontWeight: 600,
-                                              borderRadius: 1.5,
-                                              '&:hover': {
-                                                backgroundColor: 'rgba(25, 118, 210, 0.08)'
-                                              }
-                                            }}
-                                            onClick={() => handleSendReply(post.id, comment.id)}
-                                          >
-                                            Send
-                                          </Button>
-                                        ),
-                                      }}
-                                    />
-                                  </Box>
-                                )}
-                                {/* Replies */}
-                                {(comment.replies || []).map((reply) => (
-                                  <Box
-                                    key={reply.id}
-                                    sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'flex-start', 
-                                      gap: 1.5, 
-                                      pl: 3, 
-                                      mt: 1.5,
-                                      bgcolor: '#f7f9fb',
-                                      borderRadius: 2,
-                                      p: 1.5
-                                    }}
-                                  >
-                                    <Avatar
-                                      src={reply.user?.avatar || 'https://placehold.co/40x40'}
-                                      sx={{ 
-                                        width: 28, 
-                                        height: 28, 
-                                        mt: 0.5,
-                                        border: '2px solid #fff',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                                      }}
-                                    />
-                                    <Box sx={{ flex: 1 }}>
-                                      <Typography sx={{ 
-                                        fontWeight: 600, 
-                                        fontSize: '0.95rem', 
-                                        color: '#232946',
-                                        mb: 0.5
-                                      }}>
-                                        {reply.user?.username || 'Anonymous'}{' '}
-                                        <span style={{ 
+                                    <Typography sx={{ 
+                                      fontWeight: 600, 
+                                      fontSize: '1rem', 
+                                      color: '#232946',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 1
+                                    }}>
+                                      {comment.user?.first_name && comment.user?.last_name 
+                                        ? `${comment.user.first_name} ${comment.user.last_name}`
+                                        : comment.user?.username || 'Anonymous'}
+                                      <Typography 
+                                        component="span" 
+                                        sx={{ 
                                           color: '#666', 
                                           fontWeight: 400, 
-                                          fontSize: '0.9rem',
-                                          marginLeft: 8
-                                        }}>
-                                          {new Date(reply.created_at).toLocaleDateString()}
-                                        </span>
+                                          fontSize: '0.85rem',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 0.5
+                                        }}
+                                      >
+                                        <span style={{ fontSize: 16 }}>•</span>
+                                        {new Date(comment.created_at).toLocaleDateString()}
                                       </Typography>
-                                      <Typography sx={{ 
-                                        color: '#232946', 
-                                        fontSize: '0.95rem', 
-                                        mb: 0.5,
-                                        lineHeight: 1.5
-                                      }}>
-                                        {reply.content}
-                                      </Typography>
-                                      {reply.user_id === currentUserId && (
-                                        <Button
-                                          size="small"
-                                          sx={{ 
-                                            color: '#b0b3c7', 
-                                            textTransform: 'none', 
-                                            fontSize: '0.9rem', 
-                                            p: 0,
-                                            '&:hover': {
-                                              backgroundColor: 'transparent',
-                                              color: '#f44336'
-                                            }
-                                          }}
-                                          onClick={() => handleDeleteReply(post.id, comment.id, reply.id)}
-                                        >
-                                          Delete
-                                        </Button>
-                                      )}
-                                    </Box>
+                                    </Typography>
+                                    {isCommentOwner && (
+                                      <Button
+                                        size="small"
+                                        startIcon={<span style={{ color: '#f44336' }}>🗑️</span>}
+                                        className="comment-actions"
+                                        sx={{ 
+                                          color: '#f44336', 
+                                          textTransform: 'none', 
+                                          fontSize: '0.9rem', 
+                                          p: 0.5,
+                                          opacity: 0,
+                                          transition: 'opacity 0.2s ease',
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                                            color: '#d32f2f'
+                                          }
+                                        }}
+                                        onClick={() => handleDeleteComment(post.id, comment.id)}
+                                      >
+                                        Delete
+                                      </Button>
+                                    )}
                                   </Box>
-                                ))}
+                                  <Typography sx={{ 
+                                    color: '#232946', 
+                                    fontSize: '1rem', 
+                                    mb: 1,
+                                    lineHeight: 1.5,
+                                    pl: 0.5
+                                  }}>
+                                    {comment.content}
+                                  </Typography>
+                                </Box>
                               </Box>
                             </Box>
-                          </Box>
-                        ))}
+                          );
+                        })}
                       </Box>
                     )}
                   </Card>

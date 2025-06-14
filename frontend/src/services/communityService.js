@@ -122,4 +122,5 @@ const communityService = {
         }
     }
 };
+
 export default communityService; 
