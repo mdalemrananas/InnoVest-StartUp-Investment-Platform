@@ -120,6 +120,30 @@ const communityService = {
             console.error('Error deleting reply:', error);
             throw error.response?.data || error;
         }
+    },
+// Fetch community notifications (comments and interests)
+    getNotifications: async ({ offset = 0, limit = 10, markRead = false } = {}) => {
+        try {
+            const params = { offset, limit };
+            if (markRead) params.mark_read = 1;
+            const response = await axiosInstance.get('community/notifications/', { params });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            throw error.response?.data || error;
+        }
+    },
+
+    // Fetch only the unread notification count
+    getUnreadNotificationCount: async () => {
+        try {
+            const params = { offset: 0, limit: 1 };
+            const response = await axiosInstance.get('community/notifications/', { params });
+            return response.data.unread_count;
+        } catch (error) {
+            console.error('Error fetching unread notification count:', error);
+            return 0;
+        }
     }
 };
 

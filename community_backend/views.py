@@ -5,10 +5,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from .models import CommunityPost, CommunityComment, CommunityInterest
-from .serializers import CommunityPostSerializer, CommunityCommentSerializer
+from .serializers import CommunityPostSerializer, CommunityCommentSerializer, NotificationSerializer
 
 # Create your views here.
-
 class CommunityPostCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -146,3 +145,51 @@ def toggle_interest(request, post_id):
     except Exception as e:
         print(f"Error in toggle_interest: {str(e)}")  # Add logging
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+def community_notifications(request):
+    """
+    GET: Fetch latest notifications (comments on my posts, interest in my event posts).
+    POST: Mark notifications as read (by ids/type).
+    Query params: offset, limit
+    """
+    user = request.user
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 10))
+    # Comments on my posts (not by me)
+    comment_qs = CommunityComment.objects.filter(
+        post__user=user
+    ).exclude(user=user)
+    # Interests in my event posts (not by me)
+    interest_qs = CommunityInterest.objects.filter(
+        post__user=user,
+        post__type='Event'
+    ).exclude(user=user)
+    # Combine and sort by created_at desc
+    notifications = list(comment_qs) + list(interest_qs)
+    notifications.sort(key=lambda n: n.created_at, reverse=True)
+    # Paginate
+    notifications_page = notifications[offset:offset+limit]
+    # Annotate type/message
+    for n in notifications_page:
+        if hasattr(n, 'content'):
+            n.type = 'comment'
+            n.message = 'commented on your post'
+        else:
+            n.type = 'interest'
+            n.message = 'showed interest in your event'
+    # Serialize
+    serializer = NotificationSerializer(notifications_page, many=True)
+    # Count unread
+    unread_count = sum(1 for n in notifications if n.read == 'No')
+    # Mark as read if GET and ?mark_read=1
+    if request.method == 'GET' and request.GET.get('mark_read') == '1':
+        for n in notifications_page:
+            if n.read == 'No':
+                n.read = 'Yes'
+                n.save(update_fields=['read'])
+    return Response({
+        'results': serializer.data,
+        'unread_count': unread_count,
+        'has_more': offset+limit < len(notifications),
+    })

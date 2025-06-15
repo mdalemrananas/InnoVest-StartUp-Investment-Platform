@@ -42,4 +42,29 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Comment content cannot be empty")
         if len(value.strip()) > 1000:  # Maximum length of 1000 characters
             raise serializers.ValidationError("Comment content cannot exceed 1000 characters")
-        return value.strip() 
+        return value.strip()
+
+class NotificationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    type = serializers.CharField()  # 'comment' or 'interest'
+    user = serializers.SerializerMethodField()
+    post = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField()
+    read = serializers.CharField()
+    message = serializers.CharField()
+
+    def get_user(self, obj):
+        # obj.user for both comment and interest
+        u = obj.user
+        return {
+            'id': u.id,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+        }
+    def get_post(self, obj):
+        # obj.post for both comment and interest
+        p = obj.post
+        return {
+            'id': p.id,
+            'title': p.title,
+        } 

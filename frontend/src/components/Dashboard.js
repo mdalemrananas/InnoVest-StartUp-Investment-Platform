@@ -37,6 +37,7 @@ import {
   InputAdornment,
   Alert,
   CircularProgress,
+  Badge,
 } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -54,7 +55,6 @@ import LanguageIcon from '@mui/icons-material/Language';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import Badge from '@mui/material/Badge';
 import SearchIcon from '@mui/icons-material/Search';
 import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
@@ -82,6 +82,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import RoomIcon from '@mui/icons-material/Room';
+import communityService from '../services/communityService';
 
 const API_URL = 'http://localhost:8000/api/auth/profile/';
 
@@ -313,6 +314,13 @@ const Dashboard = () => {
   const [editForm, setEditForm] = useState({ title: '', type: '', description: '' });
   const [actionLoading, setActionLoading] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState([]);
+  // --- Notification State ---
+  const [communityNotifications, setCommunityNotifications] = useState([]); // List of notifications
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0); // Unread count
+  const [notificationPopupOpen, setNotificationPopupOpen] = useState(false); // Popup state
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationHasMore, setNotificationHasMore] = useState(false); // For 'View More'
+  const NOTIFICATION_PAGE_SIZE = 10;
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -984,6 +992,60 @@ const Dashboard = () => {
     setFilteredPosts(myPosts);
   };
 
+  // --- Fetch Notifications (real API) ---
+  const fetchCommunityNotifications = async (markAsRead = false, offset = 0) => {
+    setNotificationLoading(true);
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) return;
+      const data = await communityService.getNotifications({
+        offset,
+        limit: NOTIFICATION_PAGE_SIZE,
+        markRead: markAsRead,
+      });
+      if (offset === 0) {
+        setCommunityNotifications(data.results);
+      } else {
+        setCommunityNotifications(prev => [...prev, ...data.results]);
+      }
+      setUnreadNotificationCount(data.unread_count);
+      setNotificationHasMore(data.has_more);
+    } catch (err) {
+      // Optionally show error
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
+  // --- Open/close notification popup ---
+  const handleOpenNotificationPopup = () => {
+    setNotificationPopupOpen(true);
+    fetchCommunityNotifications(true, 0); // Mark as read on open
+  };
+  const handleCloseNotificationPopup = () => setNotificationPopupOpen(false);
+  const handleViewMoreNotifications = () => {
+    fetchCommunityNotifications(false, communityNotifications.length);
+  };
+
+  useEffect(() => {
+    let pollInterval;
+    const pollUnreadCount = async () => {
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser?.access) return;
+        const count = await communityService.getUnreadNotificationCount();
+        setUnreadNotificationCount(count);
+      } catch {}
+    };
+    if (tabValue === 4) { // Only poll when Community tab is active
+      pollUnreadCount(); // Initial fetch
+      pollInterval = setInterval(pollUnreadCount, 10000); // Every 10s
+    }
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [tabValue]);
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -1076,35 +1138,43 @@ const Dashboard = () => {
             </Tabs>
 
             <Box sx={{ p: 3 }}>
-                {/* Community Tab */}
+              {/* Community Tab */}
                 {tabValue === 4 && (
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6">Community</Typography>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<AddIcon sx={{ fontSize: 22 }} />}
-                      sx={{
-                        fontWeight: 800,
-                        borderRadius: 2,
-                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
-                        px: 2.5,
-                        py: 0.7,
-                        fontSize: '0.98rem',
-                        letterSpacing: 0.5,
-                        background: 'linear-gradient(90deg, #2196f3 0%, #21cbf3 100%)',
-                        textTransform: 'uppercase',
-                        minWidth: 0,
-                        '&:hover': {
-                          background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)',
-                          boxShadow: '0 4px 16px rgba(25, 118, 210, 0.18)'
-                        }
-                      }}
-                      onClick={() => setOpenShareIdea(true)}
-                    >
-                      Share Post
-                    </Button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {/* Notification Icon with Badge */}
+                      <IconButton color="inherit" onClick={handleOpenNotificationPopup} sx={{ position: 'relative' }} aria-label="Show notifications">
+                        <Badge badgeContent={unreadNotificationCount} color="error" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                          <NotificationsIcon sx={{ fontSize: 28 }} />
+                        </Badge>
+                      </IconButton>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon sx={{ fontSize: 22 }} />}
+                        sx={{
+                          fontWeight: 800,
+                          borderRadius: 2,
+                          boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
+                          px: 2.5,
+                          py: 0.7,
+                          fontSize: '0.98rem',
+                          letterSpacing: 0.5,
+                          background: 'linear-gradient(90deg, #2196f3 0%, #21cbf3 100%)',
+                          textTransform: 'uppercase',
+                          minWidth: 0,
+                          '&:hover': {
+                            background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)',
+                            boxShadow: '0 4px 16px rgba(25, 118, 210, 0.18)'
+                          }
+                        }}
+                        onClick={() => setOpenShareIdea(true)}
+                      >
+                        Share Post
+                      </Button>
+                    </Box>
                   </Box>
                   {/* Search box with clear (cross) icon */}
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
@@ -2360,6 +2430,48 @@ const Dashboard = () => {
       <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button onClick={() => setDeletePost(null)} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
         <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
+      </DialogActions>
+    </Dialog>
+    {/* Notification Popup Dialog */}
+    <Dialog open={notificationPopupOpen} onClose={handleCloseNotificationPopup} maxWidth="xs" fullWidth
+      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+      <DialogTitle sx={{ fontWeight: 700, fontSize: 20, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <NotificationsIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Notifications
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2, pb: 1, minHeight: 120 }}>
+        {notificationLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : communityNotifications.length === 0 ? (
+          <Typography color="text.secondary" align="center" sx={{ py: 3 }}>No notifications yet.</Typography>
+        ) : (
+          <List>
+            {communityNotifications.map((notif) => (
+              <ListItem key={notif.id} alignItems="flex-start" sx={{ bgcolor: notif.read === 'No' ? '#e3f2fd' : 'inherit', borderRadius: 2, mb: 1, boxShadow: notif.read === 'No' ? 1 : 0 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: notif.type === 'comment' ? '#1976d2' : '#43a047' }}>
+                    {notif.user.first_name} {notif.user.last_name} {notif.message}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {notif.post.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    {new Date(notif.created_at).toLocaleString()}
+                  </Typography>
+                </Box>
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', justifyContent: 'space-between' }}>
+        <Button onClick={handleCloseNotificationPopup} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}>Close</Button>
+        {notificationHasMore && (
+          <Button onClick={handleViewMoreNotifications} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }} disabled={notificationLoading}>
+            View More
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
     </>
