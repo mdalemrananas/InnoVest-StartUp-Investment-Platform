@@ -91,3 +91,46 @@ INFO 2025-06-02 15:22:21,979 basehttp 20676 21980 "POST /api/auth/forgot-passwor
 INFO 2025-06-02 15:22:56,379 basehttp 20676 21980 "OPTIONS /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 0
 INFO 2025-06-02 15:22:56,891 basehttp 20676 21980 "POST /api/auth/reset-password/1e2a0e22-0334-4ad0-a8e9-71bed9b68854/ HTTP/1.1" 200 51
 INFO 2025-06-02 15:23:18,279 basehttp 20676 21980 "POST /api/auth/login/ HTTP/1.1" 200 687
+INFO 2025-06-15 14:42:30,258 autoreload 1556 2524 Watching for file changes with StatReloader
+INFO 2025-06-15 14:54:51,528 basehttp 1556 6488 "OPTIONS /api/companies/ HTTP/1.1" 200 0
+INFO 2025-06-15 14:54:51,535 basehttp 1556 13632 "OPTIONS /api/companies/ HTTP/1.1" 200 0
+WARNING 2025-06-15 14:54:52,054 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:54:52,055 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:54:52,060 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:54:52,060 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:29,505 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:29,505 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:29,510 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:29,510 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:32,906 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:32,906 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:32,910 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:32,911 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:34,543 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:34,544 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:55:34,547 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:55:34,548 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:57,062 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:57,063 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:57,074 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:57,075 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:57,611 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:57,612 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:57,616 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:57,616 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:59,494 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:59,496 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 14:56:59,500 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 14:56:59,501 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:04,397 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:04,402 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:04,407 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:04,407 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:08,862 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:08,863 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:08,869 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:08,872 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:41,112 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:41,113 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:01:41,117 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:01:41,118 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
