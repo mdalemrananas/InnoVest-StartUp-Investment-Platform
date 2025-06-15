@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -48,6 +48,9 @@ const Community = () => {
   const [commentInputs, setCommentInputs] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [userInterests, setUserInterests] = useState({});
+  const [expandedPosts, setExpandedPosts] = useState({});
+  const [textHeights, setTextHeights] = useState({});
+  const textRefs = useRef({});
   const commentRefs = {};
   const currentUser = authService.getCurrentUser();
   const currentUserId = currentUser?.id || currentUser?.user?.id;
@@ -69,6 +72,26 @@ const Community = () => {
   useEffect(() => {
     handleSearch();
   }, [posts, searchQuery]);
+
+  // Add this useEffect to handle text height measurements
+  useEffect(() => {
+    const measureTextHeights = () => {
+      const newHeights = {};
+      Object.keys(textRefs.current).forEach(postId => {
+        const element = textRefs.current[postId];
+        if (element) {
+          const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
+          const height = element.scrollHeight;
+          const lines = height / lineHeight;
+          newHeights[postId] = lines;
+        }
+      });
+      setTextHeights(newHeights);
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(measureTextHeights);
+  }, [posts]); // Only re-measure when posts change
 
   const fetchUsers = async () => {
     try {
@@ -407,6 +430,13 @@ const Community = () => {
         severity: 'error'
       });
     }
+  };
+
+  const toggleDescription = (postId) => {
+    setExpandedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
   };
 
   return (
@@ -813,26 +843,86 @@ const Community = () => {
                     {/* Description/Content */}
                     <Box sx={{ px: 2.5, pb: 2 }}>
                       {post.description && (
-                        <Typography sx={{ 
-                          color: '#232946', 
-                          fontSize: '1.1rem', 
-                          mb: 1.5, 
-                          mt: 1,
-                          lineHeight: 1.6
-                        }}>
-                          {post.description}
-                        </Typography>
+                        <Box>
+                          <Typography 
+                            ref={el => textRefs.current[post.id] = el}
+                            onClick={() => textHeights[post.id] > 2 && toggleDescription(post.id)}
+                            sx={{ 
+                              color: '#232946', 
+                              fontSize: '1.1rem', 
+                              mb: 1.5, 
+                              mt: 1,
+                              lineHeight: 1.6,
+                              display: '-webkit-box',
+                              WebkitLineClamp: expandedPosts[post.id] ? 'unset' : 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              cursor: textHeights[post.id] > 2 ? 'pointer' : 'default'
+                            }}
+                          >
+                            {post.description}
+                          </Typography>
+                          {textHeights[post.id] > 2 && (
+                            <Button
+                              onClick={() => toggleDescription(post.id)}
+                              sx={{
+                                color: '#1976d2',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                                p: 0,
+                                '&:hover': {
+                                  backgroundColor: 'transparent',
+                                  textDecoration: 'underline'
+                                }
+                              }}
+                            >
+                              {expandedPosts[post.id] ? 'See less' : 'See more'}
+                            </Button>
+                          )}
+                        </Box>
                       )}
                       {!post.description && post.content && (
-                        <Typography sx={{ 
-                          color: '#232946', 
-                          fontSize: '1.1rem', 
-                          mb: 1.5, 
-                          mt: 1,
-                          lineHeight: 1.6
-                        }}>
-                          {post.content}
-                        </Typography>
+                        <Box>
+                          <Typography 
+                            ref={el => textRefs.current[post.id] = el}
+                            onClick={() => textHeights[post.id] > 2 && toggleDescription(post.id)}
+                            sx={{ 
+                              color: '#232946', 
+                              fontSize: '1.1rem', 
+                              mb: 1.5, 
+                              mt: 1,
+                              lineHeight: 1.6,
+                              display: '-webkit-box',
+                              WebkitLineClamp: expandedPosts[post.id] ? 'unset' : 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              cursor: textHeights[post.id] > 2 ? 'pointer' : 'default'
+                            }}
+                          >
+                            {post.content}
+                          </Typography>
+                          {textHeights[post.id] > 2 && (
+                            <Button
+                              onClick={() => toggleDescription(post.id)}
+                              sx={{
+                                color: '#1976d2',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                                p: 0,
+                                '&:hover': {
+                                  backgroundColor: 'transparent',
+                                  textDecoration: 'underline'
+                                }
+                              }}
+                            >
+                              {expandedPosts[post.id] ? 'See less' : 'See more'}
+                            </Button>
+                          )}
+                        </Box>
                       )}
                       {post.attachment && (
                         <Box sx={{ 
@@ -930,36 +1020,7 @@ const Community = () => {
                           {typeof post.interest_count === 'number' ? post.interest_count : 0}
                         </Typography>
                       </Box>
-                    ) : (
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        px: 2.5, 
-                        py: 1.5,
-                        background: '#fafbfc'
-                      }}>
-                        <IconButton
-                          size="small"
-                          color={post.user_reaction === 'love' ? 'error' : 'default'}
-                          onClick={() => handleReaction(post.id, 'love')}
-                          sx={{
-                            '&:hover': {
-                              backgroundColor: 'rgba(244, 33, 46, 0.08)'
-                            }
-                          }}
-                        >
-                          <FavoriteBorderOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <Typography sx={{ 
-                          fontSize: '0.95rem', 
-                          color: '#232946', 
-                          fontWeight: 500, 
-                          mr: 2 
-                        }}>
-                          {post.reactions?.love || 0}
-                        </Typography>
-                      </Box>
-                    )}
+                    ) : null}
 
                     {/* Comment input */}
                     {post.type && post.type.toLowerCase() !== 'event' && (
