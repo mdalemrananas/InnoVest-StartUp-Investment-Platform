@@ -3,7 +3,7 @@ import { Box, Container, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import FeaturedCompanies from './company/FeaturedCompanies';
 import ThreeDAnimation from './home/ThreeDAnimation';
-
+import BusinessTrendsAndHowItWorks from './home/BusinessTrendsAndHowItWorks';
 function Home() {
   const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ function Home() {
         {/* 3D Animation Background */}
         <ThreeDAnimation />
 
-        <Container
+        <Container 
           maxWidth="lg"
           sx={{
             position: 'relative',
@@ -102,8 +102,9 @@ function Home() {
 
       {/* Featured Companies Component */}
       <FeaturedCompanies />
+      <BusinessTrendsAndHowItWorks />
     </Box>
   );
 }
 
-export default Home;
+export default Home; 
