@@ -134,3 +134,93 @@ WARNING 2025-06-15 15:01:41,112 log 1556 13408 Not Found: /api/companies/
 WARNING 2025-06-15 15:01:41,113 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
 WARNING 2025-06-15 15:01:41,117 log 1556 13408 Not Found: /api/companies/
 WARNING 2025-06-15 15:01:41,118 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:04:58,477 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:04:58,478 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:04:58,482 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:04:58,483 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:05:26,209 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:26,210 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:05:26,221 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:26,221 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+INFO 2025-06-15 15:05:32,822 basehttp 1556 3008 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+INFO 2025-06-15 15:05:34,657 basehttp 1556 3008 "POST /api/auth/login/ HTTP/1.1" 200 1165
+WARNING 2025-06-15 15:05:36,008 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:36,009 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:05:36,020 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:36,021 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:05:40,762 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:40,762 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:05:40,767 log 1556 13408 Not Found: /api/companies/
+WARNING 2025-06-15 15:05:40,768 basehttp 1556 13408 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:33,502 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:33,511 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:33,525 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:33,526 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:35,233 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:35,234 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:35,240 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:35,240 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:37,207 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:37,207 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:11:37,226 log 1556 13524 Not Found: /api/companies/
+WARNING 2025-06-15 15:11:37,227 basehttp 1556 13524 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:17:23,898 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:17:23,901 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:17:23,907 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:17:23,907 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:17:25,745 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:17:25,745 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:17:25,754 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:17:25,756 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:19:39,677 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:19:39,678 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:19:39,685 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:19:39,686 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:24:32,442 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:24:32,445 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:24:32,451 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:24:32,452 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:24:34,389 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:24:34,389 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:24:34,396 log 1556 10176 Not Found: /api/companies/
+WARNING 2025-06-15 15:24:34,397 basehttp 1556 10176 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:30:23,252 log 1556 3352 Not Found: /api/companies/
+WARNING 2025-06-15 15:30:23,253 basehttp 1556 3352 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:30:23,258 log 1556 3352 Not Found: /api/companies/
+WARNING 2025-06-15 15:30:23,258 basehttp 1556 3352 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:47:46,997 log 1556 9700 Not Found: /api/companies/
+WARNING 2025-06-15 15:47:46,998 basehttp 1556 9700 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:47:47,004 log 1556 9700 Not Found: /api/companies/
+WARNING 2025-06-15 15:47:47,005 basehttp 1556 9700 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:47:49,495 log 1556 9700 Not Found: /api/companies/
+WARNING 2025-06-15 15:47:49,497 basehttp 1556 9700 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:47:49,515 log 1556 9700 Not Found: /api/companies/
+WARNING 2025-06-15 15:47:49,515 basehttp 1556 9700 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:54:26,213 log 1556 13632 Not Found: /api/companies/
+WARNING 2025-06-15 15:54:26,214 basehttp 1556 13632 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:54:26,229 log 1556 13632 Not Found: /api/companies/
+WARNING 2025-06-15 15:54:26,229 basehttp 1556 13632 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:55:45,714 log 1556 13632 Not Found: /api/companies/
+WARNING 2025-06-15 15:55:45,715 basehttp 1556 13632 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 15:55:45,722 log 1556 13632 Not Found: /api/companies/
+WARNING 2025-06-15 15:55:45,726 basehttp 1556 13632 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 16:04:56,024 log 1556 3588 Not Found: /api/companies/
+WARNING 2025-06-15 16:04:56,024 basehttp 1556 3588 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 16:04:56,028 log 1556 3588 Not Found: /api/companies/
+WARNING 2025-06-15 16:04:56,029 basehttp 1556 3588 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 16:04:57,316 log 1556 3588 Not Found: /api/companies/
+WARNING 2025-06-15 16:04:57,317 basehttp 1556 3588 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 16:04:57,327 log 1556 3588 Not Found: /api/companies/
+WARNING 2025-06-15 16:04:57,328 basehttp 1556 3588 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:04,095 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:04,103 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:04,112 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:04,113 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:10,961 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:10,962 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:10,973 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:10,974 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:15,281 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:15,281 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
+WARNING 2025-06-15 17:01:15,297 log 1556 11484 Not Found: /api/companies/
+WARNING 2025-06-15 17:01:15,299 basehttp 1556 11484 "GET /api/companies/ HTTP/1.1" 404 2540
