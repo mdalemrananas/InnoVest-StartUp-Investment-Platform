@@ -8,6 +8,7 @@ from .models import CommunityPost, CommunityComment, CommunityInterest
 from .serializers import CommunityPostSerializer, CommunityCommentSerializer, NotificationSerializer
 
 # Create your views here.
+
 class CommunityPostCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -182,14 +183,42 @@ def community_notifications(request):
     serializer = NotificationSerializer(notifications_page, many=True)
     # Count unread
     unread_count = sum(1 for n in notifications if n.read == 'No')
-    # Mark as read if GET and ?mark_read=1
-    if request.method == 'GET' and request.GET.get('mark_read') == '1':
-        for n in notifications_page:
-            if n.read == 'No':
-                n.read = 'Yes'
-                n.save(update_fields=['read'])
+    # Mark as read if GET and mark_read is True
+    mark_read = request.GET.get('mark_read', '').lower()
+    if request.method == 'GET' and mark_read in ['true', '1', 'yes']:
+        # Update all unread comments
+        comment_qs.filter(read='No').update(read='Yes')
+        # Update all unread interests
+        interest_qs.filter(read='No').update(read='Yes')
+        # Reset unread count since all are now read
+        unread_count = 0
     return Response({
         'results': serializer.data,
         'unread_count': unread_count,
         'has_more': offset+limit < len(notifications),
     })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_unread_notification_count(request):
+    """
+    GET: Fetch the unread notification count for the logged-in user.
+    """
+    user = request.user
+
+    # Count unread comments
+    unread_comments_count = CommunityComment.objects.filter(
+        post__user=user,
+        read='No'
+    ).exclude(user=user).count()
+
+    # Count unread interests
+    unread_interests_count = CommunityInterest.objects.filter(
+        post__user=user,
+        post__type='Event',
+        read='No'
+    ).exclude(user=user).count()
+
+    total_unread_count = unread_comments_count + unread_interests_count
+
+    return Response({'count': total_unread_count})

@@ -4,6 +4,7 @@ from .models import CommunityPost, CommunityComment
 class CommunityPostSerializer(serializers.ModelSerializer):
     interest_count = serializers.SerializerMethodField()
     is_interested = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = CommunityPost
@@ -18,6 +19,17 @@ class CommunityPostSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return obj.interests.filter(user=user).exists()
         return False
+
+    def get_user(self, obj):
+        if obj.user:
+            return {
+                'id': obj.user.id,
+                'username': obj.user.username,
+                'first_name': obj.user.first_name,
+                'last_name': obj.user.last_name,
+                'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None
+            }
+        return None
 
 class CommunityCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
@@ -36,6 +48,7 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
             'last_name': obj.user.last_name,
             'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None
         }
+        
 
     def validate_content(self, value):
         if not value or not value.strip():

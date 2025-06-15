@@ -1,150 +1,162 @@
 import axios from 'axios';
+import authService from './authService';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/';
+const API_URL = 'http://localhost:8000/api/community';
 
-const axiosInstance = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true
+// Initialize authenticated API client
+const authenticatedApi = axios.create({
+  baseURL: API_URL,
 });
 
-// Add request interceptor to include auth token
-axiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+// Add request interceptor to include token
+authenticatedApi.interceptors.request.use((config) => {
+  const token = authService.getCurrentUser()?.access;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Add response interceptor for error handling
+authenticatedApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      authService.logout();
+      window.location.href = '/login';
     }
+    return Promise.reject(error);
+  }
+);
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const user = authService.getCurrentUser();
+    if (user?.access) {
+      config.headers.Authorization = `Bearer ${user.access}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 const communityService = {
-    // Get all posts with optional filtering
-    getPosts: async (filters = {}) => {
-        try {
-            const response = await axiosInstance.get('community/posts/', { params: filters });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Create a new post
-    createPost: async (postData) => {
-        try {
-            const response = await axiosInstance.post('community/posts/', postData);
-            return response.data;
-        } catch (error) {
-            console.error('Error creating post:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Add a comment to a post
-    addComment: async (postId, commentData) => {
-        try {
-            const response = await axiosInstance.post(`community/posts/${postId}/comments/`, commentData);
-            return response.data;
-        } catch (error) {
-            console.error('Error adding comment:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Add a reply to a comment
-    addReply: async (postId, commentId, replyData) => {
-        try {
-            const response = await axiosInstance.post(
-                `community/posts/${postId}/comments/${commentId}/replies/`,
-                replyData
-            );
-            return response.data;
-        } catch (error) {
-            console.error('Error adding reply:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // React to a post (like, love, etc.)
-    reactToPost: async (postId, reactionType) => {
-        try {
-            const response = await axiosInstance.post(`community/posts/${postId}/react/`, {
-                reaction_type: reactionType
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error reacting to post:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Delete a post
-    deletePost: async (postId) => {
-        try {
-            const response = await axiosInstance.delete(`community/posts/${postId}/`);
-            return response.data;
-        } catch (error) {
-            console.error('Error deleting post:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Delete a comment
-    deleteComment: async (postId, commentId) => {
-        try {
-            const response = await axiosInstance.delete(
-                `community/posts/${postId}/comments/${commentId}/`
-            );
-            return response.data;
-        } catch (error) {
-            console.error('Error deleting comment:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Delete a reply
-    deleteReply: async (postId, commentId, replyId) => {
-        try {
-            const response = await axiosInstance.delete(
-                `community/posts/${postId}/comments/${commentId}/replies/${replyId}/`
-            );
-            return response.data;
-        } catch (error) {
-            console.error('Error deleting reply:', error);
-            throw error.response?.data || error;
-        }
-    },
-// Fetch community notifications (comments and interests)
-    getNotifications: async ({ offset = 0, limit = 10, markRead = false } = {}) => {
-        try {
-            const params = { offset, limit };
-            if (markRead) params.mark_read = 1;
-            const response = await axiosInstance.get('community/notifications/', { params });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-            throw error.response?.data || error;
-        }
-    },
-
-    // Fetch only the unread notification count
-    getUnreadNotificationCount: async () => {
-        try {
-            const params = { offset: 0, limit: 1 };
-            const response = await axiosInstance.get('community/notifications/', { params });
-            return response.data.unread_count;
-        } catch (error) {
-            console.error('Error fetching unread notification count:', error);
-            return 0;
-        }
+  // Get all posts
+  getPosts: async () => {
+    try {
+      const response = await api.get('/posts/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      throw error;
     }
+  },
+
+  // Get post comments
+  getComments: async (postId) => {
+    try {
+      const response = await api.get(`/posts/${postId}/comments/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      throw error;
+    }
+  },
+
+  // Add a comment (authenticated endpoint)
+  addComment: async (postId, content) => {
+    try {
+      const response = await authenticatedApi.post(`/posts/${postId}/comments/`, { content });
+      return response.data;
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      throw error;
+    }
+  },
+
+  // Delete a comment (authenticated endpoint)
+  deleteComment: async (postId, commentId) => {
+    try {
+      const response = await authenticatedApi.delete(`/posts/${postId}/comments/${commentId}/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      throw error;
+    }
+  },
+
+  // Add a reaction (authenticated endpoint)
+  addReaction: async (postId, type) => {
+    try {
+      const response = await authenticatedApi.post(`/posts/${postId}/reactions/`, { type });
+      return response.data;
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+      throw error;
+    }
+  },
+
+  // Toggle interest (authenticated endpoint)
+  toggleInterest: async (postId) => {
+    try {
+      const response = await authenticatedApi.post(`/posts/${postId}/interest/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error toggling interest:', error);
+      throw error;
+    }
+  },
+
+  // Get notifications (authenticated endpoint)
+  getNotifications: async ({ offset = 0, limit = 10, markRead = false }) => {
+    try {
+      const response = await authenticatedApi.get('/notifications/', {
+        params: { 
+          offset, 
+          limit, 
+          mark_read: markRead 
+        } 
+      });
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+  },
+
+  // Get unread notification count (authenticated endpoint)
+  getUnreadNotificationCount: async () => {
+    try {
+      const response = await authenticatedApi.get('/notifications/unread-count/');
+      return response.data?.count || 0;
+    } catch (error) {
+      console.error('Error fetching unread notification count:', error);
+      return 0;
+    }
+  },
+
+  // Delete a post (authenticated endpoint)
+  deletePost: async (postId) => {
+    try {
+      const response = await authenticatedApi.delete(`/posts/${postId}/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      throw error;
+    }
+  }
 };
 
 export default communityService; 

@@ -52,6 +52,7 @@ class CommunityInterest(models.Model):
     post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='interests')
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.CharField(max_length=3, choices=[('No', 'No'), ('Yes', 'Yes')], default='No')
+    
 
     class Meta:
         unique_together = ('user', 'post')
