@@ -38,6 +38,7 @@ import {
   Alert,
   CircularProgress,
   Badge,
+  Snackbar,
 } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -83,6 +84,14 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import RoomIcon from '@mui/icons-material/Room';
 import communityService from '../services/communityService';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useNavigate } from 'react-router-dom';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DescriptionIcon from '@mui/icons-material/Description';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 const API_URL = 'http://localhost:8000/api/auth/profile/';
 
@@ -126,7 +135,12 @@ const fetchCommunityPosts = async (accessToken) => {
 };
 
 const Dashboard = () => {
-  const [value, setValue] = useState(0);
+  const navigate = useNavigate();
+  const [accessToken, setAccessToken] = useState(null);
+  const [value, setValue] = useState(() => {
+    const savedTab = localStorage.getItem('dashboardTab');
+    return savedTab ? parseInt(savedTab) : 0;
+  });
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [followedCompanies, setFollowedCompanies] = useState([
@@ -197,10 +211,12 @@ const Dashboard = () => {
       exitEvent: null
     }
   ]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
   const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(() => {
+    const savedTab = localStorage.getItem('dashboardActiveTab');
+    return savedTab ? parseInt(savedTab) : 0;
+  });
   const [openAddTask, setOpenAddTask] = useState(false);
   const [newTask, setNewTask] = useState('');
   const [editTaskId, setEditTaskId] = useState(null);
@@ -247,7 +263,7 @@ const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const messagesContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const [settingsTab, setSettingsTab] = useState(null);
+  const [settingsTab, setSettingsTab] = useState(0);
   // Live date and clock state
   const [now, setNow] = useState(new Date());
   const [ideaSearch, setIdeaSearch] = useState('');
@@ -270,6 +286,8 @@ const Dashboard = () => {
   });
   const ideaCategories = ['Business', 'Technology', 'Design', 'Other'];
   const [openCreateCompanyDialog, setOpenCreateCompanyDialog] = useState(false);
+  const [openCompanyView, setOpenCompanyView] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [myCompanies, setMyCompanies] = useState([
     {
       id: 1,
@@ -322,30 +340,113 @@ const Dashboard = () => {
   const [notificationHasMore, setNotificationHasMore] = useState(false); // For 'View More'
   const NOTIFICATION_PAGE_SIZE = 10;
 
+  const [settingsFormData, setSettingsFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    title: '',
+    company: '',
+    website: '',
+    city: '',
+    state: '',
+    bio: '',
+    position: '',
+    address: '',
+    country: '',
+    dob: '',
+    profile_pic: null
+  });
+
+  // State variables for profile image
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
+
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const [settingsSnackbar, setSettingsSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    old_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const fetchUserProfile = async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        console.error('No access token found');
+        return;
+      }
+
+      const response = await fetch('http://localhost:8000/api/settings/profile/', {
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUserProfile(data);
+
+      // Format the date fields before setting the form data
+      const formattedData = {
+        ...data,
+        dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
+        created_at: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : ''
+      };
+      setSettingsFormData(formattedData);
+
+      // Set profile image URL with the correct path
+      if (data.profile_pic) {
+        setProfileImageUrl(`http://localhost:8000${data.profile_pic}`);
+      } else {
+        setProfileImageUrl(null);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Initialize user state from localStorage
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
-        
-        if (currentUser?.access) {
-          const response = await axios.get(API_URL, {
-            headers: { Authorization: `Bearer ${currentUser.access}` }
-          });
-          setUserProfile(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      }
-    };
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    console.log('Stored user:', storedUser);
+    if (storedUser) {
+      setUser(storedUser);
+      setAccessToken(storedUser.access);
+    }
+  }, []);
 
+  useEffect(() => {
     fetchUserProfile();
   }, []);
+  // Add useEffect for fetching users
+  useEffect(() => {
+    console.log('useEffect triggered, user:', user);
+    if (user?.id) {
+      console.log('Calling fetchUsers with user ID:', user.id);
+      fetchUsers();
+    }
+  }, [user]);
 
   // Fetch chat requests on mount and when user changes
   useEffect(() => {
@@ -412,6 +513,7 @@ const Dashboard = () => {
 
   const handleTabChange = (event, newValue) => {
     setValue(newValue);
+    localStorage.setItem('dashboardTab', newValue.toString());
   };
 
   const handleAddTask = () => {
@@ -455,20 +557,15 @@ const Dashboard = () => {
       // Fetch all users (for search suggestions)
       const allUsersFetched = await chatService.getUsers();
       setAllUsers(allUsersFetched);
-      // Fetch chat requests
+      // Set all users as chat users
+      setChatUsers(allUsersFetched);
+      // Fetch chat requests for status
       const requests = await chatService.getMyRequests();
-      // Only include users with a chat request (pending, accepted, rejected)
-      const relevantUserIds = new Set();
-      requests.forEach(r => {
-        relevantUserIds.add(r.from_user.id);
-        relevantUserIds.add(r.to_user.id);
-      });
-      const filteredUsers = allUsersFetched.filter(u => relevantUserIds.has(u.id));
-      setChatUsers(filteredUsers);
+      setChatRequests(requests);
     } catch (error) {
       setUsersError(
-        error.response?.data?.error || 
-        error.message || 
+        error.response?.data?.error ||
+        error.message ||
         'Failed to load users. Please try again.'
       );
     } finally {
@@ -487,7 +584,7 @@ const Dashboard = () => {
 
   const fetchConversation = async (userId) => {
     if (!userId || !user?.id) return;
-    
+
     try {
       setLoading(true);
       const conversation = await chatService.getConversation(userId);
@@ -495,10 +592,14 @@ const Dashboard = () => {
         setUsersError('Invalid conversation data received');
         return;
       }
+      console.log('Raw conversation data:', JSON.stringify(conversation, null, 2));
       // Map messages to include sender information and file
       const formattedMessages = conversation.map(msg => {
+        console.log('Processing message:', JSON.stringify(msg, null, 2));
+        console.log('Sender data:', JSON.stringify(msg.sender, null, 2));
+        console.log('Sender profile_pic:', msg.sender?.profile_pic);
         let dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
-        return {
+        const formattedMsg = {
           id: msg.id,
           from: msg.sender.id === user.id ? 'You' : `${msg.sender.first_name || msg.sender.email.split('@')[0]}`,
           text: msg.message,
@@ -507,9 +608,13 @@ const Dashboard = () => {
           time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           timestamp: dateObj,
           self: msg.sender.id === user.id,
-          is_read: msg.is_read
+          is_read: msg.is_read,
+          sender_profile_pic: msg.sender?.profile_pic
         };
+        console.log('Formatted message:', JSON.stringify(formattedMsg, null, 2));
+        return formattedMsg;
       });
+      console.log('All formatted messages:', JSON.stringify(formattedMessages, null, 2));
       setMessages(formattedMessages);
       setUsersError(null);
     } catch (error) {
@@ -542,7 +647,8 @@ const Dashboard = () => {
             time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             timestamp: dateObj,
             self: msg.sender.id === user.id,
-            is_read: msg.is_read
+            is_read: msg.is_read,
+            sender_profile_pic: msg.sender.profile_pic
           };
         });
         setMessages(formattedMessages);
@@ -555,7 +661,7 @@ const Dashboard = () => {
     if (selectedChat) {
       // Initial fetch
       fetchNewMessages();
-      
+
       // Set up polling interval
       pollInterval = setInterval(fetchNewMessages, POLLING_INTERVAL);
     }
@@ -571,11 +677,11 @@ const Dashboard = () => {
   // Modify handleSendChat to update lastMessageId
   const handleSendChat = async () => {
     if (!chatInput.trim() || !selectedChat || !user?.id) return;
-    
+
     try {
       setLoading(true);
       const newMessage = await chatService.sendMessage(selectedChat.id, chatInput);
-      
+
       // Update lastMessageId with the new message
       setLastMessageId(newMessage.id);
 
@@ -587,9 +693,10 @@ const Dashboard = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         timestamp: new Date(),
         self: true,
-        is_read: false
+        is_read: false,
+        sender_profile_pic: userProfile?.profile_pic
       }]);
-      
+
       setChatInput('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -619,19 +726,19 @@ const Dashboard = () => {
 
   // Add connection status indicator
   const renderConnectionStatus = () => (
-    <Box sx={{ 
-      position: 'absolute', 
-      top: 8, 
-      right: 8, 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: 1 
+    <Box sx={{
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1
     }}>
-      <Box sx={{ 
-        width: 8, 
-        height: 8, 
-        borderRadius: '50%', 
-        bgcolor: wsConnected ? 'success.main' : 'error.main' 
+      <Box sx={{
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        bgcolor: wsConnected ? 'success.main' : 'error.main'
       }} />
       <Typography variant="caption" color="text.secondary">
         {wsConnected ? 'Connected' : 'Disconnected'}
@@ -674,7 +781,8 @@ const Dashboard = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         timestamp: new Date(),
         self: true,
-        is_read: false
+        is_read: false,
+        sender_profile_pic: userProfile?.profile_pic
       }]);
       setPendingAttachment(null);
     } catch (error) {
@@ -698,10 +806,10 @@ const Dashboard = () => {
     setMessages(prev => prev.map(msg =>
       msg.id === messageId
         ? {
-            ...msg,
-            text: `This message was deleted by ${userProfile?.first_name || userProfile?.email?.split('@')[0] || 'You'}`,
-            file: null
-          }
+          ...msg,
+          text: `This message was deleted by ${userProfile?.first_name || userProfile?.email?.split('@')[0] || 'You'}`,
+          file: null
+        }
         : msg
     ));
     try {
@@ -857,8 +965,19 @@ const Dashboard = () => {
       // Refresh posts
       const posts = await fetchCommunityPosts(currentUser.access);
       setCommunityPosts(posts);
+      // Show success notification
+      setSettingsSnackbar({
+        open: true,
+        message: 'Post deleted successfully!',
+        severity: 'success'
+      });
     } catch (err) {
       // Optionally show error
+      setSettingsSnackbar({
+        open: true,
+        message: 'Failed to delete post.',
+        severity: 'error'
+      });
     } finally {
       setActionLoading(false);
     }
@@ -897,8 +1016,19 @@ const Dashboard = () => {
       // Refresh posts
       const posts = await fetchCommunityPosts(currentUser.access);
       setCommunityPosts(posts);
+      // Show success notification
+      setSettingsSnackbar({
+        open: true,
+        message: 'Post updated successfully!',
+        severity: 'success'
+      });
     } catch (err) {
       // Optionally show error
+      setSettingsSnackbar({
+        open: true,
+        message: 'Failed to update post.',
+        severity: 'error'
+      });
     } finally {
       setActionLoading(false);
     }
@@ -922,7 +1052,7 @@ const Dashboard = () => {
         const d = new Date(dt);
         if (isNaN(d)) return '';
         const pad = n => n.toString().padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
       };
 
       setEditForm({
@@ -997,16 +1127,23 @@ const Dashboard = () => {
     setNotificationLoading(true);
     try {
       const currentUser = authService.getCurrentUser();
-      if (!currentUser?.access) return;
+      if (!currentUser?.access) {
+        setNotificationLoading(false);
+        return;
+      }
       const data = await communityService.getNotifications({
         offset,
         limit: NOTIFICATION_PAGE_SIZE,
         markRead: markAsRead,
       });
+      if (!data?.results) {
+        setCommunityNotifications([]);
+        return;
+      }
       if (offset === 0) {
-        setCommunityNotifications(data.results);
+        setCommunityNotifications(data.results || []);
       } else {
-        setCommunityNotifications(prev => [...prev, ...data.results]);
+        setCommunityNotifications(prev => [...(prev || []), ...(data.results || [])]);
       }
       setUnreadNotificationCount(data.unread_count);
       setNotificationHasMore(data.has_more);
@@ -1027,34 +1164,235 @@ const Dashboard = () => {
     fetchCommunityNotifications(false, communityNotifications.length);
   };
 
+  // --- Polling for Unread Notification Count ---
   useEffect(() => {
     let pollInterval;
     const pollUnreadCount = async () => {
       try {
         const currentUser = authService.getCurrentUser();
-        if (!currentUser?.access) return;
+        if (!currentUser?.access) {
+          setUnreadNotificationCount(0); // Reset count if user logs out
+          return;
+        }
+        // Use the dedicated unread count endpoint
         const count = await communityService.getUnreadNotificationCount();
         setUnreadNotificationCount(count);
-      } catch {}
+      } catch (err) {
+        console.error('Error polling unread count:', err);
+        // Optionally reset count or show an error state if polling fails
+        setUnreadNotificationCount(0); // Assume 0 if there\'s an error
+      }
     };
-    if (tabValue === 4) { // Only poll when Community tab is active
+
+    // Start polling only if user is logged in
+    if (user?.access) {
       pollUnreadCount(); // Initial fetch
-      pollInterval = setInterval(pollUnreadCount, 10000); // Every 10s
+      // Poll every 10 seconds
+      pollInterval = setInterval(pollUnreadCount, 10000);
     }
+
+    // Cleanup interval on component unmount or user logout
     return () => {
-      if (pollInterval) clearInterval(pollInterval);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
     };
+  }, [user?.access]); // Re-run effect when user\'s access token changes
+
+  // Existing useEffect for tabValue (remove the notification polling part from here)
+  useEffect(() => {
+    // ... other logic dependent on tabValue ...
+    // (Notification polling moved to the new useEffect above)
   }, [tabValue]);
 
-  return (
+  const handleSettingsTabChange = (event, newValue) => {
+    setSettingsTab(newValue);
+  };
+
+  const handleSettingsChange = (event) => {
+    const { name, value } = event.target;
+    setSettingsFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePasswordInputChange = (event) => {
+    const { name, value } = event.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      // Validate passwords
+      if (!passwordData.old_password || !passwordData.new_password || !passwordData.confirm_password) {
+        setSettingsSnackbar({
+          open: true,
+          message: 'All fields are required',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (passwordData.new_password !== passwordData.confirm_password) {
+        setSettingsSnackbar({
+          open: true,
+          message: 'New passwords do not match',
+          severity: 'error'
+        });
+        return;
+      }
+
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:8000/api/settings/change-password/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(passwordData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Error changing password');
+      }
+
+      setSettingsSnackbar({
+        open: true,
+        message: 'Password changed successfully',
+        severity: 'success'
+      });
+
+      // Reset password form
+      setPasswordData({
+        old_password: '',
+        new_password: '',
+        confirm_password: ''
+      });
+      setShowOldPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setSettingsSnackbar({
+        open: true,
+        message: error.message || 'Error changing password',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleSettingsUpdate = async () => {
+    try {
+      setIsUpdating(true);
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        throw new Error('No authentication token found');
+      }
+
+      const formData = new FormData();
+
+      // Add profile image if it exists
+      if (profileImage) {
+        formData.append('profile_pic', profileImage);
+      }
+
+      // Add other form fields
+      Object.keys(settingsFormData).forEach(key => {
+        if (settingsFormData[key] !== null && settingsFormData[key] !== undefined && key !== 'profile_pic') {
+          formData.append(key, settingsFormData[key]);
+        }
+      });
+
+      const response = await fetch('http://localhost:8000/api/settings/profile/', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle validation errors
+        if (response.status === 400 && data.errors) {
+          const errorMessages = Object.entries(data.errors)
+            .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+            .join('\n');
+          throw new Error(`Validation errors:\n${errorMessages}`);
+        }
+        throw new Error(data.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      setSettingsSnackbar({
+        open: true,
+        message: 'Profile updated successfully',
+        severity: 'success'
+      });
+
+      // Update profile image URL if changed
+      if (data.profile_pic) {
+        setProfileImageUrl(`http://localhost:8000${data.profile_pic}`);
+      }
+
+      // Reset profile image states
+      setProfileImage(null);
+      setProfileImagePreview(null);
+
+      // Refresh the profile data
+      fetchUserProfile();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setSettingsSnackbar({
+        open: true,
+        message: error.message || 'Error updating profile',
+        severity: 'error'
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSettingsSnackbar(prev => ({
+      ...prev,
+      open: false
+    }));
+  };
+
+  const handleProfileImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Create a preview URL for the selected image
+      const previewUrl = URL.createObjectURL(file);
+      setProfileImagePreview(previewUrl);
+      setProfileImage(file);
+
+      // Update the form data with the new file
+      setSettingsFormData(prev => ({
+        ...prev,
+        profile_pic: file
+      }));
+    }
+  };
+ return (
     <>
       {/* Top Navigation Bar */}
       <AppBar position="static" elevation={0} sx={{ background: '#fff', color: '#222', borderBottom: '1px solid #eee' }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
           <Box />
-          {/* Right: Icons and User */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton color="inherit" onClick={handleLangMenuOpen}><LanguageIcon /></IconButton>
+            {/*<IconButton color="inherit" onClick={handleLangMenuOpen}><LanguageIcon /></IconButton>
             <Menu anchorEl={langAnchorEl} open={Boolean(langAnchorEl)} onClose={handleLangMenuClose}>
               <MenuItem selected={language === 'English'} onClick={() => handleLanguageChange('English')}>English</MenuItem>
               <MenuItem selected={language === 'Bangla'} onClick={() => handleLanguageChange('Bangla')}>Bangla</MenuItem>
@@ -1066,209 +1404,217 @@ const Dashboard = () => {
               <Badge badgeContent={4} color="error">
                 <NotificationsIcon />
               </Badge>
-            </IconButton>
-            <Avatar sx={{ width: 36, height: 36, ml: 1 }} src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : undefined}>
+            </IconButton>*/}
+            {/*<Avatar sx={{ width: 36, height: 36, ml: 1, border: '2px solid #6c63ff' }} src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : undefined}>
               {userProfile?.first_name ? userProfile.first_name[0] : 'P'}
-            </Avatar>
+            </Avatar>*/}
+            <Avatar
+              src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+              alt="Profile"
+              sx={{ width: 36, height: 36, ml: 1, border: '2px solid #6c63ff' }}
+            />
             <Box sx={{ ml: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'Innovest'} {userProfile?.last_name || 'Admin'}</Typography>
               <Typography variant="caption" color="text.secondary">{userProfile?.title || 'Founder'}</Typography>
             </Box>
-              </Box>
+          </Box>
         </Toolbar>
       </AppBar>
       {/* Main Dashboard Content */}
       <Container maxWidth={false} disableGutters sx={{ py: 4, px: { xs: 1, sm: 3, md: 6 } }}>
         <Grid container spacing={4}>
           <Grid item xs={12}>
-          <Paper 
-            elevation={0}
-            sx={{ 
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'rgba(0, 0, 0, 0.12)',
-            }}
-          >
-            <Tabs
-              value={tabValue}
-              onChange={(_, v) => setTabValue(v)}
+            <Paper
+              elevation={0}
               sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                px: 2,
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                }
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'rgba(0, 0, 0, 0.12)',
               }}
             >
-              <Tab 
-                icon={<BarChartIcon sx={{ fontSize: 20, color: tabValue === 0 ? '#1890ff' : 'inherit' }} />} 
-                iconPosition="start" 
-                label={<span style={{ color: tabValue === 0 ? '#1890ff' : 'inherit', fontWeight: tabValue === 0 ? 700 : 600 }}>Dashboard</span>} 
-              />
-              <Tab 
-                icon={<BusinessIcon sx={{ fontSize: 20 }} />}
-                iconPosition="start"
-                label="My Companies" 
-              />
-              <Tab 
-                icon={<BusinessIcon sx={{ fontSize: 20 }} />}
-                iconPosition="start"
-                label="Backed" 
-              />
-              <Tab 
-                icon={<WorkIcon sx={{ fontSize: 20 }} />}
-                iconPosition="start"
-                label="Following" 
-              />
-              <Tab 
-                icon={<GroupsIcon sx={{ fontSize: 20 }} />}
-                iconPosition="start"
-                label="Community" 
-              />
-              <Tab 
-                icon={<BarChartIcon sx={{ fontSize: 20 }} />}
-                iconPosition="start"
-                label="Analysis" 
-              />
-              <Tab icon={<ChatIcon sx={{ fontSize: 20 }} />} iconPosition="start" label="Chat" />
-              <Tab icon={<SettingsIcon sx={{ fontSize: 20 }} />} iconPosition="start" label="Settings" />
-            </Tabs>
+              <Tabs
+                value={value}
+                onChange={handleTabChange}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  px: 2,
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                  }
+                }}
+              >
+                <Tab
+                  icon={<BarChartIcon sx={{ fontSize: 20, color: value === 0 ? '#1890ff' : 'inherit' }} />}
+                  iconPosition="start"
+                  label={<span style={{ color: value === 0 ? '#1890ff' : 'inherit', fontWeight: value === 0 ? 700 : 600 }}>Dashboard</span>}
+                />
+                <Tab
+                  icon={<BusinessIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="My Companies"
+                />
+                <Tab
+                  icon={<BusinessIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Backed"
+                />
+                <Tab
+                  icon={<WorkIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Following"
+                />
+                <Tab
+                  icon={<GroupsIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Community"
+                />
+                <Tab
+                  icon={<BarChartIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="Analysis"
+                />
+                <Tab icon={<ChatIcon sx={{ fontSize: 20 }} />} iconPosition="start" label="Chat" />
+                <Tab icon={<SettingsIcon sx={{ fontSize: 20 }} />} iconPosition="start" label="Settings" />
+              </Tabs>
 
-            <Box sx={{ p: 3 }}>
-              {/* Community Tab */}
-                {tabValue === 4 && (
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6">Community</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {/* Notification Icon with Badge */}
-                      <IconButton color="inherit" onClick={handleOpenNotificationPopup} sx={{ position: 'relative' }} aria-label="Show notifications">
-                        <Badge badgeContent={unreadNotificationCount} color="error" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-                          <NotificationsIcon sx={{ fontSize: 28 }} />
-                        </Badge>
-                      </IconButton>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<AddIcon sx={{ fontSize: 22 }} />}
-                        sx={{
-                          fontWeight: 800,
-                          borderRadius: 2,
-                          boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
-                          px: 2.5,
-                          py: 0.7,
-                          fontSize: '0.98rem',
-                          letterSpacing: 0.5,
-                          background: 'linear-gradient(90deg, #2196f3 0%, #21cbf3 100%)',
-                          textTransform: 'uppercase',
-                          minWidth: 0,
-                          '&:hover': {
-                            background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)',
-                            boxShadow: '0 4px 16px rgba(25, 118, 210, 0.18)'
-                          }
-                        }}
-                        onClick={() => setOpenShareIdea(true)}
-                      >
-                        Share Post
-                      </Button>
-                    </Box>
-                  </Box>
-                  {/* Search box with clear (cross) icon */}
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-                    <TextField
-                      size="small"
-                      placeholder="Search by title or type..."
-                      value={ideaSearch}
-                      onChange={e => setIdeaSearch(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleCommunitySearch(); }}
-                      sx={{
-                        width: 400,
-                        background: '#fff',
-                        borderRadius: 8,
-                        boxShadow: '0 2px 8px rgba(60,64,67,0.15)',
-                        '& .MuiOutlinedInput-root': { borderRadius: 8, fontSize: 18, pl: 1 },
-                      }}
-                      InputProps={{
-                        sx: { background: '#fff', borderRadius: 8, fontSize: 18 },
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {ideaSearch && (
-                              <IconButton
-                                size="small"
-                                onClick={() => { setIdeaSearch(''); handleCommunitySearch(); }}
-                                sx={{ mr: 0.5 }}
-                                aria-label="Clear search"
-                              >
-                                <CloseIcon sx={{ color: '#888', fontSize: 22 }} />
-                              </IconButton>
-                            )}
-                            <IconButton onClick={handleCommunitySearch} edge="end" size="large">
-                              <SearchIcon sx={{ color: '#4285F4', fontSize: 28 }} />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Box>
-                  {/* My Posts Section (moved directly under search/filter) */}
-                  {userProfile && (() => {
-                    // Use filteredPosts instead of myPosts
-                    const myPosts = filteredPosts;
-                    return (
-                      <Box sx={{ mb: 3, background: '#f7f9fb', borderRadius: 2, p: 2, border: '1px solid #e3e8ef' }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>
-                        <TableContainer>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Title</TableCell>
-                                <TableCell>Post Type</TableCell>
-                                <TableCell>Post At</TableCell>
-                                <TableCell>Actions</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {myPosts.length === 0 ? (
-                                <TableRow>
-                                  <TableCell colSpan={4} align="center" style={{ color: '#999' }}>No posts found for this user.</TableCell>
-                                </TableRow>
-                              ) : myPosts.map(post => (
-                                <TableRow key={post.id}>
-                                  <TableCell>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{post.title}</Typography>
-                                  </TableCell>
-                                  <TableCell>{post.type}</TableCell>
-                                  <TableCell>{post.created_at ? post.created_at.split('T')[0] : ''}</TableCell>
-                                  <TableCell>
-                                    <IconButton color="primary" onClick={() => setViewPost(post)}><VisibilityIcon /></IconButton>
-                                    <IconButton color="primary" onClick={() => { setEditPost(post); setEditForm({ title: post.title, type: post.type, description: post.description }); }}><EditIcon /></IconButton>
-                                    <IconButton color="error" onClick={() => setDeletePost(post)}><DeleteIcon /></IconButton>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
+              <Box sx={{ p: 3 }}>
+                {/* Community Tab */}
+                {value === 4 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6">Community</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {/* Notification Icon with Badge */}
+                        <IconButton color="inherit" onClick={handleOpenNotificationPopup} sx={{ position: 'relative' }} aria-label="Show notifications">
+                          <Badge badgeContent={unreadNotificationCount} color="error" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                            <NotificationsIcon sx={{ fontSize: 28 }} />
+                          </Badge>
+                        </IconButton>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<AddIcon sx={{ fontSize: 22 }} />}
+                          sx={{
+                            fontWeight: 800,
+                            borderRadius: 2,
+                            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
+                            px: 2.5,
+                            py: 0.7,
+                            fontSize: '0.98rem',
+                            letterSpacing: 0.5,
+                            background: 'linear-gradient(90deg, #2196f3 0%, #21cbf3 100%)',
+                            textTransform: 'uppercase',
+                            minWidth: 0,
+                            '&:hover': {
+                              background: 'linear-gradient(90deg, #1976d2 0%, #00bcd4 100%)',
+                              boxShadow: '0 4px 16px rgba(25, 118, 210, 0.18)'
+                            }
+                          }}
+                          onClick={() => setOpenShareIdea(true)}
+                        >
+                          Share Post
+                        </Button>
                       </Box>
-                    );
-                  })()}
-                </Box>
+                    </Box>
+                    {/* Search box with clear (cross) icon */}
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                      <TextField
+                        size="small"
+                        placeholder="Search by title or type..."
+                        value={ideaSearch}
+                        onChange={e => setIdeaSearch(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleCommunitySearch(); }}
+                        sx={{
+                          width: 400,
+                          background: '#fff',
+                          borderRadius: 8,
+                          boxShadow: '0 2px 8px rgba(60,64,67,0.15)',
+                          '& .MuiOutlinedInput-root': { borderRadius: 8, fontSize: 18, pl: 1 },
+                        }}
+                        InputProps={{
+                          sx: { background: '#fff', borderRadius: 8, fontSize: 18 },
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {ideaSearch && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() => { setIdeaSearch(''); handleCommunitySearch(); }}
+                                  sx={{ mr: 0.5 }}
+                                  aria-label="Clear search"
+                                >
+                                  <CloseIcon sx={{ color: '#888', fontSize: 22 }} />
+                                </IconButton>
+                              )}
+                              <IconButton onClick={handleCommunitySearch} edge="end" size="large">
+                                <SearchIcon sx={{ color: '#4285F4', fontSize: 28 }} />
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Box>
+                    {/* My Posts Section (moved directly under search/filter) */}
+                    {userProfile && (() => {
+                      // Use filteredPosts instead of myPosts
+                      const myPosts = filteredPosts;
+                      return (
+                        <Box sx={{ mb: 3, background: '#f7f9fb', borderRadius: 2, p: 2, border: '1px solid #e3e8ef' }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>
+                          <TableContainer>
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Title</TableCell>
+                                  <TableCell>Post Type</TableCell>
+                                  <TableCell>Post At</TableCell>
+                                  <TableCell>Actions</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {myPosts.length === 0 ? (
+                                  <TableRow>
+                                    <TableCell colSpan={4} align="center" style={{ color: '#999' }}>No posts found for this user.</TableCell>
+                                  </TableRow>
+                                ) : myPosts
+                                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                                    .map(post => (
+                                  <TableRow key={post.id}>
+                                    <TableCell>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{post.title}</Typography>
+                                    </TableCell>
+                                    <TableCell>{post.type}</TableCell>
+                                    <TableCell>{post.created_at ? post.created_at.split('T')[0] : ''}</TableCell>
+                                    <TableCell>
+                                      <IconButton color="primary" onClick={() => setViewPost(post)}><VisibilityIcon /></IconButton>
+                                      <IconButton color="primary" onClick={() => { setEditPost(post); setEditForm({ title: post.title, type: post.type, description: post.description }); }}><EditIcon /></IconButton>
+                                      <IconButton color="error" onClick={() => setDeletePost(post)}><DeleteIcon /></IconButton>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        </Box>
+                      );
+                    })()}
+                  </Box>
                 )}
+               
                 {/* Chat Tab */}
-                {tabValue === 6 && (
+                {value === 6 && (
                   <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
                     {/* Left: Chat List */}
-                    <Box sx={{ 
-                      width: 300, 
-                      background: '#fcf8f3', 
-                      borderRight: '1px solid #eee', 
-                      p: 2, 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      height: '100%' 
+                    <Box sx={{
+                      width: 420,
+                      background: '#fcf8f3',
+                      borderRight: '1px solid #eee',
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%'
                     }}>
                       <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Chats</Typography>
                       <Box sx={{ position: 'relative' }}>
@@ -1290,9 +1636,9 @@ const Dashboard = () => {
                               >
                                 <Avatar
                                   sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}
-                                  src={user.profile_picture ? `/images/profile_pic/${user.profile_picture}` : undefined}
+                                  src={user.profile_pic ? `http://localhost:8000${user.profile_pic}` : undefined}
                                 >
-                                  {(!user.profile_picture && (user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()))}
+                                  {(!user.profile_pic && (user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()))}
                                 </Avatar>
                                 <Box>
                                   <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
@@ -1325,7 +1671,7 @@ const Dashboard = () => {
                           sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none', flex: 1 }}
                           onClick={() => setChatFilter('other')}
                         >
-                          Other Requests
+                          Message Requests
                         </Button>
                       </Box>
                       <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '3px' } }}>
@@ -1393,24 +1739,24 @@ const Dashboard = () => {
                                         bgcolor: 'primary.main',
                                         fontSize: '1rem'
                                       }}
-                                      src={userItem.profile_picture ? `/images/profile_pic/${userItem.profile_picture}` : undefined}
+                                      src={userItem.profile_pic ? `http://localhost:8000${userItem.profile_pic}` : undefined}
                                     >
-                                      {(!userItem.profile_picture && (userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()))}
+                                      {(!userItem.profile_pic && (userItem.first_name ? userItem.first_name[0].toUpperCase() : userItem.email[0].toUpperCase()))}
                                     </Avatar>
                                     <Box sx={{ ml: 2, minWidth: 0 }}>
-                                      <Typography 
-                                        variant="subtitle1" 
-                                        sx={{ 
+                                      <Typography
+                                        variant="subtitle1"
+                                        sx={{
                                           fontWeight: 600
                                           // Removed whiteSpace, overflow, textOverflow to allow full name display
                                         }}
                                       >
-                                        {userItem.first_name && userItem.last_name 
+                                        {userItem.first_name && userItem.last_name
                                           ? `${userItem.first_name} ${userItem.last_name}`
                                           : userItem.email.split('@')[0]}
                                       </Typography>
-                                      <Typography 
-                                        variant="body2" 
+                                      <Typography
+                                        variant="body2"
                                         color="text.secondary"
                                         sx={{
                                           whiteSpace: 'nowrap',
@@ -1434,11 +1780,11 @@ const Dashboard = () => {
                                         ) : req.status === 'rejected' ? (
                                           <Stack direction="column" spacing={1} alignItems="flex-end" sx={{ ml: 2 }}>
                                             <Button size="small" disabled>Rejected</Button>
-                                            <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message Again</Button>
+                                            <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request Again</Button>
                                           </Stack>
                                         ) : req.status === 'accepted' ? null : null
                                       ) : (
-                                        <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request to Message</Button>
+                                        <Button size="small" variant="outlined" onClick={e => { e.stopPropagation(); handleSendRequest(userItem.id); }}>Request</Button>
                                       )}
                                       {/* Three-dot menu icon */}
                                       <IconButton
@@ -1472,13 +1818,13 @@ const Dashboard = () => {
                                 bgcolor: 'primary.main',
                                 fontSize: '1rem'
                               }}
-                              src={selectedChat.profile_picture ? `/images/profile_pic/${selectedChat.profile_picture}` : undefined}
+                              src={selectedChat.profile_pic ? `http://localhost:8000${selectedChat.profile_pic}` : undefined}
                             >
-                              {(!selectedChat.profile_picture && (selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()))}
+                              {(!selectedChat.profile_pic && (selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()))}
                             </Avatar>
                             <Box sx={{ flex: 1, ml: 2 }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                {selectedChat.first_name && selectedChat.last_name 
+                                {selectedChat.first_name && selectedChat.last_name
                                   ? `${selectedChat.first_name} ${selectedChat.last_name}`
                                   : selectedChat.email.split('@')[0]}
                               </Typography>
@@ -1523,11 +1869,11 @@ const Dashboard = () => {
                                 <CircularProgress />
                               </Box>
                             ) : messages.length === 0 ? (
-                              <Box sx={{ 
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
+                              <Box sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 height: '100%',
                                 color: 'text.secondary'
                               }}>
@@ -1586,10 +1932,9 @@ const Dashboard = () => {
                                               mr: 1,
                                               flexShrink: 0
                                             }}
-                                            src={selectedChat.profile_picture ? `/images/profile_pic/${selectedChat.profile_picture}` : undefined}
-                                          >
-                                            {(!selectedChat.profile_picture && (selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()))}
-                                          </Avatar>
+                                            src={msg.sender_profile_pic ? `http://localhost:8000${msg.sender_profile_pic}` : undefined}
+                                            alt={selectedChat.first_name ? selectedChat.first_name[0].toUpperCase() : selectedChat.email[0].toUpperCase()}
+                                          />
                                         )}
                                         {/* For sent messages: delete icon (left) */}
                                         {msg.self && !msg.text.includes('This message was deleted by') && (
@@ -1612,14 +1957,14 @@ const Dashboard = () => {
                                           </IconButton>
                                         )}
                                         {/* Message bubble */}
-                                        <Box sx={{ 
+                                        <Box sx={{
                                           flex: '0 1 auto',
                                           maxWidth: { xs: '80%', sm: '60%', md: '420px' },
-                                          px: 2, 
-                                          py: 1.5, 
-                                          borderRadius: 2, 
+                                          px: 2,
+                                          py: 1.5,
+                                          borderRadius: 2,
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'black' : 'text.primary',
+                                          color: msg.self ? 'white' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
@@ -1697,8 +2042,8 @@ const Dashboard = () => {
                                               </Box>
                                             )
                                           )}
-                                          <Box sx={{ 
-                                            display: 'flex', 
+                                          <Box sx={{
+                                            display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
                                             gap: 1,
@@ -1706,9 +2051,9 @@ const Dashboard = () => {
                                           }}>
                                             {msg.self && (
                                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography 
-                                                  variant="caption" 
-                                                  sx={{ 
+                                                <Typography
+                                                  variant="caption"
+                                                  sx={{
                                                     color: msg.self ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -1723,18 +2068,11 @@ const Dashboard = () => {
                                         </Box>
                                         {/* For sent messages: avatar (right) */}
                                         {msg.self && (
-                                          <Avatar 
-                                            sx={{ 
-                                              width: 32, 
-                                              height: 32, 
-                                              bgcolor: 'grey.300',
-                                              fontSize: '0.875rem',
-                                              ml: 1,
-                                              flexShrink: 0
-                                            }}
-                                          >
-                                            {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
-                                          </Avatar>
+                                          <Avatar
+                                            src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+                                            alt="Profile"
+                                            sx={{ width: 32, height: 32, bgcolor: 'grey.300', fontSize: '0.875rem', ml: 1, flexShrink: 0 }}
+                                          />
                                         )}
                                       </Box>
                                     ))}
@@ -1744,12 +2082,12 @@ const Dashboard = () => {
                             )}
                           </Box>
                           {/* Chat Input */}
-                          <Box sx={{ 
+                          <Box sx={{
                             flex: '0 0 auto',
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            borderTop: '1px solid #eee', 
-                            p: 2, 
+                            display: 'flex',
+                            alignItems: 'center',
+                            borderTop: '1px solid #eee',
+                            p: 2,
                             background: '#fff',
                             gap: 1
                           }}>
@@ -1833,11 +2171,11 @@ const Dashboard = () => {
                           </Box>
                         </>
                       ) : (
-                        <Box sx={{ 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                           height: '100%',
                           color: 'text.secondary'
                         }}>
@@ -1848,632 +2186,970 @@ const Dashboard = () => {
                     </Box>
                   </Box>
                 )}
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Container>
-    {/* Share Idea Dialog */}
-    <Dialog open={openShareIdea} onClose={() => setOpenShareIdea(false)} maxWidth="sm" fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(80,80,180,0.10)',
-          background: '#fff',
-        }
-      }}
-    >
-      <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem', pb: 1, borderBottom: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
-        Share Post
-      </DialogTitle>
-      <DialogContent sx={{ pt: 3 }}>
-        <Box component="form" sx={{ mt: 1 }}>
-          <Grid container spacing={2} justifyContent="center">
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                <Avatar sx={{ width: 44, height: 44, bgcolor: 'primary.main', fontWeight: 700 }} src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : undefined}>
-                  {userProfile?.first_name ? userProfile.first_name[0].toUpperCase() : 'U'}
-                </Avatar>
-                <Box>
-                  <Typography sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'User'} {userProfile?.last_name || ''}</Typography>
-                  <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Member'}</Typography>
-                </Box>
+                {/* Settings Tab */}
+                {value === 7 && (
+                  <Box sx={{ background: '#fff', borderRadius: 3, p: 0, minHeight: 500 }}>
+                    <Container maxWidth={false} disableGutters sx={{ pt: 2, pb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
+                      <Paper elevation={3} sx={{ borderRadius: 3, p: 0 }}>
+                        <Tabs value={settingsTab} onChange={handleSettingsTabChange}>
+                          <Tab label="Personal Details" />
+                          <Tab label="Change Password" />
+                        </Tabs>
+                        <Box sx={{ p: 3 }}>
+                          {settingsTab === 0 && (
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                                <Box sx={{ position: 'relative', width: 120, height: 120 }}>
+                                  <Avatar
+                                    src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+                                    alt="Profile"
+                                    sx={{ width: 120, height: 120, border: '2px solid #6c63ff' }}
+                                  />
+                                  <input
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    id="profile-image-upload"
+                                    type="file"
+                                    onChange={handleProfileImageChange}
+                                  />
+                                  <label htmlFor="profile-image-upload">
+                                    <IconButton
+                                      component="span"
+                                      sx={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        right: 0,
+                                        backgroundColor: '#6c63ff',
+                                        color: 'white',
+                                        '&:hover': {
+                                          backgroundColor: '#574fd6',
+                                        },
+                                      }}
+                                    >
+                                      <PhotoCamera />
+                                    </IconButton>
+                                  </label>
+                                </Box>
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="First Name"
+                                  name="first_name"
+                                  value={settingsFormData.first_name || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Last Name"
+                                  name="last_name"
+                                  value={settingsFormData.last_name || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Phone Number"
+                                  name="phone"
+                                  value={settingsFormData.phone || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Email Address"
+                                  name="email"
+                                  value={settingsFormData.email || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    readOnly: true,
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} md={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Joining Date"
+                                  value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : ''}
+                                  InputProps={{
+                                    readOnly: true,
+                                  }}
+                                  sx={{ mb: 2 }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Date of Birth"
+                                  name="dob"
+                                  type="date"
+                                  value={settingsFormData.dob || ''}
+                                  onChange={handleSettingsChange}
+                                  InputLabelProps={{
+                                    shrink: true,
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Designation"
+                                  name="title"
+                                  value={settingsFormData.title || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Website"
+                                  name="website"
+                                  value={settingsFormData.website || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Address"
+                                  name="address"
+                                  value={settingsFormData.address || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="City"
+                                  name="city"
+                                  value={settingsFormData.city || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Country"
+                                  name="country"
+                                  value={settingsFormData.country || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12}>
+                                <TextField
+                                  fullWidth
+                                  label="Description"
+                                  name="bio"
+                                  multiline
+                                  rows={3}
+                                  value={settingsFormData.bio || ''}
+                                  onChange={handleSettingsChange}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
+                                  onClick={handleSettingsUpdate}
+                                  disabled={isUpdating}
+                                  startIcon={isUpdating ? <CircularProgress size={20} color="inherit" /> : null}
+                                >
+                                  {isUpdating ? 'Updating...' : 'Update'}
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  color="error"
+                                  sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
+                                  onClick={() => {
+                                    if (userProfile) {
+                                      setSettingsFormData({
+                                        first_name: userProfile.first_name || '',
+                                        last_name: userProfile.last_name || '',
+                                        phone: userProfile.phone || '',
+                                        email: userProfile.email || '',
+                                        title: userProfile.title || '',
+                                        company: userProfile.company || '',
+                                        website: userProfile.website || '',
+                                        city: userProfile.city || '',
+                                        state: userProfile.state || '',
+                                        bio: userProfile.bio || '',
+                                        position: userProfile.position || '',
+                                        address: userProfile.address || '',
+                                        country: userProfile.country || '',
+                                        skills: userProfile.skills || '',
+                                        dob: userProfile.dob || ''
+                                      });
+                                    }
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Grid>
+                            </Grid>
+                          )}
+
+                          {settingsTab === 1 && (
+                            <Grid container spacing={2} alignItems="flex-end">
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Old Password*"
+                                  placeholder="Enter current password"
+                                  type={showOldPassword ? 'text' : 'password'}
+                                  name="old_password"
+                                  value={passwordData.old_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowOldPassword(!showOldPassword)}
+                                          edge="end"
+                                        >
+                                          {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="New Password*"
+                                  placeholder="Enter new password"
+                                  type={showNewPassword ? 'text' : 'password'}
+                                  name="new_password"
+                                  value={passwordData.new_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowNewPassword(!showNewPassword)}
+                                          edge="end"
+                                        >
+                                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Confirm Password*"
+                                  placeholder="Confirm password"
+                                  type={showConfirmPassword ? 'text' : 'password'}
+                                  name="confirm_password"
+                                  value={passwordData.confirm_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                          edge="end"
+                                        >
+                                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <Box sx={{ mt: 1 }}>
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      navigate('/forgot-password');
+                                    }}
+                                    style={{ fontSize: 14, color: '#6c63ff', textDecoration: 'underline' }}
+                                  >
+                                    Forgot Password ?
+                                  </a>
+                                </Box>
+                              </Grid>
+                              <Grid item xs={12} md={8} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                                {passwordError && (
+                                  <Typography color="error" sx={{ mb: 1 }}>{passwordError}</Typography>
+                                )}
+                                {passwordSuccess && (
+                                  <Typography color="success.main" sx={{ mb: 1 }}>{passwordSuccess}</Typography>
+                                )}
+                                <Button
+                                  variant="contained"
+                                  sx={{
+                                    background: '#ff865a',
+                                    color: '#fff',
+                                    fontWeight: 600,
+                                    borderRadius: 2,
+                                    px: 4,
+                                    boxShadow: 'none',
+                                    '&:hover': { background: '#ff6a3d' }
+                                  }}
+                                  onClick={handleChangePassword}
+                                >
+                                  Change Password
+                                </Button>
+                              </Grid>
+                            </Grid>
+                          )}
+                        </Box>
+                      </Paper>
+                    </Container>
+                  </Box>
+                )}
               </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <TextField
-                  select
-                  label="Type"
-                  value={shareIdeaForm.type || ''}
-                  onChange={e => setShareIdeaForm(prev => ({ ...prev, type: e.target.value }))}
-                  sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
-                  helperText="What kind of post is this?"
-                >
-                  <MenuItem value="Discussion">💬 Discussion</MenuItem>
-                  <MenuItem value="Project Update">📢 Project Update</MenuItem>
-                  <MenuItem value="Question">❓ Question</MenuItem>
-                  <MenuItem value="Idea">🧠 Idea</MenuItem>
-                  <MenuItem value="Other">🗂️ Other</MenuItem>
-                  <MenuItem value="Event"><EventIcon sx={{ fontSize: 18, mr: 1, verticalAlign: 'middle' }} />Event</MenuItem>
-                </TextField>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <TextField
-                  select
-                  label="Visibility"
-                  value={shareIdeaForm.visibility || 'public'}
-                  onChange={e => setShareIdeaForm(prev => ({ ...prev, visibility: e.target.value }))}
-                  sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
-                  helperText="Who can see this post?"
-                >
-                  <MenuItem value="public">🌍 Public</MenuItem>
-                  <MenuItem value="private">🔒 Private</MenuItem>
-                </TextField>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Title"
-                value={shareIdeaForm.title}
-                onChange={e => setShareIdeaForm(prev => ({ ...prev, title: e.target.value }))}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontWeight: 600, fontSize: '1.15rem' } }}
-                inputProps={{ maxLength: 100 }}
-                helperText="Give your post a clear, descriptive title."
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Tags"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value.replace(/\s/g, ''))}
-                onKeyDown={handleTagAdd}
-                onBlur={handleTagAdd}
-                placeholder="Add tags (e.g. #Fintech, #Africa, #StartupFunding)"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                helperText="Press Enter or comma to add a tag."
-                InputProps={{
-                  startAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
-                    <Chip
-                      key={tag}
-                      label={`#${tag}`}
-                      onDelete={() => handleTagDelete(tag)}
-                      sx={{ mx: 0.25 }}
-                    />
-                  ))
-                }}
-              />
-            </Grid>
-            {shareIdeaForm.type === 'Event' && (
-              <>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Location"
-                    value={shareIdeaForm.eventLocation || ''}
-                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocation: e.target.value }))}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    InputProps={{ startAdornment: <InputAdornment position="start"><RoomIcon color="action" /></InputAdornment> }}
-                    helperText="Where will the event take place? (e.g. Convention Center, City)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Location Link"
-                    value={shareIdeaForm.eventLocationLink || ''}
-                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocationLink: e.target.value }))}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    type="url"
-                    placeholder="https://maps.example.com/..."
-                    InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
-                    helperText="Paste a Google Maps or website link for the location."
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Start Date & Time"
-                    type="datetime-local"
-                    value={shareIdeaForm.eventStartDateTime || ''}
-                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventStartDateTime: e.target.value }))}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
-                    helperText="When does the event start?"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="End Date & Time"
-                    type="datetime-local"
-                    value={shareIdeaForm.eventEndDateTime || ''}
-                    onChange={e => setShareIdeaForm(prev => ({ ...prev, eventEndDateTime: e.target.value }))}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
-                    helperText="When does the event end?"
-                  />
-                </Grid>
-              </>
-            )}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Description"
-                multiline
-                rows={4}
-                value={shareIdeaForm.description}
-                onChange={e => setShareIdeaForm(prev => ({ ...prev, description: e.target.value }))}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                placeholder="What's on your mind? Share your thoughts..."
-                helperText="Describe your post in detail."
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<AttachFileIcon />}
-                sx={{
-                  flexShrink: 0,
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  borderColor: 'rgba(0, 0, 0, 0.12)',
-                  mb: 1,
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  bgcolor: '#f7f9fb',
-                  fontWeight: 600,
-                  color: 'primary.main',
-                  borderWidth: 2,
-                  borderStyle: 'dashed',
-                  borderColor: '#90caf9',
-                  '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' }
-                }}
-              >
-                {shareIdeaForm.attachment ? 'Change Media or File' : 'Add Media or File'}
-                <input
-                  type="file"
-                  accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                  hidden
-                  onChange={e => setShareIdeaForm(prev => ({ ...prev, attachment: e.target.files[0] }))}
-                />
-              </Button>
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                Share an image, PDF, or document with your post.
-              </Typography>
-              {shareIdeaForm.attachment && (
-                <Box sx={{
-                  mt: 2, mb: 1, p: 2, display: 'flex', alignItems: 'center', gap: 2,
-                  border: '1.5px solid #1976d2', borderRadius: 2, bgcolor: '#f3f8fd',
-                  boxShadow: 1, position: 'relative',
-                  minHeight: 56
-                 }}>
-                   {shareIdeaForm.attachment.type && shareIdeaForm.attachment.type.startsWith('image/') ? (
-                     <img
-                       src={URL.createObjectURL(shareIdeaForm.attachment)}
-                       alt="preview"
-                       style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
-                     />
-                   ) : (
-                     <AttachFileIcon sx={{ fontSize: 36, color: '#1976d2' }} />
-                   )}
-                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                     <Typography variant="body2" sx={{ fontWeight: 600, color: '#233876', wordBreak: 'break-all' }}>{shareIdeaForm.attachment.name}</Typography>
-                     <Typography variant="caption" color="text.secondary">
-                       {shareIdeaForm.attachment.type || 'File'}
-                     </Typography>
-                   </Box>
-                   <IconButton
-                     size="small"
-                     color="error"
-                     onClick={() => setShareIdeaForm(prev => ({ ...prev, attachment: null }))}
-                     sx={{ ml: 1 }}
-                   >
-                     <DeleteIcon />
-                   </IconButton>
-                 </Box>
-              )}
-            </Grid>
+            </Paper>
           </Grid>
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Button
-          onClick={() => setOpenShareIdea(false)}
-          sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ borderRadius: 2, textTransform: 'none', px: 3, fontWeight: 700, boxShadow: 'none', background: '#1976d2', '&:hover': { background: '#115293' } }}
-          onClick={handleSharePost}
-          disabled={postLoading}
-        >
-          {postLoading ? 'Posting...' : 'Post'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-    {/* Chat user menu */}
-    <Menu
-      anchorEl={chatMenuAnchorEl}
-      open={Boolean(chatMenuAnchorEl)}
-      onClose={() => setChatMenuAnchorEl(null)}
-    >
-      <MenuItem
-        onClick={() => {
-          // Delete from chat
-          setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
-          setChatMenuAnchorEl(null);
-          if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
+        </Grid>
+      </Container>
+      {/* Share Idea Dialog */}
+      <Dialog open={openShareIdea} onClose={() => setOpenShareIdea(false)} maxWidth="sm" fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(80,80,180,0.10)',
+            background: '#fff',
+          }
         }}
       >
-        Delete from Chat
-      </MenuItem>
-    </Menu>
-    {/* Show post success/error message */}
-    {postSuccess && (
-      <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
-        <Alert severity="success" onClose={() => setPostSuccess(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>{postSuccess}</Alert>
-      </Box>
-    )}
-    {postError && (
-      <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
-        <Alert severity="error" onClose={() => setPostError(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>{typeof postError === 'string' ? postError : JSON.stringify(postError)}</Alert>
-      </Box>
-    )}
-    {/* View Post Dialog */}
-    <Dialog open={!!viewPost} onClose={() => setViewPost(null)} maxWidth="sm" fullWidth
-      PaperProps={{ sx: { borderRadius: 4, boxShadow: 12, p: 0, background: '#fafdff' } }}>
-      <DialogTitle sx={{ fontWeight: 800, fontSize: 26, pb: 1.5, borderBottom: '1.5px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#f5faff' }}>
-        <VisibilityIcon color="primary" sx={{ fontSize: 32, mr: 1 }} /> View Post
-      </DialogTitle>
-      <DialogContent sx={{ pt: 3, pb: 2, px: 3 }}>
-        {viewPost && (
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Typography variant="h5" sx={{ fontWeight: 800, mb: 0 }}>{viewPost.title}</Typography>
-              <Chip label={viewPost.type} color="primary" sx={{ fontWeight: 700, fontSize: 15, borderRadius: 1, bgcolor: '#e3f2fd', color: '#1976d2', ml: 1 }} />
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Visibility</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.visibility}</Typography>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem', pb: 1, borderBottom: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+          Share Post
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Box component="form" sx={{ mt: 1 }}>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Avatar
+                    src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+                    alt="Profile"
+                    sx={{ width: 44, height: 44, bgcolor: 'primary.main', fontWeight: 700 }}
+                  />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'User'} {userProfile?.last_name || ''}</Typography>
+                    <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Member'}</Typography>
+                  </Box>
+                </Box>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Created At</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.created_at ? viewPost.created_at.split('T')[0] : ''}</Typography>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <TextField
+                    select
+                    label="Type"
+                    value={shareIdeaForm.type || ''}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, type: e.target.value }))}
+                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                    helperText="What kind of post is this?"
+                  >
+                    <MenuItem value="Discussion">💬 Discussion</MenuItem>
+                    <MenuItem value="Project Update">📢 Project Update</MenuItem>
+                    <MenuItem value="Question">❓ Question</MenuItem>
+                    <MenuItem value="Idea">🧠 Idea</MenuItem>
+                    <MenuItem value="Other">🗂️ Other</MenuItem>
+                    <MenuItem value="Event"><EventIcon sx={{ fontSize: 18, mr: 1, verticalAlign: 'middle' }} />Event</MenuItem>
+                  </TextField>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <TextField
+                    select
+                    label="Visibility"
+                    value={shareIdeaForm.visibility || 'public'}
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, visibility: e.target.value }))}
+                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                    helperText="Who can see this post?"
+                  >
+                    <MenuItem value="public">🌍 Public</MenuItem>
+                    <MenuItem value="private">🔒 Private</MenuItem>
+                  </TextField>
+                </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Tags</Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  {(() => {
-                    let tags = viewPost.tags;
-                    if (typeof tags === 'string') {
-                      tags = tags.split(',').map(t => t.trim()).filter(Boolean);
-                    }
-                    if (!Array.isArray(tags)) tags = [];
-                    return tags.length > 0 ? (
-                      tags.map((tag, idx) => (
-                        <Chip key={idx} label={`#${tag}`} size="small" sx={{ mr: 0.5, mt: 0.5, bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 700 }} />
-                      ))
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={shareIdeaForm.title}
+                  onChange={e => setShareIdeaForm(prev => ({ ...prev, title: e.target.value }))}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontWeight: 600, fontSize: '1.15rem' } }}
+                  inputProps={{ maxLength: 100 }}
+                  helperText="Give your post a clear, descriptive title."
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Tags"
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value.replace(/\s/g, ''))}
+                  onKeyDown={handleTagAdd}
+                  onBlur={handleTagAdd}
+                  placeholder="Add tags (e.g. #Fintech, #Africa, #StartupFunding)"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  helperText="Press Enter or comma to add a tag."
+                  InputProps={{
+                    startAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
+                      <Chip
+                        key={tag}
+                        label={`#${tag}`}
+                        onDelete={() => handleTagDelete(tag)}
+                        sx={{ mx: 0.25 }}
+                      />
+                    ))
+                  }}
+                />
+              </Grid>
+              {shareIdeaForm.type === 'Event' && (
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location"
+                      value={shareIdeaForm.eventLocation || ''}
+                      onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocation: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><RoomIcon color="action" /></InputAdornment> }}
+                      helperText="Where will the event take place? (e.g. Convention Center, City)"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location Link"
+                      value={shareIdeaForm.eventLocationLink || ''}
+                      onChange={e => setShareIdeaForm(prev => ({ ...prev, eventLocationLink: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      type="url"
+                      placeholder="https://maps.example.com/..."
+                      InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
+                      helperText="Paste a Google Maps or website link for the location."
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Start Date & Time"
+                      type="datetime-local"
+                      value={shareIdeaForm.eventStartDateTime || ''}
+                      onChange={e => setShareIdeaForm(prev => ({ ...prev, eventStartDateTime: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                      helperText="When does the event start?"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="End Date & Time"
+                      type="datetime-local"
+                      value={shareIdeaForm.eventEndDateTime || ''}
+                      onChange={e => setShareIdeaForm(prev => ({ ...prev, eventEndDateTime: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                      helperText="When does the event end?"
+                    />
+                  </Grid>
+                </>
+              )}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={shareIdeaForm.description}
+                  onChange={e => setShareIdeaForm(prev => ({ ...prev, description: e.target.value }))}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  placeholder="What's on your mind? Share your thoughts..."
+                  helperText="Describe your post in detail."
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<AttachFileIcon />}
+                  sx={{
+                    flexShrink: 0,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
+                    mb: 1,
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    bgcolor: '#f7f9fb',
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    borderWidth: 2,
+                    borderStyle: 'dashed',
+                    borderColor: '#90caf9',
+                    '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' }
+                  }}
+                >
+                  {shareIdeaForm.attachment ? 'Change Media or File' : 'Add Media or File'}
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    hidden
+                    onChange={e => setShareIdeaForm(prev => ({ ...prev, attachment: e.target.files[0] }))}
+                  />
+                </Button>
+                <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                  Share an image, PDF, or document with your post.
+                </Typography>
+                {shareIdeaForm.attachment && (
+                  <Box sx={{
+                    mt: 2, mb: 1, p: 2, display: 'flex', alignItems: 'center', gap: 2,
+                    border: '1.5px solid #1976d2', borderRadius: 2, bgcolor: '#f3f8fd',
+                    boxShadow: 1, position: 'relative',
+                    minHeight: 56
+                  }}>
+                    {shareIdeaForm.attachment.type && shareIdeaForm.attachment.type.startsWith('image/') ? (
+                      <img
+                        src={URL.createObjectURL(shareIdeaForm.attachment)}
+                        alt="preview"
+                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                      />
                     ) : (
-                      <Typography variant="body2" color="text.secondary">No tags</Typography>
-                    );
-                  })()}
-                </Box>
+                      <AttachFileIcon sx={{ fontSize: 36, color: '#1976d2' }} />
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#233876', wordBreak: 'break-all' }}>{shareIdeaForm.attachment.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {shareIdeaForm.attachment.type || 'File'}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => setShareIdeaForm(prev => ({ ...prev, attachment: null }))}
+                      sx={{ ml: 1 }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                )}
               </Grid>
             </Grid>
-            <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1976d2' }}>Description</Typography>
-              <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: 16 }}>{viewPost.description}</Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button
+            onClick={() => setOpenShareIdea(false)}
+            sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ borderRadius: 2, textTransform: 'none', px: 3, fontWeight: 700, boxShadow: 'none', background: '#1976d2', '&:hover': { background: '#115293' } }}
+            onClick={handleSharePost}
+            disabled={postLoading}
+          >
+            {postLoading ? 'Posting...' : 'Post'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Settings Snackbar */}
+      <Snackbar
+        open={settingsSnackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={settingsSnackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {settingsSnackbar.message}
+        </Alert>
+      </Snackbar>
+      {/* Notification Popup Dialog */}
+      <Dialog open={notificationPopupOpen} onClose={handleCloseNotificationPopup} maxWidth="xs" fullWidth
+        PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 20, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <NotificationsIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Notifications
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2, pb: 1, minHeight: 120 }}>
+          {notificationLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+              <CircularProgress size={28} />
             </Box>
-            {viewPost.type === 'Event' && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: '#f0f7fa', borderRadius: 2, border: '1px solid #b3e5fc', boxShadow: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0288d1', mb: 1 }}><EventIcon sx={{ mr: 1, verticalAlign: 'middle' }} />Event Details</Typography>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}><RoomIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocation || 'N/A'}</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}><LinkIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocationLink || 'N/A'}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />Start: {(() => {
-                    const dt = viewPost.eventStartDateTime;
-                    if (!dt) return 'N/A';
-                    const d = new Date(dt);
-                    if (isNaN(d)) return dt;
-                    return format(d, 'MMM dd, yyyy, hh:mm a');
-                  })()}</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />End: {(() => {
-                    const dt = viewPost.eventEndDateTime;
-                    if (!dt) return 'N/A';
-                    const d = new Date(dt);
-                    if (isNaN(d)) return dt;
-                    return format(d, 'MMM dd, yyyy, hh:mm a');
-                  })()}</Typography>
-                </Box>
+          ) : !communityNotifications || communityNotifications.length === 0 ? (
+            <Typography color="text.secondary" align="center" sx={{ py: 3 }}>No notifications yet.</Typography>
+          ) : (
+            <List>
+              {communityNotifications.map((notif) => (
+                <ListItem key={notif.id} alignItems="flex-start" sx={{ bgcolor: notif.read === 'No' ? '#e3f2fd' : 'inherit', borderRadius: 2, mb: 1, boxShadow: notif.read === 'No' ? 1 : 0 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: notif.type === 'comment' ? '#1976d2' : '#43a047' }}>
+                      {notif.user.first_name} {notif.user.last_name} {notif.message}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {notif.post.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                      {new Date(notif.created_at).toLocaleString()}
+                    </Typography>
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', justifyContent: 'space-between' }}>
+          <Button onClick={handleCloseNotificationPopup} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}>Close</Button>
+          {notificationHasMore && (
+            <Button onClick={handleViewMoreNotifications} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }} disabled={notificationLoading}>
+              View More
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Show post success/error message */}
+      {postSuccess && (
+        <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
+          <Alert severity="success" onClose={() => setPostSuccess(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center', borderRadius: 2, boxShadow: 3 }}>{postSuccess}</Alert>
+        </Box>
+      )}
+      {postError && (
+        <Box sx={{ position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 320, maxWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
+          <Alert severity="error" onClose={() => setPostError(null)} sx={{ width: '100%', textAlign: 'center', alignItems: 'center', borderRadius: 2, boxShadow: 3 }}>{typeof postError === 'string' ? postError : JSON.stringify(postError)}</Alert>
+        </Box>
+      )}
+
+      {/* View Post Dialog */}
+      <Dialog open={!!viewPost} onClose={() => setViewPost(null)} maxWidth="sm" fullWidth
+        PaperProps={{ sx: { borderRadius: 4, boxShadow: 12, p: 0, background: '#fafdff' } }}>
+        <DialogTitle sx={{ fontWeight: 800, fontSize: 26, pb: 1.5, borderBottom: '1.5px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#f5faff' }}>
+          <VisibilityIcon color="primary" sx={{ fontSize: 32, mr: 1 }} /> View Post
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2, px: 3 }}>
+          {viewPost && (
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, mb: 0 }}>{viewPost.title}</Typography>
+                <Chip label={viewPost.type} color="primary" sx={{ fontWeight: 700, fontSize: 15, borderRadius: 1, bgcolor: '#e3f2fd', color: '#1976d2', ml: 1 }} />
               </Box>
-            )}
-            {viewPost.attachment && (
-              <Box sx={{ mt: 2, p: 2, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={6}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Visibility</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.visibility}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Created At</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{viewPost.created_at ? viewPost.created_at.split('T')[0] : ''}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Tags</Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    {(() => {
+                      let tags = viewPost.tags;
+                      if (typeof tags === 'string') {
+                        tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+                      }
+                      if (!Array.isArray(tags)) tags = [];
+                      return tags.length > 0 ? (
+                        tags.map((tag, idx) => (
+                          <Chip key={idx} label={`#${tag}`} size="small" sx={{ mr: 0.5, mt: 0.5, bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 700 }} />
+                        ))
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">No tags</Typography>
+                      );
+                    })()}
+                  </Box>
+                </Grid>
+              </Grid>
+              <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1976d2' }}>Description</Typography>
+                <Typography variant="body1" sx={{ color: 'text.secondary', fontSize: 16 }}>{viewPost.description}</Typography>
+              </Box>
+              {viewPost.type === 'Event' && (
+                <Box sx={{ mb: 3, p: 2, bgcolor: '#f0f7fa', borderRadius: 2, border: '1px solid #b3e5fc', boxShadow: 0, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0288d1', mb: 1 }}><EventIcon sx={{ mr: 1, verticalAlign: 'middle' }} />Event Details</Typography>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}><RoomIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocation || 'N/A'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}><LinkIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />{viewPost.eventLocationLink || 'N/A'}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />Start: {(() => {
+                      const dt = viewPost.eventStartDateTime;
+                      if (!dt) return 'N/A';
+                      const d = new Date(dt);
+                      if (isNaN(d)) return dt;
+                      return format(d, 'MMM dd, yyyy, hh:mm a');
+                    })()}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}><EventIcon sx={{ fontSize: 18, mr: 0.5, color: '#0288d1' }} />End: {(() => {
+                      const dt = viewPost.eventEndDateTime;
+                      if (!dt) return 'N/A';
+                      const d = new Date(dt);
+                      if (isNaN(d)) return dt;
+                      return format(d, 'MMM dd, yyyy, hh:mm a');
+                    })()}</Typography>
+                  </Box>
+                </Box>
+              )}
+              {viewPost.attachment && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: '#f7fafd', borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box>
+                    {(() => {
+                      let fileUrl = '';
+                      let fileName = '';
+                      if (typeof viewPost.attachment === 'string') {
+                        fileUrl = viewPost.attachment;
+                        fileName = viewPost.attachment.split('/').pop();
+                      } else if (viewPost.attachment && viewPost.attachment.url) {
+                        fileUrl = viewPost.attachment.url;
+                        fileName = viewPost.attachment.name || viewPost.attachment.url.split('/').pop();
+                      } else if (viewPost.attachment && viewPost.attachment.name) {
+                        fileName = viewPost.attachment.name;
+                      }
+                      if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                        fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                        fileUrl = `http://localhost:8000/media/${fileUrl}`;
+                      }
+                      if (fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i)) {
+                        return (
+                          <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
+                            <img src={fileUrl} alt={fileName} style={{ maxWidth: 90, maxHeight: 90, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer', background: '#fff' }} />
+                          </a>
+                        );
+                      } else if (fileUrl) {
+                        return (
+                          <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 700 }}>{fileName || 'View Attachment'}</a>
+                        );
+                      } else if (fileName) {
+                        return <Typography variant="body2">{fileName}</Typography>;
+                      } else {
+                        return <Typography variant="body2">File attached</Typography>;
+                      }
+                    })()}
+                  </Box>
                   {(() => {
                     let fileUrl = '';
-                    let fileName = '';
                     if (typeof viewPost.attachment === 'string') {
                       fileUrl = viewPost.attachment;
-                      fileName = viewPost.attachment.split('/').pop();
                     } else if (viewPost.attachment && viewPost.attachment.url) {
                       fileUrl = viewPost.attachment.url;
-                      fileName = viewPost.attachment.name || viewPost.attachment.url.split('/').pop();
-                    } else if (viewPost.attachment && viewPost.attachment.name) {
-                      fileName = viewPost.attachment.name;
                     }
                     if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
                       fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
                       fileUrl = `http://localhost:8000/media/${fileUrl}`;
                     }
-                    if (fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i)) {
-                      return (
-                        <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
-                          <img src={fileUrl} alt={fileName} style={{ maxWidth: 90, maxHeight: 90, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer', background: '#fff' }} />
-                        </a>
-                      );
-                    } else if (fileUrl) {
-                      return (
-                        <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 700 }}>{fileName || 'View Attachment'}</a>
-                      );
-                    } else if (fileName) {
-                      return <Typography variant="body2">{fileName}</Typography>;
-                    } else {
-                      return <Typography variant="body2">File attached</Typography>;
-                    }
+                    return (
+                      <IconButton
+                        color="primary"
+                        component="a"
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ ml: 1 }}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    );
                   })()}
                 </Box>
-                {(() => {
-                  let fileUrl = '';
-                  if (typeof viewPost.attachment === 'string') {
-                    fileUrl = viewPost.attachment;
-                  } else if (viewPost.attachment && viewPost.attachment.url) {
-                    fileUrl = viewPost.attachment.url;
-                  }
-                  if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
-                    fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
-                    fileUrl = `http://localhost:8000/media/${fileUrl}`;
-                  }
-                  return (
-                    <IconButton
-                      color="primary"
-                      component="a"
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ ml: 1 }}
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                  );
-                })()}
-              </Box>
-            )}
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#f5faff' }}>
+          <Button onClick={() => setViewPost(null)} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Post Dialog */}
+      <Dialog open={!!editPost} onClose={() => setEditPost(null)} maxWidth="sm" fullWidth
+        PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EditIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Edit Post
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          {/* Attachment preview and upload */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Attachment:</Typography>
+            {(() => {
+              let fileUrl = '';
+              let fileName = '';
+              let showOld = false;
+              if (editPost && editPost.attachment && (!editForm.attachment || typeof editForm.attachment === 'string')) {
+                fileUrl = editPost.attachment;
+                fileName = typeof editPost.attachment === 'string' ? editPost.attachment.split('/').pop() : '';
+                showOld = true;
+                if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                  fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                  fileUrl = `http://localhost:8000/media/${fileUrl}`;
+                }
+              } else if (editForm.attachment && typeof editForm.attachment === 'string') {
+                fileUrl = editForm.attachment;
+                fileName = editForm.attachment.split('/').pop();
+                showOld = true;
+                if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
+                  fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
+                  fileUrl = `http://localhost:8000/media/${fileUrl}`;
+                }
+              } else if (editForm.attachment && editForm.attachment.name) {
+                fileName = editForm.attachment.name;
+              }
+              return (
+                <>
+                  {showOld && fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
+                    <Box sx={{ mt: 1 }}>
+                      <a href={fileUrl} download={fileName} style={{ display: 'inline-block' }}>
+                        <img src={fileUrl} alt={fileName} style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer' }} />
+                      </a>
+                      <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+                        <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName}</a>
+                      </Typography>
+                    </Box>
+                  )}
+                  {showOld && fileUrl && !fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
+                    <Box sx={{ mt: 1 }}>
+                      <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName || 'Download Attachment'}</a>
+                    </Box>
+                  )}
+                  {editForm.attachment && editForm.attachment.name && (
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="body2">New file: {editForm.attachment.name}</Typography>
+                      <IconButton size="small" color="error" onClick={() => setEditForm(f => ({ ...f, attachment: null }))}><DeleteIcon /></IconButton>
+                    </Box>
+                  )}
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<AttachFileIcon />}
+                    sx={{ mt: 2, borderRadius: 2, textTransform: 'none', borderColor: 'rgba(0, 0, 0, 0.12)', bgcolor: '#f7f9fb', fontWeight: 600, color: 'primary.main', borderWidth: 2, borderStyle: 'dashed', borderColor: '#90caf9', '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' } }}
+                  >
+                    {editForm.attachment ? 'Change Media or File' : 'Add Media or File'}
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                      hidden
+                      onChange={e => setEditForm(f => ({ ...f, attachment: e.target.files[0] }))}
+                    />
+                  </Button>
+                </>
+              );
+            })()}
           </Box>
-        )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#f5faff' }}>
-        <Button onClick={() => setViewPost(null)} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Close</Button>
-      </DialogActions>
-    </Dialog>
-    {/* Edit Post Dialog */}
-    <Dialog open={!!editPost} onClose={() => setEditPost(null)} maxWidth="sm" fullWidth
-      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
-      <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <EditIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Edit Post
-      </DialogTitle>
-      <DialogContent sx={{ pt: 3, pb: 2 }}>
-        {/* Attachment preview and upload */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Attachment:</Typography>
-          {(() => {
-            let fileUrl = '';
-            let fileName = '';
-            let showOld = false;
-            if (editPost && editPost.attachment && (!editForm.attachment || typeof editForm.attachment === 'string')) {
-              // Show previous attachment if no new file selected or if new is a string (old value)
-              fileUrl = editPost.attachment;
-              fileName = typeof editPost.attachment === 'string' ? editPost.attachment.split('/').pop() : '';
-              showOld = true;
-              if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
-                fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
-                fileUrl = `http://localhost:8000/media/${fileUrl}`;
-              }
-            } else if (editForm.attachment && typeof editForm.attachment === 'string') {
-              fileUrl = editForm.attachment;
-              fileName = editForm.attachment.split('/').pop();
-              showOld = true;
-              if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
-                fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
-                fileUrl = `http://localhost:8000/media/${fileUrl}`;
-              }
-            } else if (editForm.attachment && editForm.attachment.name) {
-              fileName = editForm.attachment.name;
-            }
-            return (
-              <>
-                {showOld && fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
-                  <Box sx={{ mt: 1 }}>
-                    <a href={fileUrl} download={fileName} style={{ display: 'inline-block' }}>
-                      <img src={fileUrl} alt={fileName} style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer' }} />
-                    </a>
-                    <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
-                      <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName}</a>
-                    </Typography>
-                  </Box>
-                )}
-                {showOld && fileUrl && !fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
-                  <Box sx={{ mt: 1 }}>
-                    <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName || 'Download Attachment'}</a>
-                  </Box>
-                )}
-                {editForm.attachment && editForm.attachment.name && (
-                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="body2">New file: {editForm.attachment.name}</Typography>
-                    <IconButton size="small" color="error" onClick={() => setEditForm(f => ({ ...f, attachment: null }))}><DeleteIcon /></IconButton>
-                  </Box>
-                )}
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<AttachFileIcon />}
-                  sx={{ mt: 2, borderRadius: 2, textTransform: 'none', borderColor: 'rgba(0, 0, 0, 0.12)', bgcolor: '#f7f9fb', fontWeight: 600, color: 'primary.main', borderWidth: 2, borderStyle: 'dashed', borderColor: '#90caf9', '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' } }}
-                >
-                  {editForm.attachment ? 'Change Media or File' : 'Add Media or File'}
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                    hidden
-                    onChange={e => setEditForm(f => ({ ...f, attachment: e.target.files[0] }))}
-                  />
-                </Button>
-              </>
-            );
-          })()}
-        </Box>
-        <TextField fullWidth label="Title" sx={{ my: 2 }} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 18 } }} />
-        {/* Type: read-only */}
-        <TextField fullWidth label="Type" sx={{ my: 2 }} value={editForm.type} InputProps={{ readOnly: true, sx: { borderRadius: 2, fontWeight: 600, fontSize: 16, bgcolor: '#f7f9fb' } }} />
-        {/* Visibility: select dropdown */}
-        <FormControl fullWidth sx={{ my: 2 }}>
+          <TextField fullWidth label="Title" sx={{ my: 2 }} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 18 } }} />
+          {/* Type: read-only */}
+          <TextField fullWidth label="Type" sx={{ my: 2 }} value={editForm.type} InputProps={{ readOnly: true, sx: { borderRadius: 2, fontWeight: 600, fontSize: 16, bgcolor: '#f7f9fb' } }} />
+          {/* Visibility: select dropdown */}
+          <FormControl fullWidth sx={{ my: 2 }}>
+            <TextField
+              select
+              label="Visibility"
+              value={editForm.visibility || 'public'}
+              onChange={e => setEditForm(f => ({ ...f, visibility: e.target.value }))}
+              sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+            >
+              <MenuItem value="public">🌍 Public</MenuItem>
+              <MenuItem value="private">🔒 Private</MenuItem>
+            </TextField>
+          </FormControl>
+          {/* Tags: chips input, pre-filled and editable */}
           <TextField
-            select
-            label="Visibility"
-            value={editForm.visibility || 'public'}
-            onChange={e => setEditForm(f => ({ ...f, visibility: e.target.value }))}
-            sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
-          >
-            <MenuItem value="public">🌍 Public</MenuItem>
-            <MenuItem value="private">🔒 Private</MenuItem>
-          </TextField>
-        </FormControl>
-        {/* Tags: chips input, pre-filled and editable */}
-        <TextField
-          fullWidth
-          label="Tags"
-          value={editForm.tagInput || ''}
-          onChange={e => setEditForm(f => ({ ...f, tagInput: e.target.value.replace(/\s/g, '') }))}
-          onKeyDown={e => {
-            if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+            fullWidth
+            label="Tags"
+            value={editForm.tagInput || ''}
+            onChange={e => setEditForm(f => ({ ...f, tagInput: e.target.value.replace(/\s/g, '') }))}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+                const value = (editForm.tagInput || '').trim().replace(/^#/, '');
+                if (value && !(editForm.tags || []).includes(value)) {
+                  setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
+                } else {
+                  setEditForm(f => ({ ...f, tagInput: '' }));
+                }
+                e.preventDefault();
+              }
+            }}
+            onBlur={e => {
               const value = (editForm.tagInput || '').trim().replace(/^#/, '');
               if (value && !(editForm.tags || []).includes(value)) {
                 setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
               } else {
                 setEditForm(f => ({ ...f, tagInput: '' }));
               }
-              e.preventDefault();
-            }
-          }}
-          onBlur={e => {
-            const value = (editForm.tagInput || '').trim().replace(/^#/, '');
-            if (value && !(editForm.tags || []).includes(value)) {
-              setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
-            } else {
-              setEditForm(f => ({ ...f, tagInput: '' }));
-            }
-          }}
-          placeholder="Add tags (e.g. #Fintech, #Startup)"
-          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-          helperText="Press Enter or comma to add a tag."
-          InputProps={{
-            startAdornment: (editForm.tags || []).map((tag, idx) => (
-              <Chip
-                key={tag}
-                label={`#${tag}`}
-                onDelete={() => setEditForm(f => ({ ...f, tags: (f.tags || []).filter(t => t !== tag) }))}
-                sx={{ mx: 0.25 }}
-              />
-            ))
-          }}
-        />
-        <TextField fullWidth label="Description" sx={{ my: 2 }} multiline rows={4} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontSize: 16 } }} />
-        {/* Event fields if type is Event, always shown and pre-filled */}
-        {editForm.type === 'Event' && (
-          <>
-            <TextField fullWidth label="Event Location" sx={{ my: 2 }} value={editForm.eventLocation || ''} onChange={e => setEditForm(f => ({ ...f, eventLocation: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
-            <TextField fullWidth label="Event Location Link" sx={{ my: 2 }} value={editForm.eventLocationLink || ''} onChange={e => setEditForm(f => ({ ...f, eventLocationLink: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
-            <TextField fullWidth label="Event Start Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventStartDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventStartDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
-            <TextField fullWidth label="Event End Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventEndDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventEndDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
-          </>
-        )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Button onClick={() => setEditPost(null)} variant="outlined" color="error" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
-        <Button onClick={handleEditPost} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Saving...' : 'Save'}</Button>
-      </DialogActions>
-    </Dialog>
-    {/* Delete Post Dialog */}
-    <Dialog open={!!deletePost} onClose={() => setDeletePost(null)} maxWidth="xs"
-      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
-      <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <DeleteIcon color="error" sx={{ fontSize: 28, mr: 1 }} /> Delete Post
-      </DialogTitle>
-      <DialogContent sx={{ pt: 3, pb: 2 }}>
-        <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>Are you sure you want to delete this post?</Typography>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>{deletePost?.title}</Typography>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Button onClick={() => setDeletePost(null)} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
-        <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
-      </DialogActions>
-    </Dialog>
-    {/* Notification Popup Dialog */}
-    <Dialog open={notificationPopupOpen} onClose={handleCloseNotificationPopup} maxWidth="xs" fullWidth
-      PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
-      <DialogTitle sx={{ fontWeight: 700, fontSize: 20, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <NotificationsIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Notifications
-      </DialogTitle>
-      <DialogContent sx={{ pt: 2, pb: 1, minHeight: 120 }}>
-        {notificationLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
-            <CircularProgress size={28} />
-          </Box>
-        ) : communityNotifications.length === 0 ? (
-          <Typography color="text.secondary" align="center" sx={{ py: 3 }}>No notifications yet.</Typography>
-        ) : (
-          <List>
-            {communityNotifications.map((notif) => (
-              <ListItem key={notif.id} alignItems="flex-start" sx={{ bgcolor: notif.read === 'No' ? '#e3f2fd' : 'inherit', borderRadius: 2, mb: 1, boxShadow: notif.read === 'No' ? 1 : 0 }}>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: notif.type === 'comment' ? '#1976d2' : '#43a047' }}>
-                    {notif.user.first_name} {notif.user.last_name} {notif.message}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {notif.post.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                    {new Date(notif.created_at).toLocaleString()}
-                  </Typography>
-                </Box>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider', justifyContent: 'space-between' }}>
-        <Button onClick={handleCloseNotificationPopup} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}>Close</Button>
-        {notificationHasMore && (
-          <Button onClick={handleViewMoreNotifications} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 3 }} disabled={notificationLoading}>
-            View More
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+            }}
+            placeholder="Add tags (e.g. #Fintech, #Startup)"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            helperText="Press Enter or comma to add a tag."
+            InputProps={{
+              startAdornment: (editForm.tags || []).map((tag, idx) => (
+                <Chip
+                  key={tag}
+                  label={`#${tag}`}
+                  onDelete={() => setEditForm(f => ({ ...f, tags: (f.tags || []).filter(t => t !== tag) }))}
+                  sx={{ mx: 0.25 }}
+                />
+              ))
+            }}
+          />
+          <TextField fullWidth label="Description" sx={{ my: 2 }} multiline rows={4} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontSize: 16 } }} />
+          {/* Event fields if type is Event, always shown and pre-filled */}
+          {editForm.type === 'Event' && (
+            <>
+              <TextField fullWidth label="Event Location" sx={{ my: 2 }} value={editForm.eventLocation || ''} onChange={e => setEditForm(f => ({ ...f, eventLocation: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
+              <TextField fullWidth label="Event Location Link" sx={{ my: 2 }} value={editForm.eventLocationLink || ''} onChange={e => setEditForm(f => ({ ...f, eventLocationLink: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
+              <TextField fullWidth label="Event Start Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventStartDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventStartDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
+              <TextField fullWidth label="Event End Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventEndDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventEndDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button onClick={() => setEditPost(null)} variant="outlined" color="error" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
+          <Button onClick={handleEditPost} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Saving...' : 'Save'}</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Post Dialog */}
+      <Dialog open={!!deletePost} onClose={() => setDeletePost(null)} maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DeleteIcon color="error" sx={{ fontSize: 28, mr: 1 }} /> Delete Post
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3, pb: 2 }}>
+          <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>Are you sure you want to delete this post?</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>{deletePost?.title}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button onClick={() => setDeletePost(null)} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
+          <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
