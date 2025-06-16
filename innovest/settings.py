@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authentication',
     'chat.apps.ChatConfig',
     'community_backend',
+     'settings',
   ]
 
 MIDDLEWARE = [
