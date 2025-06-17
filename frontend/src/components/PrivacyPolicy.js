@@ -7,25 +7,43 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { Link } from 'react-router-dom';
 
 const PrivacyPolicy = () => {
+  const theme = useTheme();
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));  // phone
+  const isMd = useMediaQuery(theme.breakpoints.down('md'));  // tablet
+
   return (
-    <Box sx={{ background: '#f8fafd', minHeight: '100vh', py: 8 }}>
-      <Container maxWidth="md">
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+    <Box sx={{ background: '#f8fafd', minHeight: '100vh', py: { xs: 4, sm: 6, md: 8 } }}>
+      <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3, md: 0 } }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 4, sm: 5, md: 6 } }}>
+          <Typography
+            variant={isSm ? "h5" : isMd ? "h4" : "h3"}
+            sx={{ fontWeight: 700, mb: 1, letterSpacing: 1 }}
+          >
             Privacy Policy
           </Typography>
-          <Typography variant="subtitle2" color="text.secondary">
+          <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: isSm ? 12 : 14 }}>
             Last updated: June 2, 2025
           </Typography>
         </Box>
 
-        <Paper elevation={0} sx={{ borderRadius: 3, p: { xs: 2, md: 4 }, border: '1px solid #e0e3ea' }}>
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            p: { xs: 2, sm: 3, md: 4 },
+            border: '1px solid #e0e3ea',
+            maxWidth: 900,
+            mx: 'auto',
+          }}
+        >
           {/* Introduction */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <ListItemIcon sx={{ minWidth: 40 }}>
@@ -42,7 +60,7 @@ const PrivacyPolicy = () => {
             By accessing or using our platform, you agree to the terms outlined in this Privacy Policy. For questions or concerns, you can reach us at innovest05@gmail.com.
           </Typography>
 
-          {/* Information Collection */}
+          {/* What Information We Collect */}
           <Typography variant="body1" sx={{ fontWeight: 700, mb: 1 }}>
             What Information We Collect
           </Typography>
@@ -57,12 +75,15 @@ const PrivacyPolicy = () => {
             ].map((text, i) => (
               <ListItem sx={{ py: 0 }} key={i}>
                 <ListItemIcon sx={{ minWidth: 24 }}>•</ListItemIcon>
-                <ListItemText primary={text} primaryTypographyProps={{ variant: 'body1', color: 'text.secondary', lineHeight: 1.8 }} />
+                <ListItemText
+                  primary={text}
+                  primaryTypographyProps={{ variant: 'body1', color: 'text.secondary', lineHeight: 1.8, fontSize: isSm ? 14 : 16 }}
+                />
               </ListItem>
             ))}
           </List>
 
-          {/* How We Use Information */}
+          {/* How We Use Your Data */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <ListItemIcon sx={{ minWidth: 40 }}>
               <CheckCircleOutlineIcon color="success" />
@@ -87,7 +108,10 @@ const PrivacyPolicy = () => {
             ].map((text, i) => (
               <ListItem sx={{ py: 0 }} key={i}>
                 <ListItemIcon sx={{ minWidth: 24 }}>•</ListItemIcon>
-                <ListItemText primary={text} primaryTypographyProps={{ variant: 'body1', color: 'text.secondary', lineHeight: 1.8 }} />
+                <ListItemText
+                  primary={text}
+                  primaryTypographyProps={{ variant: 'body1', color: 'text.secondary', lineHeight: 1.8, fontSize: isSm ? 14 : 16 }}
+                />
               </ListItem>
             ))}
           </List>
@@ -105,12 +129,16 @@ const PrivacyPolicy = () => {
             Our platform may link to third-party services like payment gateways, startup profiles, or external analytics tools. We do not control or take responsibility for the privacy practices or the content of these third parties. We encourage you to review the privacy policies of any third-party sites or services you interact with.
           </Typography>
 
-          {/* Optional Contact Section */}
+          {/* Contact Us */}
           <Typography variant="body1" sx={{ fontWeight: 700, mb: 1 }}>
             Contact Us
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.8 }}>
-            For privacy-related questions or data access requests, you can also visit our <Link to="/contact" style={{ color: '#ff715a', textDecoration: 'none' }}>Contact Us</Link> page or email us directly at innovest05@gmail.com. We respond to inquiries promptly in accordance with applicable data protection laws.
+            For privacy-related questions or data access requests, you can also visit our{' '}
+            <Link to="/contact" style={{ color: '#ff715a', textDecoration: 'none' }}>
+              Contact Us
+            </Link>{' '}
+            page or email us directly at innovest05@gmail.com. We respond to inquiries promptly in accordance with applicable data protection laws.
           </Typography>
         </Paper>
       </Container>

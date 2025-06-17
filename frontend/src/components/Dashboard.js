@@ -419,6 +419,16 @@ const Dashboard = () => {
   const [permitUserDetail, setPermitUserDetail] = useState(null);
   const [permitDeleteDialogOpen, setPermitDeleteDialogOpen] = useState(false);
   const [permitUserToDelete, setPermitUserToDelete] = useState(null);
+  // Add state for users dialog
+  const [openCompanyUsersDialog, setOpenCompanyUsersDialog] = useState(false);
+  const [companyUsers, setCompanyUsers] = useState([]);
+  const [companyUsersLoading, setCompanyUsersLoading] = useState(false);
+  const [companyUsersError, setCompanyUsersError] = useState('');
+  const [selectedUserProfile, setSelectedUserProfile] = useState(null);
+  const [openUserProfileDialog, setOpenUserProfileDialog] = useState(false);
+  const [selectedCompanyForUsers, setSelectedCompanyForUsers] = useState(null);
+  // Add state for visibility filter
+  const [ideaVisibilityFilter, setIdeaVisibilityFilter] = useState('');
 
   const fetchUserProfile = async () => {
     try {
@@ -1257,9 +1267,10 @@ const Dashboard = () => {
     // eslint-disable-next-line
   }, [communityPosts, ideaSearch, ideaStatusFilter, userProfile]);
 
-  const handleCommunitySearch = () => {
+  const handleCommunitySearch = (typeFilter = ideaStatusFilter, visibilityFilter = ideaVisibilityFilter) => {
     const search = ideaSearch.trim().toLowerCase();
-    const status = ideaStatusFilter;
+    const type = typeFilter;
+    const visibility = visibilityFilter;
     const myPosts = communityPosts.filter(post => {
       // Only show current user's posts
       const isMine = post.user && typeof post.user === 'object'
@@ -1269,9 +1280,11 @@ const Dashboard = () => {
       const matchesSearch = !search ||
         (post.title && post.title.toLowerCase().includes(search)) ||
         (post.type && post.type.toLowerCase().includes(search));
-      // Filter by status
-      const matchesStatus = !status || (post.status && post.status === status);
-      return isMine && matchesSearch && matchesStatus;
+      // Filter by type
+      const matchesType = !type || (post.type && post.type === type);
+      // Filter by visibility
+      const matchesVisibility = !visibility || (post.visibility && post.visibility === visibility);
+      return isMine && matchesSearch && matchesType && matchesVisibility;
     });
     setFilteredPosts(myPosts);
   };
@@ -1835,6 +1848,41 @@ const Dashboard = () => {
     setSelectedCompany(null);
   };
 
+  // Add handler to open users dialog
+  const handleOpenCompanyUsers = async (company) => {
+    setSelectedCompanyForUsers(company);
+    setOpenCompanyUsersDialog(true);
+    setCompanyUsersLoading(true);
+    setCompanyUsersError('');
+    try {
+      const payments = await companyService.getUserPayments(company.id);
+      // Group by user, show only users with at least one payment
+      const userMap = {};
+      for (const payment of payments) {
+        if (!userMap[payment.user.id]) {
+          userMap[payment.user.id] = {
+            user_id: payment.user.id,
+            user: payment.user, // User details are now included in the payment
+            payments: []
+          };
+        }
+        userMap[payment.user.id].payments.push(payment);
+      }
+      setCompanyUsers(Object.values(userMap));
+    } catch (err) {
+      setCompanyUsersError('Failed to load users');
+      setCompanyUsers([]);
+    } finally {
+      setCompanyUsersLoading(false);
+    }
+  };
+
+  // Add handler to open user profile dialog
+  const handleViewUserProfile = (user) => {
+    setSelectedUserProfile(user);
+    setOpenUserProfileDialog(true);
+  };
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -2140,9 +2188,9 @@ const Dashboard = () => {
                   <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
                     {selectedCompany && (
                       <Box sx={{ height: '100%', overflowY: 'auto' }}>
-                        <CompanyView 
-                          id={selectedCompany.id} 
-                          isDialog={true} 
+                        <CompanyView
+                          id={selectedCompany.id}
+                          isDialog={true}
                           onClose={handleCloseCompanyView}
                         />
                       </Box>
@@ -2153,14 +2201,28 @@ const Dashboard = () => {
                 {/* My Companies Tab */}
                 {value === 1 && (
                   <Box>
-                    <Box sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 4
-                    }}>
-                      <Typography variant="h6">
-                        My Companies
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6">My Companies</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconButton onClick={() => {
+                          // Refresh My Companies
+                          const fetchMyCompanies = async () => {
+                            try {
+                              const user = authService.getCurrentUser();
+                              const userId = user?.id || user?.user_id || user?.pk;
+                              if (!userId) return;
+                              const userCompanies = await companyService.getCompanies({ user: userId });
+                              setMyCompanies(userCompanies);
+                            } catch (err) {
+                              setMyCompanies([]);
+                            }
+                          };
+                          fetchMyCompanies();
+                        }}>
+                          <RefreshIcon sx={{ color: '#888' }} />
+                        </IconButton>
+                        <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
+                          {myCompanies.length} companies
                       </Typography>
                       <Button
                         variant="contained"
@@ -2175,6 +2237,7 @@ const Dashboard = () => {
                       >
                         Create Company
                       </Button>
+                      </Box>
                     </Box>
                     {myCompanies.length === 0 ? (
                       <Box sx={{
@@ -2219,20 +2282,66 @@ const Dashboard = () => {
                               <CardMedia
                                 component="img"
                                 sx={{ width: 200, height: 140 }}
-                                image={company.cover_image ? (company.cover_image.startsWith('http') ? company.cover_image : `/media/${company.cover_image}`) : 'https://placehold.co/400x200'}
+                                image={company.cover_image || `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`}
                                 alt={company.product_name}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`;
+                                }}
                               />
                               <CardContent sx={{ flex: 1 }}>
-                                <Typography variant="h6" gutterBottom>
+                                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   {company.product_name}
+                                  <IconButton
+                                    size="small"
+                                    sx={{
+                                      ml: 1,
+                                      p: 0.5,
+                                      borderRadius: '50%',
+                                      bgcolor:
+                                        company.company_status === 'Approved' ? '#4caf50' :
+                                        company.company_status === 'Pending' ? '#ff9800' :
+                                        company.company_status === 'Rejected' ? '#f44336' : '#bdbdbd',
+                                      border: '2px solid #fff',
+                                      boxShadow: 1,
+                                      width: 22,
+                                      height: 22,
+                                      minWidth: 22,
+                                      minHeight: 22,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: 'pointer',
+                                      transition: 'background 0.2s',
+                                      '&:hover': {
+                                        boxShadow: 3,
+                                        opacity: 0.8
+                                      }
+                                    }}
+                                    onClick={() => handleStatusClick(company)}
+                                    aria-label={company.company_status}
+                                  >
+                                    <span style={{
+                                      color: '#fff',
+                                      fontWeight: 700,
+                                      fontSize: '0.8rem',
+                                      lineHeight: 1,
+                                      userSelect: 'none',
+                                      letterSpacing: 0.5
+                                    }}>
+                                      {company.company_status === 'Approved' ? 'A' :
+                                       company.company_status === 'Pending' ? 'P' :
+                                       company.company_status === 'Rejected' ? 'R' : 'O'}
+                                    </span>
+                                  </IconButton>
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" paragraph>
                                   {company.quick_description}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                  <Button 
-                                    variant="outlined" 
-                                    size="small" 
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
                                     sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
                                     onClick={() => handleOpenCompanyView(company)}
                                   >
@@ -2241,27 +2350,13 @@ const Dashboard = () => {
                                   <Button variant="outlined" size="small" color="success" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleOpenTrackProgressDialog(company)}>Update</Button>
                                   <Button variant="outlined" size="small" color="error" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleDeleteClick(company)}>Delete</Button>
                                   <Button
-                                    variant="contained"
+                                    variant="outlined"
                                     size="small"
-                                    sx={{
-                                      fontWeight: 600,
-                                      borderRadius: 2,
-                                      textTransform: 'none',
-                                      background:
-                                        company.company_status === 'Approved' ? '#4caf50' :
-                                          company.company_status === 'Pending' ? '#ff9800' :
-                                            company.company_status === 'Rejected' ? '#f44336' : '#bdbdbd',
-                                      color: '#fff',
-                                      '&:hover': {
-                                        background:
-                                          company.company_status === 'Approved' ? '#388e3c' :
-                                            company.company_status === 'Pending' ? '#f57c00' :
-                                              company.company_status === 'Rejected' ? '#d32f2f' : '#757575',
-                                      },
-                                    }}
-                                    onClick={() => handleStatusClick(company)}
+                                    color="info"
+                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                                    onClick={() => handleOpenCompanyUsers(company)}
                                   >
-                                    Status
+                                    Users
                                   </Button>
                                   <Button variant="contained" size="small" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none', background: '#bdbdbd', color: '#fff', '&:hover': { background: '#757575' } }} onClick={() => handleOpenPermitDialog(company)}>Permit</Button>
                                 </Box>
@@ -2276,9 +2371,70 @@ const Dashboard = () => {
                 {/* Backed Tab */}
                 {value === 2 && (
                   <Box>
-                    <Typography variant="h6" gutterBottom>
-                      Backed Companies
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Backed Companies</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <IconButton onClick={() => {
+                        // Refresh Backed Companies
+                        setAllCompaniesLoading(true);
+                        setAllCompaniesError('');
+                        const fetchAllCompanies = async () => {
+                          try {
+                            const user = authService.getCurrentUser();
+                            const userId = user?.id || user?.user_id || user?.pk;
+                            if (!userId) return;
+                            const companies = await companyService.getCompanies({ company_status: '' });
+                            if (!companies || companies.length === 0) {
+                              setAllCompanies([]);
+                              return;
+                            }
+                            const backedCompanies = [];
+                            for (const company of companies) {
+                              try {
+                                const payments = await companyService.getUserPayments(company.id);
+                                if (!payments || payments.length === 0) continue;
+                                const paidPayments = payments.filter(payment => payment.payment_status === 'paid');
+                                if (paidPayments.length === 0) continue;
+                                const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
+                                const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
+                                const preMoneyValuation = currentTerm ? parseFloat(currentTerm.pre_money_valuation) : 0;
+                                const raiseAmount = currentTerm ? parseFloat(currentTerm.raise_amount) : 0;
+                                const totalPaidInvestment = paidPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+                                const equityPercentage = preMoneyValuation && raiseAmount ?
+                                  ((totalPaidInvestment / (preMoneyValuation + raiseAmount)) * 100) : 0;
+                                backedCompanies.push({
+                                  ...company,
+                                  payments: paidPayments,
+                                  preMoneyValuation: preMoneyValuation,
+                                  raiseAmount: raiseAmount,
+                                  equityPercentage: equityPercentage,
+                                  invested: totalPaidInvestment,
+                                  investedDate: paidPayments[0].payment_date,
+                                  investmentHistory: paidPayments.map(payment => ({
+                                    date: new Date(payment.payment_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                                    value: parseFloat(payment.amount)
+                                  }))
+                                });
+                              } catch (err) {
+                                continue;
+                              }
+                            }
+                            setAllCompanies(backedCompanies);
+                          } catch (err) {
+                            setAllCompaniesError('Failed to load companies');
+                          } finally {
+                            setAllCompaniesLoading(false);
+                          }
+                        };
+                        fetchAllCompanies();
+                      }}>
+                        <RefreshIcon sx={{ color: '#888' }} />
+                      </IconButton>
+                      <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
+                        {allCompanies.length} companies
                     </Typography>
+                      </Box>
+                    </Box>
                     {allCompaniesLoading ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
                         <CircularProgress />
@@ -2287,48 +2443,111 @@ const Dashboard = () => {
                       <Typography color="error.main">{allCompaniesError}</Typography>
                     ) : allCompanies.length > 0 ? (
                       <>
-                      <Grid container spacing={3}>
+                        <Grid container spacing={3}>
                           {allCompanies.slice(0, backedPage * COMPANIES_PER_PAGE).map((company) => (
-                          <Grid item xs={12} key={company.id}>
-                            <Card
-                              elevation={0}
-                              sx={{
-                                display: 'flex',
-                                borderRadius: 2,
-                                border: '1px solid',
-                                borderColor: 'rgba(0, 0, 0, 0.12)',
-                              }}
-                            >
-                              <CardMedia
-                                component="img"
-                                sx={{ width: 200, height: 140 }}
-                                  image={company.cover_image ? (company.cover_image.startsWith('http') ? company.cover_image : `/media/${company.cover_image}`) : 'https://placehold.co/400x200'}
+                            <Grid item xs={12} key={company.id}>
+                              <Card
+                                elevation={0}
+                                sx={{
+                                  display: 'flex',
+                                  borderRadius: 2,
+                                  border: '1px solid',
+                                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                                }}
+                              >
+                                <CardMedia
+                                  component="img"
+                                  sx={{ width: 200, height: 140 }}
+                                  image={company.cover_image || `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`}
                                   alt={company.product_name}
-                              />
-                              <CardContent sx={{ flex: 1 }}>
-                                <Typography variant="h6" gutterBottom>
+                                  onError={(e) => {
+                                    e.target.onerror = null; // Prevent infinite loop if default image fails
+                                    e.target.src = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`;
+                                  }}
+                                />
+                                <CardContent sx={{ flex: 1 }}>
+                                  <Typography variant="h6" gutterBottom>
                                     {company.product_name}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" paragraph>
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary" paragraph>
                                     {company.quick_description}
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
                                       onClick={() => handleViewCompanyDetails(company)}
-                                  >
-                                    View
-                                  </Button>
-                                </Box>
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
+                                    >
+                                      View
+                                    </Button>
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
                         {allCompanies.length > backedPage * COMPANIES_PER_PAGE && (
-                          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, alignItems: 'center', gap: 1 }}>
+                            <IconButton onClick={() => {
+                              // Refresh Backed Companies
+                              setAllCompaniesLoading(true);
+                              setAllCompaniesError('');
+                              const fetchAllCompanies = async () => {
+                                try {
+                                  const user = authService.getCurrentUser();
+                                  const userId = user?.id || user?.user_id || user?.pk;
+                                  if (!userId) return;
+                                  const companies = await companyService.getCompanies({ company_status: '' });
+                                  if (!companies || companies.length === 0) {
+                                    setAllCompanies([]);
+                                    return;
+                                  }
+                                  const backedCompanies = [];
+                                  for (const company of companies) {
+                                    try {
+                                      const payments = await companyService.getUserPayments(company.id);
+                                      if (!payments || payments.length === 0) continue;
+                                      const paidPayments = payments.filter(payment => payment.payment_status === 'paid');
+                                      if (paidPayments.length === 0) continue;
+                                      const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
+                                      const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
+                                      const preMoneyValuation = currentTerm ? parseFloat(currentTerm.pre_money_valuation) : 0;
+                                      const raiseAmount = currentTerm ? parseFloat(currentTerm.raise_amount) : 0;
+                                      const totalPaidInvestment = paidPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+                                      const equityPercentage = preMoneyValuation && raiseAmount ?
+                                        ((totalPaidInvestment / (preMoneyValuation + raiseAmount)) * 100) : 0;
+                                      backedCompanies.push({
+                                        ...company,
+                                        payments: paidPayments,
+                                        preMoneyValuation: preMoneyValuation,
+                                        raiseAmount: raiseAmount,
+                                        equityPercentage: equityPercentage,
+                                        invested: totalPaidInvestment,
+                                        investedDate: paidPayments[0].payment_date,
+                                        investmentHistory: paidPayments.map(payment => ({
+                                          date: new Date(payment.payment_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                                          value: parseFloat(payment.amount)
+                                        }))
+                                      });
+                                    } catch (err) {
+                                      continue;
+                                    }
+                                  }
+                                  setAllCompanies(backedCompanies);
+                                } catch (err) {
+                                  setAllCompaniesError('Failed to load companies');
+                                } finally {
+                                  setAllCompaniesLoading(false);
+                                }
+                              };
+                              fetchAllCompanies();
+                            }}>
+                              <RefreshIcon sx={{ color: '#888' }} />
+                            </IconButton>
+                            <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
+                              {allCompanies.length} companies
+                            </Typography>
                             <Button variant="contained" onClick={() => setBackedPage(backedPage + 1)}>
                               Load More Companies
                             </Button>
@@ -2413,14 +2632,32 @@ const Dashboard = () => {
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6">Community</Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconButton onClick={() => {
+                          // Refresh Community Posts
+                          const loadPosts = async () => {
+                            try {
+                              const currentUser = authService.getCurrentUser();
+                              if (currentUser?.access) {
+                                const posts = await fetchCommunityPosts(currentUser.access);
+                                setCommunityPosts(posts);
+                              }
+                            } catch (err) {}
+                          };
+                          loadPosts();
+                        }}>
+                          <RefreshIcon sx={{ color: '#888' }} />
+                        </IconButton>
+                        <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
+                          {communityPosts.length} posts
+                        </Typography>
                         {/* Notification Icon with Badge */}
                         <IconButton color="inherit" onClick={handleOpenNotificationPopup} sx={{ position: 'relative' }} aria-label="Show notifications">
                           <Badge badgeContent={unreadNotificationCount} color="error" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
                             <NotificationsIcon sx={{ fontSize: 28 }} />
                           </Badge>
                         </IconButton>
-                        <Button
+                        {/*<Button
                           variant="contained"
                           color="primary"
                           startIcon={<AddIcon sx={{ fontSize: 22 }} />}
@@ -2443,45 +2680,81 @@ const Dashboard = () => {
                           onClick={() => setOpenShareIdea(true)}
                         >
                           Share Post
-                        </Button>
+                        </Button>*/}
+                        <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontWeight: 700 }}
+                        onClick={() => setOpenShareIdea(true)}
+                      >
+                          + Share Post
+                      </Button>
                       </Box>
                     </Box>
                     {/* Search box with clear (cross) icon */}
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                       <TextField
                         size="small"
-                        placeholder="Search by title or type..."
+                        placeholder="Search by title or tags..."
                         value={ideaSearch}
                         onChange={e => setIdeaSearch(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleCommunitySearch(); }}
                         sx={{
-                          width: 400,
-                          background: '#fff',
-                          borderRadius: 8,
-                          boxShadow: '0 2px 8px rgba(60,64,67,0.15)',
-                          '& .MuiOutlinedInput-root': { borderRadius: 8, fontSize: 18, pl: 1 },
+                          width: 320,
+                          background: '#f7f9fb',
+                          borderRadius: 2,
+                          '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 16, pl: 1 },
                         }}
                         InputProps={{
-                          sx: { background: '#fff', borderRadius: 8, fontSize: 18 },
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              {ideaSearch && (
-                                <IconButton
-                                  size="small"
-                                  onClick={() => { setIdeaSearch(''); handleCommunitySearch(); }}
-                                  sx={{ mr: 0.5 }}
-                                  aria-label="Clear search"
-                                >
-                                  <CloseIcon sx={{ color: '#888', fontSize: 22 }} />
-                                </IconButton>
-                              )}
-                              <IconButton onClick={handleCommunitySearch} edge="end" size="large">
-                                <SearchIcon sx={{ color: '#4285F4', fontSize: 28 }} />
-                              </IconButton>
-                            </InputAdornment>
-                          )
+                          sx: { background: '#f7f9fb', borderRadius: 2, fontSize: 16 },
                         }}
                       />
+                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                        <Select
+                          value={ideaStatusFilter}
+                          displayEmpty
+                          onChange={e => { setIdeaStatusFilter(e.target.value); handleCommunitySearch(e.target.value, ideaVisibilityFilter); }}
+                          sx={{ borderRadius: 2, background: '#fff' }}
+                        >
+                          <MenuItem value="">All Types</MenuItem>
+                          <MenuItem value="Discussion">Discussion</MenuItem>
+                          <MenuItem value="Project Update">Project Update</MenuItem>
+                          <MenuItem value="Question">Question</MenuItem>
+                          <MenuItem value="Idea">Idea</MenuItem>
+                          <MenuItem value="Other">Other</MenuItem>
+                          <MenuItem value="Event">Event</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                        <Select
+                          value={ideaVisibilityFilter}
+                          displayEmpty
+                          onChange={e => { setIdeaVisibilityFilter(e.target.value); handleCommunitySearch(ideaStatusFilter, e.target.value); }}
+                          sx={{ borderRadius: 2, background: '#fff' }}
+                        >
+                          <MenuItem value="">All Visibility</MenuItem>
+                          <MenuItem value="public">Public</MenuItem>
+                          <MenuItem value="private">Private</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <Button
+                        variant="contained"
+                        sx={{
+                          background: '#233876',
+                          color: '#fff',
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          px: 3,
+                          boxShadow: 'none',
+                          textTransform: 'uppercase',
+                          height: 40,
+                          '&:hover': { background: '#1a285a' },
+                        }}
+                        startIcon={<SearchIcon />}
+                        onClick={() => handleCommunitySearch(ideaStatusFilter, ideaVisibilityFilter)}
+                      >
+                        Filters
+                      </Button>
                     </Box>
                     {/* My Posts Section (moved directly under search/filter) */}
                     {userProfile && (() => {
@@ -2489,13 +2762,14 @@ const Dashboard = () => {
                       const myPosts = filteredPosts;
                       return (
                         <Box sx={{ mb: 3, background: '#f7f9fb', borderRadius: 2, p: 2, border: '1px solid #e3e8ef' }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>
+                          {/*<Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>My Posts</Typography>*/}
                           <TableContainer>
                             <Table size="small">
                               <TableHead>
                                 <TableRow>
                                   <TableCell>Title</TableCell>
                                   <TableCell>Post Type</TableCell>
+                                  <TableCell>Visibility</TableCell>
                                   <TableCell>Post At</TableCell>
                                   <TableCell>Actions</TableCell>
                                 </TableRow>
@@ -2506,21 +2780,43 @@ const Dashboard = () => {
                                     <TableCell colSpan={4} align="center" style={{ color: '#999' }}>No posts found for this user.</TableCell>
                                   </TableRow>
                                 ) : myPosts
-                                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                                    .map(post => (
-                                  <TableRow key={post.id}>
-                                    <TableCell>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{post.title}</Typography>
-                                    </TableCell>
-                                    <TableCell>{post.type}</TableCell>
-                                    <TableCell>{post.created_at ? post.created_at.split('T')[0] : ''}</TableCell>
-                                    <TableCell>
-                                      <IconButton color="primary" onClick={() => setViewPost(post)}><VisibilityIcon /></IconButton>
-                                      <IconButton color="primary" onClick={() => { setEditPost(post); setEditForm({ title: post.title, type: post.type, description: post.description }); }}><EditIcon /></IconButton>
-                                      <IconButton color="error" onClick={() => setDeletePost(post)}><DeleteIcon /></IconButton>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                                  .map(post => (
+                                    <TableRow key={post.id}>
+                                      <TableCell>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{post.title}</Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Chip
+                                          label={post.type}
+                                          sx={{ bgcolor: '#f5f5f5', color: '#333', fontWeight: 600, borderRadius: 2, px: 1.5, fontSize: 14 }}
+                                          size="small"
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Chip
+                                          label={post.visibility}
+                                          sx={{
+                                            bgcolor: post.visibility === 'public' ? '#388e3c' : '#fbc02d',
+                                            color: '#fff',
+                                            fontWeight: 600,
+                                            borderRadius: 2,
+                                            px: 1.5,
+                                            fontSize: 14
+                                          }}
+                                          size="small"
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        {post.created_at ? format(new Date(post.created_at), 'MMM dd, yyyy hh:mm a') : ''}
+                                      </TableCell>
+                                      <TableCell>
+                                        <IconButton color="primary" onClick={() => setViewPost(post)}><VisibilityIcon /></IconButton>
+                                        <IconButton color="primary" onClick={() => { setEditPost(post); setEditForm({ title: post.title, type: post.type, description: post.description }); }}><EditIcon /></IconButton>
+                                        <IconButton color="error" onClick={() => setDeletePost(post)}><DeleteIcon /></IconButton>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
                               </TableBody>
                             </Table>
                           </TableContainer>
@@ -2894,7 +3190,7 @@ const Dashboard = () => {
                                           py: 1.5,
                                           borderRadius: 2,
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'black' : 'text.primary',
+                                          color: msg.self ? 'white' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
@@ -3782,9 +4078,9 @@ const Dashboard = () => {
               alignItems: 'center'
             }}>
               <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {selectedCompany.name || selectedCompany.product_name || 'Company'}
-              </Typography>
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Investment Tracking Dashboard
                 </Typography>
@@ -3827,7 +4123,7 @@ const Dashboard = () => {
                       {selectedCompany.payments && selectedCompany.payments.length > 0 ?
                         `$${selectedCompany.payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toLocaleString()}`
                         : 'N/A'}
-                  </Typography>
+                    </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {selectedCompany.payments && selectedCompany.payments.length > 0 ?
                         `Invested on ${new Date(selectedCompany.payments[0].payment_date).toLocaleDateString('en-US', {
@@ -3957,18 +4253,18 @@ const Dashboard = () => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Investment Performance</Typography>
                     <Box sx={{ height: 300 }}>
-                    <ResponsiveContainer width="100%" height="100%">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={selectedCompany.investmentHistory || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
                           <Bar dataKey="value" fill="#233876" radius={[6, 6, 6, 6]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Box>
                   </Paper>
-                  </Grid>
+                </Grid>
                 <Grid item xs={12} md={4}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Company KPIs</Typography>
@@ -4015,15 +4311,15 @@ const Dashboard = () => {
                         })}` : ''}
                     </Typography>
                   </Paper>
-                  </Grid>
-                  </Grid>
+                </Grid>
+              </Grid>
 
               {/* Updates and Documents */}
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Company Updates</Typography>
-                <List>
+                    <List>
                       {(selectedCompany.updates || []).map((update, index) => (
                         <ListItem key={index} sx={{ px: 0, py: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'flex-start', width: '100%' }}>
@@ -4033,37 +4329,37 @@ const Dashboard = () => {
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {update.text}
-                      </Typography>
+                              </Typography>
                               <Typography variant="caption" color="text.secondary">
                                 {update.date}
                               </Typography>
                             </Box>
                           </Box>
-                    </ListItem>
-                  ))}
-                </List>
+                        </ListItem>
+                      ))}
+                    </List>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Investment Documents</Typography>
-                <List>
+                    <List>
                       {(selectedCompany.documents || []).map((doc, index) => (
                         <ListItem key={index} sx={{ px: 0, py: 1 }}>
-                      <Button
+                          <Button
                             startIcon={<LinkIcon />}
-                        sx={{
-                          textTransform: 'none',
-                          color: 'primary.main',
-                          '&:hover': { textDecoration: 'underline' }
-                        }}
+                            sx={{
+                              textTransform: 'none',
+                              color: 'primary.main',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
                             href={doc.url}
-                      >
+                          >
                             {doc.name}
-                      </Button>
-                    </ListItem>
-                  ))}
-                </List>
+                          </Button>
+                        </ListItem>
+                      ))}
+                    </List>
                   </Paper>
                 </Grid>
               </Grid>
@@ -4805,23 +5101,87 @@ const Dashboard = () => {
           <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
         </DialogActions>
       </Dialog>
-      {/* Chat user menu */}
-                <Menu
-                  anchorEl={chatMenuAnchorEl}
-                  open={Boolean(chatMenuAnchorEl)}
-                  onClose={() => setChatMenuAnchorEl(null)}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      // Delete from chat
-                      setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
-                      setChatMenuAnchorEl(null);
-                      if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
-                    }}
-                  >
-                    Delete from Chat
-                  </MenuItem>
-                </Menu>
+      {/* Company Users Dialog */}
+      <Dialog open={openCompanyUsersDialog} onClose={() => setOpenCompanyUsersDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Company Users - {selectedCompanyForUsers?.product_name}</DialogTitle>
+        <DialogContent>
+          {companyUsersLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+              <CircularProgress />
+            </Box>
+          ) : companyUsersError ? (
+            <Typography color="error.main">{companyUsersError}</Typography>
+          ) : companyUsers.length === 0 ? (
+            <Typography color="text.secondary">No users found for this company.</Typography>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Contact</TableCell>
+                    <TableCell>Address</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {companyUsers.map(u => {
+                    // Find latest payment for status/amount
+                    const latestPayment = u.payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0];
+                    return (
+                      <TableRow key={u.user_id}>
+                        <TableCell>{u.user?.first_name} {u.user?.last_name}</TableCell>
+                        <TableCell>{u.user?.email}<br />{u.user?.phone}</TableCell>
+                        <TableCell>{u.user?.address || u.user?.city || '-'}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={latestPayment.payment_status}
+                            color={latestPayment.payment_status === 'paid' ? 'success' : 'warning'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {latestPayment.amount}
+                        </TableCell>
+                        <TableCell>
+                          <IconButton size="small" onClick={() => handleViewUserProfile(u.user)}>
+                            <VisibilityIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCompanyUsersDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+      {/* User Profile Dialog */}
+      <Dialog open={openUserProfileDialog} onClose={() => setOpenUserProfileDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>User Profile</DialogTitle>
+        <DialogContent>
+          {selectedUserProfile ? (
+            <Box>
+              <Typography variant="h6">{selectedUserProfile.first_name} {selectedUserProfile.last_name}</Typography>
+              <Typography>Email: {selectedUserProfile.email}</Typography>
+              <Typography>Phone: {selectedUserProfile.phone}</Typography>
+              <Typography>Address: {selectedUserProfile.address || selectedUserProfile.city || '-'}</Typography>
+              {/* Add more fields as needed */}
+            </Box>
+          ) : (
+            <Typography color="text.secondary">No user selected.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUserProfileDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

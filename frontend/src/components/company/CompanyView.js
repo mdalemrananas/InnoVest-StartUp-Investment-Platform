@@ -330,7 +330,9 @@ function CompanyDetails({ id: propId, isDialog = false }) {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundImage: `url(/images/company_covers/${company.cover_image || 'default-cover.jpg'})`,
+                        backgroundImage: company.cover_image 
+                            ? `url(${company.cover_image})`
+                            : `url(${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg)`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         opacity: 0.3,
@@ -398,7 +400,7 @@ function CompanyDetails({ id: propId, isDialog = false }) {
                 </Container>
             </Box>
 
-            <Container maxWidth="lg" sx={{ mt: -4, position: 'relative' }}>
+            <Container maxWidth="xl" sx={{ mt: -4, position: 'relative' }}>
                 <Paper
                     elevation={3}
                     sx={{

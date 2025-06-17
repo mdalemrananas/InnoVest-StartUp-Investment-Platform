@@ -17,8 +17,9 @@ const FaqIllustration = () => (
     <img
       src="/images/FAQ.png"
       alt="FAQ Illustration"
-      style={{ maxWidth: 320, marginBottom: 8 }}
+      style={{ width: '100%', maxWidth: 320, height: 'auto', marginBottom: 8 }}
     />
+    
   </Box>
 );
 
@@ -100,15 +101,15 @@ const Faq = () => {
       <Paper
         elevation={6}
         sx={{
-          maxWidth: 900,
+          maxWidth: 1200,
           mx: 'auto',
           borderRadius: 4,
-          p: { xs: 2, sm: 4 },
+          p: { xs: 2, sm: 3, md: 4 },
           background: '#232323',
           color: 'white',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
         }}
       >
+
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             {leftFaqs.map((faq, idx) => {

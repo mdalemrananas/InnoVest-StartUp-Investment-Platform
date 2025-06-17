@@ -110,7 +110,7 @@ const ResetPassword = () => {
         
         // Fill the rest randomly
         const allChars = uppercase + lowercase + numbers + special;
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 4; i++) {
             password += getRandomChar(allChars);
         }
         
@@ -138,7 +138,7 @@ const ResetPassword = () => {
         setSuccess('');
         setLoading(true);
 
-        if (passwordStrength.score < 4) {
+        if (passwordStrength.score < 3) {
             setError('Please choose a stronger password');
             setLoading(false);
             return;
@@ -306,7 +306,7 @@ const ResetPassword = () => {
                                         boxShadow: '0 6px 8px rgba(25, 118, 210, 0.35)',
                                     }
                                 }}
-                                disabled={loading || passwordStrength.score < 4}
+                                disabled={loading || passwordStrength.score < 3}
                             >
                                 {loading ? 'Resetting...' : 'Reset Password'}
                             </Button>

@@ -8,6 +8,8 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import axios from 'axios';
 import authService from '../services/authService';
+import Dialog from '@mui/material/Dialog';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const bannerImage = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80';
 
@@ -34,6 +36,7 @@ const Events = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState(null);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -73,7 +76,11 @@ const Events = () => {
         status: err.response?.status,
         data: err.response?.data
       });
-      setError(err.response?.data?.detail || err.message || 'Failed to fetch events');
+      const errMsg = err.response?.data?.detail || err.message || 'Failed to fetch events';
+      setError(errMsg);
+      if (errMsg === 'Given token not valid for any token type') {
+        setLoginDialogOpen(true);
+      }
       setLoading(false);
     }
   };
@@ -241,7 +248,7 @@ const Events = () => {
       <Container maxWidth={false} sx={{ px: { xs: 1, sm: 4, md: 8 }, py: 4 }}>
         {loading ? (
           <Typography align="center">Loading events...</Typography>
-        ) : error ? (
+        ) : error && error !== 'Given token not valid for any token type' ? (
           <Typography align="center" color="error">{error}</Typography>
         ) : (
           <Grid container spacing={3}>
@@ -414,6 +421,40 @@ const Events = () => {
           </Grid>
         )}
       </Container>
+
+      {/* Login Required Dialog */}
+      <Dialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+        maxWidth="xs"
+        PaperProps={{
+          sx: { borderRadius: 3, p: 2, textAlign: 'center', minWidth: 340 }
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+          <Box sx={{ mb: 2 }}>
+            <WarningAmberIcon sx={{ fontSize: 60, color: '#f7b928' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            Oops...! Something went Wrong !
+          </Typography>
+          <Typography sx={{ color: '#888', mb: 3 }}>
+            You Must be Login Before Explore this page
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{ background: '#2d3e70', color: '#fff', borderRadius: 2, px: 4, fontWeight: 700 }}
+            component={RouterLink}
+            to="/login"
+            onClick={() => {
+              setLoginDialogOpen(false);
+              setError(null);
+            }}
+          >
+            Login
+          </Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 };

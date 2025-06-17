@@ -46,7 +46,7 @@ import communityService from '../services/communityService';
 import chatService from '../services/chatService';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ErrorOutlineIcon from '@mui/icons-material/Delete';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const bannerImage = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80'; // Same as Events.js
 
@@ -86,6 +86,7 @@ const Community = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   const currentUsername = currentUser?.first_name && currentUser?.last_name
     ? `${currentUser.first_name} ${currentUser.last_name}`
@@ -186,13 +187,8 @@ const Community = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        //setError('Failed to load community posts. Please try again later.');
         setError('You Must be Login Before');
-        {/*setSnackbar({
-          open: true,
-          message: 'Failed to load community posts. Please try again later.',
-          severity: 'error'
-        });*/}
+        setLoginDialogOpen(true);
       } finally {
         setLoading(false);
       }
@@ -702,7 +698,7 @@ const Community = () => {
       </Container>
 
       <Container maxWidth="lg" sx={{ px: { xs: 0, sm: 2 } }}>
-        {error && (
+        {error && error !== 'You Must be Login Before' && (
           <Alert
             severity="error"
             sx={{
@@ -1276,12 +1272,50 @@ const Community = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={
+          snackbar.message === 'Comment added successfully!' || snackbar.message === 'Comment deleted successfully!'
+            ? { vertical: 'top', horizontal: 'center' }
+            : { vertical: 'bottom', horizontal: 'center' }
+        }
       >
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Login Required Dialog */}
+      <Dialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+        maxWidth="xs"
+        PaperProps={{
+          sx: { borderRadius: 3, p: 2, textAlign: 'center', minWidth: 340 }
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+          <Box sx={{ mb: 2 }}>
+            <WarningAmberIcon sx={{ fontSize: 60, color: '#f7b928' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            Oops...! Something went Wrong !
+          </Typography>
+          <Typography sx={{ color: '#888', mb: 3 }}>
+            You Must be Login Before Explore this page
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{ background: '#2d3e70', color: '#fff', borderRadius: 2, px: 4, fontWeight: 700 }}
+            component={RouterLink}
+            to="/login"
+            onClick={() => {
+              setLoginDialogOpen(false);
+              setError('');
+            }}
+          >
+            Login
+          </Button>
+        </Box>
+      </Dialog>
 
       {/* Add Dialog for Full Post View */}
       <Dialog

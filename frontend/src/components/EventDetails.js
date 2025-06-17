@@ -16,6 +16,9 @@ import AssignmentIcon from '@mui/icons-material/Assignment'; // 📝 Suitable fo
 import EventNoteIcon from '@mui/icons-material/EventNote'; // calendar icon
 import LockIcon from '@mui/icons-material/Lock';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
+import Dialog from '@mui/material/Dialog';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Link as RouterLink } from 'react-router-dom';
 
 
 const fallbackImage = 'https://img.freepik.com/free-vector/business-people-office_24908-57140.jpg';
@@ -55,6 +58,7 @@ const EventDetails = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const theme = useTheme();
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -75,7 +79,11 @@ const EventDetails = () => {
         }
       } catch (err) {
         console.error('Error fetching event details:', err);
-        setError(err.response?.data?.detail || err.message || 'Failed to fetch event details');
+        const errMsg = err.response?.data?.detail || err.message || 'Failed to fetch event details';
+        setError(errMsg);
+        if (errMsg === 'Given token not valid for any token type') {
+          setLoginDialogOpen(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -99,7 +107,11 @@ const EventDetails = () => {
   }, [event?.registration_end]);
 
   if (loading) return <Typography align="center">Loading...</Typography>;
-  if (error) return <Typography align="center" color="error">{error}</Typography>;
+  if (error && error === 'Given token not valid for any token type') {
+    // Show nothing, dialog will be shown below
+  } else if (error) {
+    return <Typography align="center" color="error">{error}</Typography>;
+  }
   if (!event) return null;
 
   return (
@@ -111,15 +123,14 @@ const EventDetails = () => {
             <Card sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, boxShadow: '0 4px 24px 0 rgba(80, 80, 180, 0.08)', bgcolor: '#fff' }}>
               {/* Image Carousel Placeholder */}
               <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', mb: 3 }}>
-  <CardMedia
-    component="img"
-    height="340"
-    image={event.cover_image || fallbackImage}
-    alt={event.title || 'Event'}
-    sx={{ borderRadius: 3, objectFit: 'cover', width: '100%' }}
-  />
-</Box>
-
+                <CardMedia
+                  component="img"
+                  height="340"
+                  image={event.cover_image || fallbackImage}
+                  alt={event.title || 'Event'}
+                  sx={{ borderRadius: 3, objectFit: 'cover', width: '100%' }}
+                />
+              </Box>
 
               <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, color: '#232946', fontSize: { xs: '1.5rem', md: '2.1rem' } }}>
                 {event.title || 'Untitled Event'}
@@ -180,52 +191,7 @@ const EventDetails = () => {
                 <IconButton sx={{ color: '#e60023', bgcolor: '#f5f7fa', '&:hover': { bgcolor: '#ffeaea', color: '#b71c1c' } }}><PinterestIcon /></IconButton>
                 <IconButton sx={{ color: '#ea4335', bgcolor: '#f5f7fa', '&:hover': { bgcolor: '#ffeaea', color: '#b71c1c' } }}><GoogleIcon /></IconButton>
               </Box>
-              {/* Comments Section */}
-              {/*<Typography variant="h6" sx={{ mt: 5, mb: 2, fontWeight: 700, color: '#232946' }}>
-                {String(comments.length).padStart(2, '0')} Comments
-              </Typography>
-              <List sx={{ mb: 3 }}>
-                {comments.map((c, i) => (
-                  <ListItem key={i} alignItems="flex-start" sx={{ px: 0 }}>
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: '#6C63FF', fontWeight: 700 }}>{c.name[0]}</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={<Typography sx={{ fontWeight: 600, color: '#232946' }}>{c.name}</Typography>}
-                      secondary={<>
-                        <Rating value={c.rating} readOnly size="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <Typography component="span" sx={{ color: '#555', fontSize: '0.98rem' }}>{c.message}</Typography>
-                      </>}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-              {/* Leave a Comment 
-              <Box sx={{ mt: 4, bgcolor: '#f7f9fb', borderRadius: 3, p: { xs: 2, md: 3 }, boxShadow: '0 2px 8px 0 rgba(80,80,180,0.04)' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: '#232946' }}>
-                  Leave A Comment
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
-                    <TextField label="Full Name" fullWidth size="small" variant="outlined" sx={{ bgcolor: '#fff', borderRadius: 2 }} />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField label="Email Address" fullWidth size="small" variant="outlined" sx={{ bgcolor: '#fff', borderRadius: 2 }} />
-                  </Grid>
-                  <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography sx={{ mr: 1, color: '#232946' }}>Your Rating:</Typography>
-                    <Rating value={0} size="small" />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField label="Type Here Message" fullWidth multiline minRows={3} variant="outlined" sx={{ bgcolor: '#fff', borderRadius: 2 }} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button variant="contained" sx={{ fontWeight: 700, px: 5, borderRadius: 3, fontSize: '1.1rem', bgcolor: '#6C63FF', '&:hover': { bgcolor: '#4B44B3' } }}>
-                      SUBMIT REVIEW
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>*/}
+
             </Card>
           </Grid>
           {/* Sidebar */}
@@ -244,7 +210,7 @@ const EventDetails = () => {
                     <CalendarTodayIcon sx={{ color: '#1976d2', fontSize: 20 }} />
                     <Typography variant="body2">End : <b>{event.end_at ? new Date(event.end_at).toLocaleString() : 'N/A'}</b></Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/*<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <AssignmentIcon sx={{ color: '#1976d2', fontSize: 20 }} />
                     <Typography variant="body2">Registration Form:{' '}
                       {event.registration_form ? (<Link
@@ -260,7 +226,7 @@ const EventDetails = () => {
                         <b>N/A</b>
                       )}
                     </Typography>
-                  </Box>
+                  </Box>*/}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LocationOnIcon sx={{ color: '#1976d2', fontSize: 20 }} />
                     <Typography variant="body2">Location : <b>{event.location || 'N/A'}</b></Typography>
@@ -288,13 +254,69 @@ const EventDetails = () => {
                       </Typography>
                     </Box>
                   )}
-
                 </Box>
+                {/* Registration Button */}
+                {event.registration_form && (
+                  <Button
+                    variant="contained"
+                    onClick={() => window.open(event.registration_form, '_blank')}
+                    sx={{
+                      bgcolor: '#111',
+                      color: '#fff',
+                      borderRadius: 2, // square shape
+                      px: 4,
+                      py: 1.5,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      boxShadow: 'none',
+                      fontSize: '1.1rem',
+                      mt: 2,
+                      mb: 2,
+                      width: { xs: '100%', sm: 'auto' },
+                      '&:hover': { bgcolor: '#333' },
+                    }}
+                  >
+                    Registration
+                  </Button>
+                )}
               </Card>
             </Box>
           </Grid>
         </Grid>
       </Container>
+      {/* Login Required Dialog */}
+      <Dialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+        maxWidth="xs"
+        PaperProps={{
+          sx: { borderRadius: 3, p: 2, textAlign: 'center', minWidth: 340 }
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+          <Box sx={{ mb: 2 }}>
+            <WarningAmberIcon sx={{ fontSize: 60, color: '#f7b928' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            Oops...! Something went Wrong !
+          </Typography>
+          <Typography sx={{ color: '#888', mb: 3 }}>
+            You Must be Login Before Explore this page
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{ background: '#2d3e70', color: '#fff', borderRadius: 2, px: 4, fontWeight: 700 }}
+            component={RouterLink}
+            to="/login"
+            onClick={() => {
+              setLoginDialogOpen(false);
+              setError(null);
+            }}
+          >
+            Login
+          </Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 };

@@ -27,7 +27,7 @@ import {
     Info 
 } from '@mui/icons-material';
 import authService from '../../services/authService';
-//import Layout from '../shared/Layout';
+import Layout from '../shared/Layout';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -116,7 +116,7 @@ const Register = () => {
         
         // Fill the rest randomly
         const allChars = uppercase + lowercase + numbers + special;
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 4; i++) {
             password += getRandomChar(allChars);
         }
         
@@ -138,37 +138,6 @@ const Register = () => {
             checkPasswordStrength(value);
         }
 
-        // Check if passwords match when either password field changes
-        if (name === 'password' || name === 'password2') {
-            if (name === 'password' && formData.password2) {
-                if (value !== formData.password2) {
-                    setValidationErrors(prev => ({
-                        ...prev,
-                        password2: 'Passwords do not match'
-                    }));
-                } else {
-                    setValidationErrors(prev => {
-                        const newErrors = { ...prev };
-                        delete newErrors.password2;
-                        return newErrors;
-                    });
-                }
-            } else if (name === 'password2' && formData.password) {
-                if (value !== formData.password) {
-                    setValidationErrors(prev => ({
-                        ...prev,
-                        password2: 'Passwords do not match'
-                    }));
-                } else {
-                    setValidationErrors(prev => {
-                        const newErrors = { ...prev };
-                        delete newErrors.password2;
-                        return newErrors;
-                    });
-                }
-            }
-        }
-
         // Clear validation error when user types
         if (validationErrors[name]) {
             setValidationErrors(prev => {
@@ -186,17 +155,7 @@ const Register = () => {
         setValidationErrors({});
         setLoading(true);
 
-        // Check if passwords match before submitting
-        if (formData.password !== formData.password2) {
-            setValidationErrors(prev => ({
-                ...prev,
-                password2: 'Passwords do not match'
-            }));
-            setLoading(false);
-            return;
-        }
-
-        if (passwordStrength.score < 4) {
+        if (passwordStrength.score < 3) {
             setError('Please choose a stronger password');
             setLoading(false);
             return;
@@ -211,16 +170,7 @@ const Register = () => {
             if (err.response?.data?.errors) {
                 setValidationErrors(err.response.data.errors);
             } else if (err.response?.data?.error) {
-                // Check if the error is about email already being registered
-                if (err.response.data.error.toLowerCase().includes('email') && 
-                    err.response.data.error.toLowerCase().includes('already')) {
-                    setValidationErrors(prev => ({
-                        ...prev,
-                        email: 'This email is already registered. Please use a different email or try logging in.'
-                    }));
-                } else {
-                    setError(err.response.data.error);
-                }
+                setError(err.response.data.error);
             } else if (err.response?.data?.message) {
                 setError(err.response.data.message);
             } else {
@@ -238,244 +188,246 @@ const Register = () => {
     };
 
     return (
-        <Box
-            sx={{
-                minHeight: 'calc(100vh - 128px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 4
-            }}
-        >
-            <Container component="main" maxWidth="sm">
-                <Paper 
-                    elevation={3} 
-                    sx={{ 
-                        p: 4,
-                        backgroundColor: 'white',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-                    }}
-                >
-                    <Typography component="h1" variant="h5" sx={{ mb: 3, textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
-                        Create Account
-                    </Typography>
+        <Layout>
+            <Box
+                sx={{
+                    minHeight: 'calc(100vh - 128px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 4
+                }}
+            >
+                <Container component="main" maxWidth="sm">
+                    <Paper 
+                        elevation={3} 
+                        sx={{ 
+                            p: 4,
+                            backgroundColor: 'white',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                        }}
+                    >
+                        <Typography component="h1" variant="h5" sx={{ mb: 3, textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
+                            Create Account
+                        </Typography>
 
-                    {error && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                            {error}
-                        </Alert>
-                    )}
-
-                    {success && (
-                        <Alert severity="success" sx={{ mb: 2 }}>
-                            {success}
-                        </Alert>
-                    )}
-
-                    <Box component="form" onSubmit={handleSubmit}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    label="First Name"
-                                    name="first_name"
-                                    value={formData.first_name}
-                                    onChange={handleChange}
-                                    error={!!validationErrors.first_name}
-                                    helperText={validationErrors.first_name}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: '8px',
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    label="Last Name"
-                                    name="last_name"
-                                    value={formData.last_name}
-                                    onChange={handleChange}
-                                    error={!!validationErrors.last_name}
-                                    helperText={validationErrors.last_name}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: '8px',
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                        </Grid>
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            label="Email Address"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            error={!!validationErrors.email}
-                            helperText={validationErrors.email}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '8px',
-                                }
-                            }}
-                        />
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            label="Password"
-                            name="password"
-                            type={showPassword ? 'text' : 'password'}
-                            value={formData.password}
-                            onChange={handleChange}
-                            error={!!validationErrors.password}
-                            helperText={validationErrors.password}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            edge="end"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '8px',
-                                }
-                            }}
-                        />
-
-                        {formData.password && (
-                            <Box sx={{ mt: 2, mb: 2 }}>
-                                <Typography variant="body2" color="text.secondary" gutterBottom>
-                                    Password Strength
-                                </Typography>
-                                <LinearProgress 
-                                    variant="determinate" 
-                                    value={(passwordStrength.score / 6) * 100}
-                                    sx={{
-                                        height: 8,
-                                        borderRadius: 4,
-                                        backgroundColor: '#e0e0e0',
-                                        '& .MuiLinearProgress-bar': {
-                                            backgroundColor: getStrengthColor(passwordStrength.score)
-                                        }
-                                    }}
-                                />
-                                <List dense>
-                                    {passwordStrength.feedback.map((feedback, index) => (
-                                        <ListItem key={index}>
-                                            <ListItemIcon>
-                                                {feedback.includes('should') || feedback.includes('Avoid') ? 
-                                                    <Cancel color="error" /> : 
-                                                    <CheckCircle color="success" />
-                                                }
-                                            </ListItemIcon>
-                                            <ListItemText primary={feedback} />
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            </Box>
+                        {error && (
+                            <Alert severity="error" sx={{ mb: 2 }}>
+                                {error}
+                            </Alert>
                         )}
 
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            label="Confirm Password"
-                            name="password2"
-                            type={showPassword2 ? 'text' : 'password'}
-                            value={formData.password2}
-                            onChange={handleChange}
-                            error={!!validationErrors.password2}
-                            helperText={validationErrors.password2}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowPassword2(!showPassword2)}
-                                            edge="end"
-                                        >
-                                            {showPassword2 ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
+                        {success && (
+                            <Alert severity="success" sx={{ mb: 2 }}>
+                                {success}
+                            </Alert>
+                        )}
+
+                        <Box component="form" onSubmit={handleSubmit}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        required
+                                        fullWidth
+                                        label="First Name"
+                                        name="first_name"
+                                        value={formData.first_name}
+                                        onChange={handleChange}
+                                        error={!!validationErrors.first_name}
+                                        helperText={validationErrors.first_name}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '8px',
+                                            }
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        required
+                                        fullWidth
+                                        label="Last Name"
+                                        name="last_name"
+                                        value={formData.last_name}
+                                        onChange={handleChange}
+                                        error={!!validationErrors.last_name}
+                                        helperText={validationErrors.last_name}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '8px',
+                                            }
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                label="Email Address"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                error={!!validationErrors.email}
+                                helperText={validationErrors.email}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '8px',
+                                    }
+                                }}
+                            />
+
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                label="Password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={formData.password}
+                                onChange={handleChange}
+                                error={!!validationErrors.password}
+                                helperText={validationErrors.password}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '8px',
+                                    }
+                                }}
+                            />
+
+                            {formData.password && (
+                                <Box sx={{ mt: 2, mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Password Strength
+                                    </Typography>
+                                    <LinearProgress 
+                                        variant="determinate" 
+                                        value={(passwordStrength.score / 6) * 100}
+                                        sx={{
+                                            height: 8,
+                                            borderRadius: 4,
+                                            backgroundColor: '#e0e0e0',
+                                            '& .MuiLinearProgress-bar': {
+                                                backgroundColor: getStrengthColor(passwordStrength.score)
+                                            }
+                                        }}
+                                    />
+                                    <List dense>
+                                        {passwordStrength.feedback.map((feedback, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemIcon>
+                                                    {feedback.includes('should') || feedback.includes('Avoid') ? 
+                                                        <Cancel color="error" /> : 
+                                                        <CheckCircle color="success" />
+                                                    }
+                                                </ListItemIcon>
+                                                <ListItemText primary={feedback} />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Box>
+                            )}
+
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                label="Confirm Password"
+                                name="password2"
+                                type={showPassword2 ? 'text' : 'password'}
+                                value={formData.password2}
+                                onChange={handleChange}
+                                error={!!validationErrors.password2}
+                                helperText={validationErrors.password2}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword2(!showPassword2)}
+                                                edge="end"
+                                            >
+                                                {showPassword2 ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '8px',
+                                    }
+                                }}
+                            />
+
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                <Tooltip title="Click to generate a strong password suggestion">
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => {
+                                            const suggestion = generatePasswordSuggestion();
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                password: suggestion,
+                                                password2: suggestion
+                                            }));
+                                            checkPasswordStrength(suggestion);
+                                        }}
+                                        startIcon={<Info />}
+                                        fullWidth
+                                    >
+                                        Generate Strong Password
+                                    </Button>
+                                </Tooltip>
+                            </Box>
+
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                sx={{ 
+                                    mt: 3, 
+                                    mb: 2,
+                                    backgroundColor: '#1976d2',
+                                    color: 'white',
+                                    padding: '12px 20px',
+                                    fontWeight: 600,
                                     borderRadius: '8px',
-                                }
-                            }}
-                        />
+                                    boxShadow: '0 4px 6px rgba(25, 118, 210, 0.25)',
+                                    '&:hover': {
+                                        backgroundColor: '#1565c0',
+                                        boxShadow: '0 6px 8px rgba(25, 118, 210, 0.35)',
+                                    }
+                                }}
+                                disabled={loading || passwordStrength.score < 3}
+                            >
+                                {loading ? 'Creating Account...' : 'Create Account'}
+                            </Button>
 
-                        <Box sx={{ mt: 2, mb: 2 }}>
-                            <Tooltip title="Click to generate a strong password suggestion">
-                                <Button
-                                    variant="outlined"
-                                    onClick={() => {
-                                        const suggestion = generatePasswordSuggestion();
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            password: suggestion,
-                                            password2: suggestion
-                                        }));
-                                        checkPasswordStrength(suggestion);
-                                    }}
-                                    startIcon={<Info />}
-                                    fullWidth
-                                >
-                                    Generate Strong Password
-                                </Button>
-                            </Tooltip>
+                            <Box sx={{ mt: 2, textAlign: 'center' }}>
+                                <MuiLink component={Link} to="/login" variant="body2" sx={{ color: '#1976d2' }}>
+                                    Already have an account? Sign in
+                                </MuiLink>
+                            </Box>
                         </Box>
-
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ 
-                                mt: 3, 
-                                mb: 2,
-                                backgroundColor: '#1976d2',
-                                color: 'white',
-                                padding: '12px 20px',
-                                fontWeight: 600,
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px rgba(25, 118, 210, 0.25)',
-                                '&:hover': {
-                                    backgroundColor: '#1565c0',
-                                    boxShadow: '0 6px 8px rgba(25, 118, 210, 0.35)',
-                                }
-                            }}
-                            disabled={loading || passwordStrength.score < 4}
-                        >
-                            {loading ? 'Creating Account...' : 'Create Account'}
-                        </Button>
-
-                        <Box sx={{ mt: 2, textAlign: 'center' }}>
-                            <MuiLink component={Link} to="/login" variant="body2" sx={{ color: '#1976d2' }}>
-                                Already have an account? Sign in
-                            </MuiLink>
-                        </Box>
-                    </Box>
-                </Paper>
-            </Container>
-        </Box>
+                    </Paper>
+                </Container>
+            </Box>
+        </Layout>
     );
 };
 
