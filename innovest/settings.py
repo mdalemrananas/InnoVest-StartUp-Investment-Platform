@@ -39,11 +39,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
     'authentication',
-    'chat.apps.ChatConfig',
+    'contact',
+    'companies',
+    'events',
+    'company_permission',
+    'backend',
+    'payments.apps.PaymentsConfig',
+    'ml_api',
+    'emails.apps.EmailsConfig',
+    'mailer',
+    'company_control',
+    'user_control',
+    'settings',
+    'chat',
     'community_backend',
-     'settings',
-  ]
+    'my_companies',
+    'my_companies_trackprogress',
+    'my_companies_permission',
+]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -162,6 +179,11 @@ EMAIL_HOST_USER = 'innovest05@gmail.com'
 EMAIL_HOST_PASSWORD = 'ltiyumrbggmgopbk'
 DEFAULT_FROM_EMAIL = 'innovest05@gmail.com'
 
+# SSLCommerz Settings
+SSLCOMMERZ_STORE_ID = 'innov6824dba3dae37'  # Replace with your store ID
+SSLCOMMERZ_STORE_PASS = 'innov6824dba3dae37@ssl'  # Replace with your store password
+SSLCOMMERZ_SANDBOX = True  # Set to False in production
+FRONTEND_URL = 'http://localhost:3000'  # Frontend URL for payment callbacks
 
 # Logging Configuration
 LOGGING = {
