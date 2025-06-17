@@ -4,8 +4,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+import requests
+from django.conf import settings
+import logging
+
 from .models import CommunityPost, CommunityComment, CommunityInterest
 from .serializers import CommunityPostSerializer, CommunityCommentSerializer, NotificationSerializer
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -64,28 +71,95 @@ class CommunityCommentView(APIView):
             serializer = CommunityCommentSerializer(comments, many=True)
             return Response(serializer.data)
 
+    def _check_hate_speech(self, text):
+        """
+        Check if the given text contains hate speech using the ML API.
+        Returns (is_hate_speech, confidence, message)
+        """
+        try:
+            # Get the ML API URL from settings or use a default
+            ml_api_url = getattr(settings, 'ML_API_URL', 'http://localhost:8000/api')
+            url = f"{ml_api_url}/hate-speech/detect/"
+            
+            # Make request to ML API
+            response = requests.post(
+                url,
+                json={"text": text},
+                timeout=2  # 2 second timeout
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                prediction = result.get('result', {})
+                is_hate = prediction.get('prediction') == 'hate_speech'
+                confidence = prediction.get('confidence', 0)
+                
+                # Consider it hate speech only if confidence is above threshold
+                confidence_threshold = getattr(settings, 'HATE_SPEECH_CONFIDENCE_THRESHOLD', 0.7)
+                if is_hate and confidence >= confidence_threshold:
+                    return True, confidence, "This comment appears to contain hate speech and was not posted."
+                return False, confidence, None
+            
+            logger.warning(f"ML API returned status {response.status_code}: {response.text}")
+            return False, 0, None
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error calling ML API: {str(e)}")
+            # If the ML API is down, we'll let the comment through but log the error
+            return False, 0, None
+
     def post(self, request, post_id):
         try:
             post = get_object_or_404(CommunityPost, id=post_id)
-            print(f"Creating comment for post {post_id} by user {request.user.id}")
-            print(f"Request data: {request.data}")
+            logger.info(f"Creating comment for post {post_id} by user {request.user.id}")
+            
+            # Get the comment text
+            comment_text = request.data.get('content', '').strip()
+            if not comment_text:
+                return Response(
+                    {"detail": "Comment text is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check for hate speech
+            is_hate_speech, confidence, message = self._check_hate_speech(comment_text)
+            
+            if is_hate_speech:
+                logger.warning(
+                    f"Blocked hate speech comment from user {request.user.id} "
+                    f"on post {post_id} (confidence: {confidence:.2f})"
+                )
+                return Response(
+                    {"detail": message or "This comment violates our community guidelines."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             # Add post_id to the request data
             data = request.data.copy()
             data['post'] = post_id
             
+            # Log that we're about to save the comment
+            logger.debug(f"Saving comment for post {post_id} by user {request.user.id}")
+            
             serializer = CommunityCommentSerializer(data=data)
             if serializer.is_valid():
                 comment = serializer.save(user=request.user, post=post)
-                print(f"Comment created successfully: {comment.id}")
+                logger.info(f"Comment {comment.id} created successfully for post {post_id}")
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
-                print(f"Serializer errors: {serializer.errors}")
+                logger.warning(
+                    f"Validation error creating comment for post {post_id} by user {request.user.id}: "
+                    f"{serializer.errors}"
+                )
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
         except Exception as e:
-            print(f"Error creating comment: {str(e)}")
+            logger.error(
+                f"Error creating comment for post {post_id} by user {request.user.id}: {str(e)}",
+                exc_info=True
+            )
             return Response(
-                {"detail": f"Error creating comment: {str(e)}"},
+                {"detail": "An error occurred while creating the comment. Please try again later."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
