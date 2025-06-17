@@ -154,17 +154,15 @@ class CompanyViewSet(viewsets.ModelViewSet):
                     'message': 'Authentication required'
                 }, status=status.HTTP_401_UNAUTHORIZED)
             
+            # Get all payments for this company (not just current user)
             payments = CompanyPayment.objects.filter(
-                company=company,
-                user=request.user
-            )
-            logger.info(f"Found {payments.count()} payments for user {request.user.id}")
+                company=company
+            ).select_related('user')  # Include user details in the query
+            
+            logger.info(f"Found {payments.count()} payments for company {company.id}")
             
             serializer = CompanyPaymentSerializer(payments, many=True)
-            return Response({
-                'status': 'success',
-                'payments': serializer.data
-            })
+            return Response(serializer.data)
         except Company.DoesNotExist:
             logger.error(f"Company not found with ID: {pk}")
             return Response({

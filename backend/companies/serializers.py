@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Company
 from .models import CompanyPayment
+from authentication.models import CustomUser
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +9,14 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'industry', 'location', 
                  'privacy_status', 'logo', 'cover_image', 'created_at']
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city']
+
 class CompanyPaymentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
     class Meta:
         model = CompanyPayment
         fields = [
