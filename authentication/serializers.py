@@ -35,8 +35,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'first_name', 'last_name',
-            'title', 'company', 'website', 'city', 'state', 'bio', 'profile_pic',
-            'user_type'
+            'title', 'company', 'website', 'address', 'city', 'state', 'country', 'bio', 'profile_pic',
+            'user_type', 'phone', 'dob'
         )
         extra_kwargs = {
             'email': {'required': True},
