@@ -1964,7 +1964,7 @@ const Dashboard = () => {
                                           py: 1.5,
                                           borderRadius: 2,
                                           background: msg.self ? 'primary.main' : 'background.paper',
-                                          color: msg.self ? 'white' : 'text.primary',
+                                          color: msg.self ? 'black' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
@@ -3150,6 +3150,23 @@ const Dashboard = () => {
           <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
         </DialogActions>
       </Dialog>
+      {/* Chat user menu */}
+          <Menu
+            anchorEl={chatMenuAnchorEl}
+            open={Boolean(chatMenuAnchorEl)}
+            onClose={() => setChatMenuAnchorEl(null)}
+          >
+            <MenuItem
+              onClick={() => {
+                // Delete from chat
+                setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
+                setChatMenuAnchorEl(null);
+                if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
+              }}
+            >
+              Delete from Chat
+            </MenuItem>
+          </Menu>
     </>
   );
 };

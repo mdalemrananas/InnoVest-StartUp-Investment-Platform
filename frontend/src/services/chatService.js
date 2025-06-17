@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/chat/messages/';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/chat/';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -39,7 +39,7 @@ class ChatService {
     // Get all users except current user
     async getUsers() {
         try {
-            console.log('Fetching users...');
+            console.log('Fetching users from:', `${API_URL}users/`);
             const response = await axiosInstance.get('users/');
             console.log('Users response:', response.data);
             
@@ -95,7 +95,7 @@ class ChatService {
     async markAsRead(messageId) {
         try {
             console.log('Marking message as read:', messageId);
-            const response = await axiosInstance.post(`${messageId}/mark_as_read/`);
+            const response = await axiosInstance.post(`messages/${messageId}/mark_as_read/`);
             console.log('Mark as read response:', response.data);
             return response.data;
         } catch (error) {
@@ -107,7 +107,9 @@ class ChatService {
     // Send a chat request
     async sendRequest(toUserId) {
         try {
-            const response = await axiosInstance.post('send_request/', { to_user: toUserId });
+            const response = await axiosInstance.post('send_request/', { 
+                to_user: toUserId 
+            });
             return response.data;
         } catch (error) {
             console.error('Error sending chat request:', error);
@@ -118,7 +120,10 @@ class ChatService {
     // Respond to a chat request (accept/reject)
     async respondRequest(requestId, action) {
         try {
-            const response = await axiosInstance.post('respond_request/', { request_id: requestId, action });
+            const response = await axiosInstance.post('respond_request/', { 
+                request_id: requestId, 
+                action_type: action 
+            });
             return response.data;
         } catch (error) {
             console.error('Error responding to chat request:', error);
@@ -140,7 +145,7 @@ class ChatService {
     // Delete a message
     async deleteMessage(messageId) {
         try {
-            const response = await axiosInstance.delete(`${messageId}/delete_message/`);
+            const response = await axiosInstance.delete(`messages/${messageId}/delete_message/`);
             return response.data;
         } catch (error) {
             console.error('Error deleting message:', error);
