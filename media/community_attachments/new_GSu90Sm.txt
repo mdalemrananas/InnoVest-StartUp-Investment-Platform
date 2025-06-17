@@ -1,0 +1,250 @@
+Machine Learning Project Prompt: Predict Startup Profitability from SQLite Data
+📋 Project Objective:
+Build a machine learning pipeline that:
+
+Loads startup data from a SQLite database
+
+Cleans and preprocesses the data (convert data types, handle missing values, encode categories)
+
+Trains a classification model to predict whether a startup is profitable
+
+Evaluates the model performance
+
+Provides a user-friendly interface (CLI or simple function) to predict profitability based on user input
+
+🗂 Database Info:
+SQLite Table Name: company_analysis
+
+Schema:
+
+sql
+Copy
+Edit
+CREATE TABLE company_analysis (
+  startup_name TEXT,
+  industry TEXT,
+  funding_rounds TEXT,
+  funding_amount_m_usd TEXT,
+  valuation_m_usd TEXT,
+  revenue_m_usd TEXT,
+  employees TEXT,
+  market_share_percent TEXT,
+  profitable TEXT, -- Target variable: 1 (profitable), 0 (not)
+  year_founded TEXT,
+  region TEXT,
+  exit_status TEXT
+);
+Note: All fields are stored as TEXT. Numeric fields must be converted to the appropriate types.
+
+🧮 Target Variable:
+profitable: Binary classification (1 = profitable, 0 = not profitable)
+
+🧾 Input Features (for prediction):
+industry
+
+funding_rounds
+
+funding_amount_m_usd
+
+valuation_m_usd
+
+revenue_m_usd
+
+employees
+
+market_share_percent
+
+year_founded
+
+region
+
+✅ What You Should Deliver:
+Data Loading:
+
+Connect to the SQLite database
+
+Load data from company_analysis
+
+Convert numeric fields (e.g., funding_amount_m_usd) from text to float/int
+
+Data Preprocessing:
+
+Handle missing values
+
+Encode categorical variables (e.g., one-hot or label encoding for industry, region)
+
+Convert target variable profitable to integer
+
+Optionally scale/normalize numeric features
+
+Modeling:
+
+Use a classification algorithm (e.g., RandomForestClassifier)
+
+Split data into train/test
+
+Train the model
+
+Evaluate using accuracy, precision, recall, F1-score, or ROC-AUC
+
+Prediction Interface:
+
+Create a function or simple CLI where a user can input the 9 fields listed above
+
+Return prediction: Is the startup likely to be profitable?
+
+Complete Python Code:
+
+All necessary imports
+
+Comments explaining each step
+
+Instructions on running the script (e.g., pip install commands, how to run)
+
+💡 Optional Project Extensions:
+Predict other outcomes like valuation_m_usd (regression) instead of profitability
+
+Perform clustering (e.g., K-Means) to segment startups by similar characteristics
+
+Visualize feature importance, correlations, or cluster segments
+
+Build a Streamlit or Flask web interface for user input and prediction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Machine Learning Project Prompt: Predict Startup Profitability from SQLite Data
+📋 Project Objective:
+Build a machine learning pipeline that:
+
+Loads startup data from a SQLite database
+
+Cleans and preprocesses the data (convert data types, handle missing values, encode categories)
+
+Trains a classification model to predict whether a startup is profitable
+
+Evaluates the model performance
+
+Provides a user-friendly interface (CLI or simple function) to predict profitability based on user input
+
+🗂 Database Info:
+SQLite Table Name: company_analysis
+
+Schema:
+
+sql
+Copy
+Edit
+CREATE TABLE company_analysis (
+  startup_name TEXT,
+  industry TEXT,
+  funding_rounds TEXT,
+  funding_amount_m_usd TEXT,
+  valuation_m_usd TEXT,
+  revenue_m_usd TEXT,
+  employees TEXT,
+  market_share_percent TEXT,
+  profitable TEXT, -- Target variable: 1 (profitable), 0 (not)
+  year_founded TEXT,
+  region TEXT,
+  exit_status TEXT
+);
+Note: All fields are stored as TEXT. Numeric fields must be converted to the appropriate types.
+
+🧮 Target Variable:
+profitable: Binary classification (1 = profitable, 0 = not profitable)
+
+🧾 Input Features (for prediction):
+industry
+
+funding_rounds
+
+funding_amount_m_usd
+
+valuation_m_usd
+
+revenue_m_usd
+
+employees
+
+market_share_percent
+
+year_founded
+
+region
+
+✅ What You Should Deliver:
+Data Loading:
+
+Connect to the SQLite database
+
+Load data from company_analysis
+
+Convert numeric fields (e.g., funding_amount_m_usd) from text to float/int
+
+Data Preprocessing:
+
+Handle missing values
+
+Encode categorical variables (e.g., one-hot or label encoding for industry, region)
+
+Convert target variable profitable to integer
+
+Optionally scale/normalize numeric features
+
+Modeling:
+
+Use a classification algorithm (e.g., RandomForestClassifier)
+
+Split data into train/test
+
+Train the model
+
+Evaluate using accuracy, precision, recall, F1-score, or ROC-AUC
+
+Prediction Interface:
+
+Create a function or simple CLI where a user can input the 9 fields listed above
+
+Return prediction: Is the startup likely to be profitable?
+
+Complete Python Code:
+
+All necessary imports
+
+Comments explaining each step
+
+Instructions on running the script (e.g., pip install commands, how to run)
+
+💡 Optional Project Extensions:
+Predict other outcomes like valuation_m_usd (regression) instead of profitability
+
+Perform clustering (e.g., K-Means) to segment startups by similar characteristics
+
+Visualize feature importance, correlations, or cluster segments
+
+Build a Streamlit or Flask web interface for user input and prediction
