@@ -3,6 +3,7 @@ from .models import Company
 from backend.models import CompanyFundraiseTerms, CompanyPayment
 import logging
 from decimal import Decimal
+from authentication.models import CustomUser
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,14 @@ class CompanyFundraiseTermsSerializer(serializers.ModelSerializer):
         model = CompanyFundraiseTerms
         fields = ['raise_amount', 'pre_money_valuation', 'max_investors', 'duration', 'investment_type']
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city']
+
 class CompanyPaymentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
     class Meta:
         model = CompanyPayment
         fields = [

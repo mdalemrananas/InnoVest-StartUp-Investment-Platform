@@ -221,10 +221,10 @@ class CompanyViewSet(viewsets.ModelViewSet):
                     'message': 'Authentication required'
                 }, status=status.HTTP_401_UNAUTHORIZED)
             
+            # Get all payments for this company (not just current user)
             payments = CompanyPayment.objects.filter(
-                company=company,
-                user=user
-            )
+                company=company
+            ).select_related('user')  # Include user details in the query
             
             serializer = CompanyPaymentSerializer(payments, many=True)
             return Response(serializer.data)
