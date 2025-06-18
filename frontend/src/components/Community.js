@@ -1365,25 +1365,49 @@ const Community = () => {
               }}>
                 {/* Post Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar
-                    src={users[selectedPost.user]?.avatar || 'https://placehold.co/40x40'}
-                    sx={{ width: 48, height: 48, mr: 2, border: '2px solid #e3e8ef', boxShadow: 1 }}
-                  />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#232946' }}>
-                      {users[selectedPost.user]?.name || 'Unknown User'}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Typography sx={{ color: '#666', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <AccessTimeRoundedIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />
-                        {new Date(selectedPost.created_at).toLocaleString()}
-                      </Typography>
-                      <Typography sx={{ color: '#1976d2', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 500 }}>
-                        <PublicRoundedIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />
-                        Public
-                      </Typography>
-                    </Box>
-                  </Box>
+                  {(() => {
+                    // Get user data either from the post's user object or from the users map
+                    let userData;
+                    if (selectedPost.user && typeof selectedPost.user === 'object') {
+                      // If selectedPost.user is an object (from serializer), use it directly
+                      userData = {
+                        name: selectedPost.user.first_name && selectedPost.user.last_name
+                          ? `${selectedPost.user.first_name} ${selectedPost.user.last_name}`
+                          : selectedPost.user.username || 'Unknown User',
+                        avatar: selectedPost.user.profile_picture || 'https://placehold.co/40x40'
+                      };
+                    } else {
+                      // If selectedPost.user is just an ID, use the users map
+                      const postUserId = String(selectedPost.user);
+                      userData = users[postUserId] || {
+                        name: 'Unknown User',
+                        avatar: 'https://placehold.co/40x40'
+                      };
+                    }
+                    return (
+                      <>
+                        <Avatar
+                          src={userData.avatar}
+                          sx={{ width: 48, height: 48, mr: 2, border: '2px solid #e3e8ef', boxShadow: 1 }}
+                        />
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#232946' }}>
+                            {userData.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography sx={{ color: '#666', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <AccessTimeRoundedIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />
+                              {new Date(selectedPost.created_at).toLocaleString()}
+                            </Typography>
+                            <Typography sx={{ color: '#1976d2', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 500 }}>
+                              <PublicRoundedIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />
+                              Public
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </>
+                    );
+                  })()}
                 </Box>
 
                 {/* Post Type Badge */}

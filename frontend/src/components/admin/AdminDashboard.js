@@ -471,7 +471,7 @@ function AdminDashboard() {
 
   // Update useEffect to fetch events when tab changes
   useEffect(() => {
-    if (value === 2) { // Events tab
+    if (value === 3) { // Events tab (index 3)
       fetchCompanyEvents();
     }
   }, [value]);
@@ -3866,7 +3866,23 @@ function AdminDashboard() {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => setOpenCreateEventDialog(true)}
+                          onClick={() => {
+                            // Reset the form data before opening the dialog
+                            setEventForm({
+                              title: '',
+                              description: '',
+                              coverImage: null,
+                              location: '',
+                              locationLink: '',
+                              categories: [],
+                              registration_form: '',
+                              publish: true,
+                              startAt: '',
+                              endAt: '',
+                              registrationEnd: ''
+                            });
+                            setOpenCreateEventDialog(true);
+                          }}
                         >
                           + Create Event
                         </Button>

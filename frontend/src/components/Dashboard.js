@@ -548,9 +548,15 @@ const Dashboard = () => {
               continue;
             }
 
-            const paidPayments = payments.filter(payment => payment.payment_status === 'paid');
+            // Filter payments by current user AND paid status
+            const paidPayments = payments.filter(payment => 
+              payment.payment_status === 'paid' && 
+              payment.user && 
+              (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
+            );
+            
             if (paidPayments.length === 0) {
-              console.log(`No paid payments found for company ${company.id}`);
+              console.log(`No paid payments found for current user in company ${company.id}`);
               continue;
             }
 
@@ -601,7 +607,7 @@ const Dashboard = () => {
       }
     };
     fetchAllCompanies();
-  }, []);
+  }, [user]);
 
   // Add useEffect for fetching users
   useEffect(() => {
@@ -2393,7 +2399,12 @@ const Dashboard = () => {
                               try {
                                 const payments = await companyService.getUserPayments(company.id);
                                 if (!payments || payments.length === 0) continue;
-                                const paidPayments = payments.filter(payment => payment.payment_status === 'paid');
+                                // Filter payments by current user AND paid status
+                                const paidPayments = payments.filter(payment => 
+                                  payment.payment_status === 'paid' && 
+                                  payment.user && 
+                                  (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
+                                );
                                 if (paidPayments.length === 0) continue;
                                 const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
                                 const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
@@ -2508,7 +2519,12 @@ const Dashboard = () => {
                                     try {
                                       const payments = await companyService.getUserPayments(company.id);
                                       if (!payments || payments.length === 0) continue;
-                                      const paidPayments = payments.filter(payment => payment.payment_status === 'paid');
+                                      // Filter payments by current user AND paid status
+                                      const paidPayments = payments.filter(payment => 
+                                        payment.payment_status === 'paid' && 
+                                        payment.user && 
+                                        (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
+                                      );
                                       if (paidPayments.length === 0) continue;
                                       const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
                                       const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
@@ -2555,9 +2571,32 @@ const Dashboard = () => {
                         )}
                       </>
                     ) : (
-                      <Typography color="text.secondary">
-                        No companies found.
-                      </Typography>
+                      <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        py: 8,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        boxShadow: 1
+                      }}>
+                        <img
+                          src="/images/company-illustration.jpg"
+                          alt="No backed companies"
+                          style={{
+                            width: '200px',
+                            height: 'auto',
+                            marginBottom: '24px',
+                            opacity: 0.8
+                          }}
+                        />
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No Backed Companies Yet
+                        </Typography>
+                        <Typography color="text.secondary" align="center" sx={{ maxWidth: '400px', mb: 3 }}>
+                          Start your investment journey by backing your first company. Discover promising startups and become part of their growth story.
+                        </Typography>
+                      </Box>
                     )}
                   </Box>
                 )}
