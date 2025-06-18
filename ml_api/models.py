@@ -5,7 +5,7 @@ User = get_user_model()
 
 class CompanyAnalysis(models.Model):
     """Model to store company analysis data for ML training and prediction"""
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='company_analyses')
+    #user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='company_analyses')
     startup_name = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=100)
     funding_rounds = models.CharField(max_length=100, blank=True, null=True)
