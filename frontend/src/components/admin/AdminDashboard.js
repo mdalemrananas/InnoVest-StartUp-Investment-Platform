@@ -3430,25 +3430,46 @@ function AdminDashboard() {
                                 </TableCell>
                                 <TableCell>
                                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    {user.profile_picture && (
-                                      <Avatar
-                                        src={`http://localhost:8000${user.profile_picture}`}
-                                        alt={`${user.first_name} ${user.last_name}`}
-                                        sx={{ mr: 2, width: 40, height: 40 }}
-                                      />
-                                    )}
-                                    {!user.profile_picture && (
-                                      <Avatar
-                                        sx={{
-                                          mr: 2,
-                                          width: 40,
-                                          height: 40,
-                                          bgcolor: 'primary.main'
-                                        }}
-                                      >
-                                        {user.first_name?.[0]}{user.last_name?.[0]}
-                                      </Avatar>
-                                    )}
+                                    {(() => {
+                                      console.log('User profile data:', {
+                                        id: user.id,
+                                        email: user.email,
+                                        hasProfilePic: !!(user.profile_picture || user.profile_pic),
+                                        profile_picture: user.profile_picture,
+                                        profile_pic: user.profile_pic,
+                                        allKeys: Object.keys(user)
+                                      });
+                                      
+                                      const profilePic = user.profile_picture || user.profile_pic;
+                                      const fullUrl = profilePic ? 
+                                        (profilePic.startsWith('http') ? profilePic : 
+                                        `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                                        null;
+
+                                      return fullUrl ? (
+                                        <Avatar
+                                          src={fullUrl}
+                                          alt={`${user.first_name || ''} ${user.last_name || ''}`.trim()}
+                                          sx={{ mr: 2, width: 40, height: 40 }}
+                                          onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = null; // This will make it fall through to the default avatar
+                                          }}
+                                        />
+                                      ) : (
+                                        <Avatar
+                                          sx={{
+                                            mr: 2,
+                                            width: 40,
+                                            height: 40,
+                                            bgcolor: 'primary.main',
+                                            color: 'white'
+                                          }}
+                                        >
+                                          {user.first_name?.[0]?.toUpperCase()}{user.last_name?.[0]?.toUpperCase()}
+                                        </Avatar>
+                                      );
+                                    })()}
                                     <Box>
                                       <Typography variant="subtitle2">
                                         {user.first_name} {user.last_name}
@@ -3929,7 +3950,7 @@ function AdminDashboard() {
                           '&:hover': { background: '#1a285a' }
                         }}
                         startIcon={<FilterAltIcon />}
-                        onClick={() => { setOpenAdvancedFilters(true); }}
+                        //onClick={() => { setOpenAdvancedFilters(true); }}
                       >
                         Filters
                       </Button>
@@ -3997,17 +4018,19 @@ function AdminDashboard() {
                                 </TableCell>
                                 <TableCell>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    {event.cover_image && (
-                                      <Avatar
-                                        src={eventForm.coverImage instanceof File
-                                          ? URL.createObjectURL(eventForm.coverImage)
-                                          : typeof eventForm.coverImage === 'string' && eventForm.coverImage.startsWith('http')
-                                            ? eventForm.coverImage
-                                            : `http://localhost:8000${eventForm.coverImage}`}
-                                        alt={event.title}
-                                        sx={{ width: 40, height: 40 }}
-                                      />
-                                    )}
+                                    <Avatar
+                                      src={event.cover_image 
+                                        ? (event.cover_image.startsWith('http')
+                                          ? event.cover_image
+                                          : `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${event.cover_image}`)
+                                        : `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/event_images/default_event_cover.jpg`}
+                                      alt={event.title}
+                                      sx={{ width: 40, height: 40 }}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/event_images/default_event_cover.jpg`;
+                                      }}
+                                    />
                                     <Box>
                                       <Typography variant="subtitle2">{event.title}</Typography>
                                       <Typography variant="body2" color="text.secondary">
@@ -4106,8 +4129,8 @@ function AdminDashboard() {
                 )}
                 {/* Community Tab (now value === 4) */}
                 {value === 4 && (
-                  <Box sx={{ width: '100%' }}>
-                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 1, sm: 3, md: 6 } }}>
+                  <Box>
+                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Community</Typography>
 
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -4146,7 +4169,7 @@ function AdminDashboard() {
                       </Button>*/}
                       </Box>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2, px: { xs: 1, sm: 3, md: 6 } }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                       <TextField
                         size="small"
                         placeholder="Search by title or tags..."
@@ -4198,7 +4221,7 @@ function AdminDashboard() {
                     ) : postError ? (
                       <Alert severity="error" sx={{ mx: { xs: 1, sm: 3, md: 6 } }}>{postError}</Alert>
                     ) : (
-                      <TableContainer sx={{ px: { xs: 1, sm: 3, md: 6 } }}>
+                      <TableContainer>
                         <Table>
                           <TableHead>
                             <TableRow>
@@ -4245,18 +4268,25 @@ function AdminDashboard() {
                                   </TableCell>
                                   <TableCell>
                                     {post.user ? (
-                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        {(console.log('User Object:', post.user), null)}
                                         <Avatar
-                                          src={post.user.profile_picture}
+                                          src={post.user?.profile_picture || 
+                                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/profile_pics/default_profile.png`}
                                           alt={`${post.user.first_name} ${post.user.last_name}`}
-                                          sx={{ width: 24, height: 24 }}
+                                          sx={{ width: 40, height: 40 }}
+                                          onError={(e) => {
+                                            console.error('Error loading profile image:', e.target.src);
+                                            e.target.onerror = null;
+                                            e.target.src = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/profile_pics/default_profile.png`;
+                                          }}
                                         />
-                                        <Typography variant="body2">
+                                        <Typography variant="subtitle2">
                                           {post.user.first_name} {post.user.last_name}
                                         </Typography>
                                       </Box>
                                     ) : (
-                                      <Typography variant="body2" color="text.secondary">
+                                      <Typography variant="subtitle2" color="text.secondary">
                                         Unknown User
                                       </Typography>
                                     )}
@@ -4394,11 +4424,37 @@ function AdminDashboard() {
                     <Grid container spacing={2}>
                       {/* Profile Picture */}
                       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                        <Avatar
-                          src={selectedUser.profile_picture}
-                          alt={`${selectedUser.first_name} ${selectedUser.last_name}`}
-                          sx={{ width: 100, height: 100 }}
-                        />
+                        {(() => {
+                          const profilePic = selectedUser.profile_picture || selectedUser.profile_pic;
+                          const fullUrl = profilePic ? 
+                            (profilePic.startsWith('http') ? profilePic : 
+                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                            null;
+
+                          return fullUrl ? (
+                            <Avatar
+                              src={fullUrl}
+                              alt={`${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim()}
+                              sx={{ width: 100, height: 100 }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = null;
+                              }}
+                            />
+                          ) : (
+                            <Avatar
+                              sx={{
+                                width: 100,
+                                height: 100,
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                fontSize: '2.5rem'
+                              }}
+                            >
+                              {selectedUser.first_name?.[0]?.toUpperCase()}{selectedUser.last_name?.[0]?.toUpperCase()}
+                            </Avatar>
+                          );
+                        })()}
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <Typography variant="subtitle2" color="text.secondary">First Name</Typography>
@@ -6643,9 +6699,15 @@ function AdminDashboard() {
                       position: 'relative'
                     }}>
                       <img
-                        src={`http://localhost:8000${selectedEvent.cover_image}`}
+                        src={selectedEvent.cover_image.startsWith('http') 
+                          ? selectedEvent.cover_image 
+                          : `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${selectedEvent.cover_image}`}
                         alt={selectedEvent.title}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/event_images/default_event_cover.jpg`;
+                        }}
                       />
                     </Box>
                   </Grid>
