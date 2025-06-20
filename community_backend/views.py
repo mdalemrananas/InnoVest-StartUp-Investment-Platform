@@ -32,7 +32,7 @@ class CommunityPostCreateView(APIView):
     def patch(self, request, *args, **kwargs):
         post_id = kwargs.get('pk')
         post = self.get_object(post_id)
-        serializer = CommunityPostSerializer(post, data=request.data, partial=True)
+        serializer = CommunityPostSerializer(post, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -45,7 +45,7 @@ class CommunityPostCreateView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, *args, **kwargs):
-        serializer = CommunityPostSerializer(data=request.data)
+        serializer = CommunityPostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

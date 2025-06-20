@@ -22,12 +22,22 @@ class CommunityPostSerializer(serializers.ModelSerializer):
 
     def get_user(self, obj):
         if obj.user:
+            request = self.context.get('request')
+            profile_picture_url = None
+            # Check both profile_pic and profile_picture fields
+            profile_image = getattr(obj.user, 'profile_pic', None) or getattr(obj.user, 'profile_picture', None)
+            if profile_image:
+                if request:
+                    profile_picture_url = request.build_absolute_uri(profile_image.url)
+                else:
+                    profile_picture_url = profile_image.url
+            
             return {
                 'id': obj.user.id,
                 'username': obj.user.username,
                 'first_name': obj.user.first_name,
                 'last_name': obj.user.last_name,
-                'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None
+                'profile_picture': profile_picture_url
             }
         return None
 
@@ -41,12 +51,22 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'created_at', 'updated_at']
 
     def get_user(self, obj):
+        profile_picture_url = None
+        # Check both profile_pic and profile_picture fields
+        profile_image = getattr(obj.user, 'profile_pic', None) or getattr(obj.user, 'profile_picture', None)
+        if profile_image:
+            request = self.context.get('request')
+            if request:
+                profile_picture_url = request.build_absolute_uri(profile_image.url)
+            else:
+                profile_picture_url = profile_image.url
+                
         return {
             'id': obj.user.id,
             'username': obj.user.username,
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
-            'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None
+            'profile_picture': profile_picture_url
         }
         
 
