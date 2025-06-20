@@ -196,7 +196,13 @@ function CompanyDetails({ id: propId, isDialog = false }) {
                 if (user && user.access) {
                     try {
                         const userPayments = await companyService.getUserPayments(id);
-                        const hasPaidPayment = userPayments.some(payment => payment.payment_status === 'paid');
+                        const hasPaidPayment = userPayments.some(payment => 
+                            payment.user && (
+                                Number(payment.user.id) === Number(user.id) || 
+                                Number(payment.user.user_id) === Number(user.id) || 
+                                Number(payment.user.pk) === Number(user.id)
+                            ) && payment.payment_status === 'paid'
+                        );
                         setUserHasPaidPayment(hasPaidPayment);
                     } catch (error) {
                         console.warn('Could not fetch user payments:', error);
