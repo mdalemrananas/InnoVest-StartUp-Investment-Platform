@@ -1595,8 +1595,16 @@ const Community = () => {
                   boxShadow: 1
                 }}>
                   <Avatar
-                    src={currentUser?.profile_picture || currentUser?.user?.profile_picture || 'https://placehold.co/40x40'}
+                    src={currentUser?.profile_picture || 
+                         (currentUser?.profile_pic ? 
+                           `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${currentUser.profile_pic}` : 
+                           'https://placehold.co/40x40')}
+                    alt={`${currentUser?.first_name || 'User'}`}
                     sx={{ width: 40, height: 40 }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://placehold.co/40x40';
+                    }}
                   />
                   <TextField
                     fullWidth
@@ -1642,6 +1650,7 @@ const Community = () => {
                 {/* Comments List */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {(selectedPost.comments || []).map((comment) => {
+                    console.log('Comment object:', comment);
                     const commentUserId = comment.user?.id || comment.user_id;
                     const currentUserId = currentUser?.user?.id || currentUser?.id;
                     const isCommentOwner = String(commentUserId) === String(currentUserId);
@@ -1661,10 +1670,38 @@ const Community = () => {
                           }
                         }}
                       >
-                        <Avatar
-                          src={comment.user?.profile_picture || 'https://placehold.co/40x40'}
-                          sx={{ width: 40, height: 40 }}
-                        />
+                        {(() => {
+                          const user = comment.user || {};
+                          const profilePic = user.profile_picture || user.profile_pic;
+                          const fullUrl = profilePic ? 
+                            (profilePic.startsWith('http') ? profilePic : 
+                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                            null;
+                            
+                          console.log('Avatar debug:', {
+                            userId: user.id,
+                            hasProfilePic: !!profilePic,
+                            profilePic,
+                            fullUrl,
+                            user: user
+                          });
+                          
+                          return (
+                            <Avatar
+                              key={`avatar-${user.id}`}
+                              src={fullUrl || 'https://placehold.co/40x40'}
+                              alt={user.first_name ? 
+                                   `${user.first_name} ${user.last_name || ''}`.trim() : 
+                                   'User'}
+                              sx={{ width: 40, height: 40 }}
+                              onError={(e) => {
+                                console.error('Error loading profile picture:', e.target.src);
+                                e.target.onerror = null;
+                                e.target.src = 'https://placehold.co/40x40';
+                              }}
+                            />
+                          );
+                        })()}
                         <Box sx={{ flex: 1 }}>
                           <Box sx={{
                             display: 'flex',
