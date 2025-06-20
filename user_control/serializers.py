@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'password', 'first_name', 'last_name', 'user_type', 
                  'is_staff', 'title', 'company', 'website', 'city', 'state', 'bio',
                  'phone', 'position', 'address', 'country', 'is_active', 'email_verified',
-                 'verification_token')
+                 'verification_token', 'profile_picture', 'profile_pic')
         extra_kwargs = {
             'password': {'write_only': True},
             'is_active': {'read_only': True},
