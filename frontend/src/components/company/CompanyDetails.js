@@ -193,12 +193,31 @@ function CompanyDetails() {
                 if (user && user.access) {
                     try {
                         const userPayments = await companyService.getUserPayments(id);
-                        const hasPaidPayment = userPayments.some(payment => payment.payment_status === 'paid');
+                        console.log('User payments for company:', userPayments);
+                        console.log('Current user ID:', user.id);
+                        
+                        // Check if the current user specifically has a paid payment for this company
+                        const hasPaidPayment = userPayments.some(payment => {
+                            console.log('Checking payment:', payment);
+                            const isCurrentUser = payment.user && (
+                                Number(payment.user.id) === Number(user.id) || 
+                                Number(payment.user.user_id) === Number(user.id) || 
+                                Number(payment.user.pk) === Number(user.id)
+                            );
+                            const isPaid = payment.payment_status === 'paid';
+                            console.log(`Payment user: ${JSON.stringify(payment.user)}, current user: ${user.id} (${typeof user.id}), isCurrentUser: ${isCurrentUser}, payment_status: ${payment.payment_status}, isPaid: ${isPaid}`);
+                            return isCurrentUser && isPaid;
+                        });
+                        
+                        console.log('Final hasPaidPayment result:', hasPaidPayment);
                         setUserHasPaidPayment(hasPaidPayment);
                     } catch (error) {
                         console.warn('Could not fetch user payments:', error);
                         setUserHasPaidPayment(false);
                     }
+                } else {
+                    // If user is not logged in, set to false
+                    setUserHasPaidPayment(false);
                 }
 
                 // Fetch permission if user is logged in
@@ -287,8 +306,9 @@ function CompanyDetails() {
             setLoginPromptOpen(true);
             return;
         }
-        // Always navigate to the investment flow with the company id
-        navigate(`/invest/company/${company.id}`);
+        // Use the URL parameter 'id' instead of company.id to ensure correct company ID
+        console.log('Deal button clicked - using company ID from URL:', id);
+        navigate(`/invest/company/${id}`);
     };
 
     if (loading) {
@@ -1134,17 +1154,29 @@ function CompanyDetails() {
                                                         )}
                                                     </tbody>
                                                 </Box>
-                                                {user && user.user_type !== 'admin' && user.id !== company.user_id && !userHasPaidPayment && (
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        fullWidth
-                                                        size="large"
-                                                        onClick={handleDealClick}
-                                                    >
-                                                        Deal
-                                                    </Button>
-                                                )}
+                                                {(() => {
+                                                    const shouldShowDealButton = user && 
+                                                        user.user_type !== 'admin' && 
+                                                        Number(user.id) !== Number(company.user_id) && 
+                                                        !userHasPaidPayment;
+                                                    console.log('Deal button condition check:', {
+                                                        user: user ? { id: user.id, user_type: user.user_type } : null,
+                                                        company_user_id: company.user_id,
+                                                        userHasPaidPayment,
+                                                        shouldShowDealButton
+                                                    });
+                                                    return shouldShowDealButton && (
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            fullWidth
+                                                            size="large"
+                                                            onClick={handleDealClick}
+                                                        >
+                                                            Deal
+                                                        </Button>
+                                                    );
+                                                })()}
                                             </CardContent>
                                         </Card>
                                     ) : (
