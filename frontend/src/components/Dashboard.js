@@ -89,6 +89,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useNavigate } from 'react-router-dom';
 import companyService from '../services/companyService';
+import userService from '../services/userService';
 import CompanyView from './company/CompanyView';
 import companyPermissionService from '../services/companyPermissionService';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -429,6 +430,53 @@ const Dashboard = () => {
   const [selectedCompanyForUsers, setSelectedCompanyForUsers] = useState(null);
   // Add state for visibility filter
   const [ideaVisibilityFilter, setIdeaVisibilityFilter] = useState('');
+  
+  // Contact founder handler
+  const handleContactFounder = async (company) => {
+    try {
+      setLoading(true);
+      
+      // Get the company details to find the owner
+      const companyDetails = await companyService.getCompanyById(company.id);
+      const ownerId = companyDetails.user_id;
+      
+      if (!ownerId) {
+        console.error('Owner ID not found for company:', company.id);
+        alert('Could not find the company owner. Please try again later.');
+        return;
+      }
+      
+      // Get all users to find the owner
+      const users = await userService.getAllUsers();
+      const owner = users.find(u => u.id === ownerId);
+      
+      if (!owner) {
+        console.error('Owner not found in user list:', ownerId);
+        alert('Could not load the company owner\'s details. Please try again later.');
+        return;
+      }
+      
+      // Check if user already exists in chat users
+      const existingUser = chatUsers.find(u => u.id === owner.id);
+      
+      if (!existingUser) {
+        // Add user to chat users if not already there
+        setChatUsers(prev => [...prev, owner]);
+      }
+      
+      // Switch to chat tab (assuming tab index 5 is the chat tab)
+      setValue(6);
+      
+      // Select the chat with the owner
+      setSelectedChat(existingUser || owner);
+      
+    } catch (error) {
+      console.error('Error contacting founder:', error);
+      alert('Failed to open chat with the founder. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -549,12 +597,12 @@ const Dashboard = () => {
             }
 
             // Filter payments by current user AND paid status
-            const paidPayments = payments.filter(payment => 
-              payment.payment_status === 'paid' && 
-              payment.user && 
+            const paidPayments = payments.filter(payment =>
+              payment.payment_status === 'paid' &&
+              payment.user &&
               (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
             );
-            
+
             if (paidPayments.length === 0) {
               console.log(`No paid payments found for current user in company ${company.id}`);
               continue;
@@ -2229,20 +2277,20 @@ const Dashboard = () => {
                         </IconButton>
                         <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
                           {myCompanies.length} companies
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        startIcon={<BusinessIcon />}
-                        sx={{
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          borderRadius: '8px',
-                          px: 3
-                        }}
-                        onClick={() => setOpenCreateCompanyDialog(true)}
-                      >
-                        Create Company
-                      </Button>
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          startIcon={<BusinessIcon />}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            borderRadius: '8px',
+                            px: 3
+                          }}
+                          onClick={() => setOpenCreateCompanyDialog(true)}
+                        >
+                          Create Company
+                        </Button>
                       </Box>
                     </Box>
                     {myCompanies.length === 0 ? (
@@ -2306,8 +2354,8 @@ const Dashboard = () => {
                                       borderRadius: '50%',
                                       bgcolor:
                                         company.company_status === 'Approved' ? '#4caf50' :
-                                        company.company_status === 'Pending' ? '#ff9800' :
-                                        company.company_status === 'Rejected' ? '#f44336' : '#bdbdbd',
+                                          company.company_status === 'Pending' ? '#ff9800' :
+                                            company.company_status === 'Rejected' ? '#f44336' : '#bdbdbd',
                                       border: '2px solid #fff',
                                       boxShadow: 1,
                                       width: 22,
@@ -2336,8 +2384,8 @@ const Dashboard = () => {
                                       letterSpacing: 0.5
                                     }}>
                                       {company.company_status === 'Approved' ? 'A' :
-                                       company.company_status === 'Pending' ? 'P' :
-                                       company.company_status === 'Rejected' ? 'R' : 'O'}
+                                        company.company_status === 'Pending' ? 'P' :
+                                          company.company_status === 'Rejected' ? 'R' : 'O'}
                                     </span>
                                   </IconButton>
                                 </Typography>
@@ -2364,7 +2412,11 @@ const Dashboard = () => {
                                   >
                                     Users
                                   </Button>
-                                  <Button variant="contained" size="small" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none', background: '#bdbdbd', color: '#fff', '&:hover': { background: '#757575' } }} onClick={() => handleOpenPermitDialog(company)}>Permit</Button>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none', background: '#bdbdbd', color: '#fff', '&:hover': { background: '#757575' } }} onClick={() => handleOpenPermitDialog(company)}>Permit</Button>
+                                  
                                 </Box>
                               </CardContent>
                             </Card>
@@ -2378,72 +2430,72 @@ const Dashboard = () => {
                 {value === 2 && (
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6">Backed Companies</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <IconButton onClick={() => {
-                        // Refresh Backed Companies
-                        setAllCompaniesLoading(true);
-                        setAllCompaniesError('');
-                        const fetchAllCompanies = async () => {
-                          try {
-                            const user = authService.getCurrentUser();
-                            const userId = user?.id || user?.user_id || user?.pk;
-                            if (!userId) return;
-                            const companies = await companyService.getCompanies({ company_status: '' });
-                            if (!companies || companies.length === 0) {
-                              setAllCompanies([]);
-                              return;
-                            }
-                            const backedCompanies = [];
-                            for (const company of companies) {
-                              try {
-                                const payments = await companyService.getUserPayments(company.id);
-                                if (!payments || payments.length === 0) continue;
-                                // Filter payments by current user AND paid status
-                                const paidPayments = payments.filter(payment => 
-                                  payment.payment_status === 'paid' && 
-                                  payment.user && 
-                                  (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
-                                );
-                                if (paidPayments.length === 0) continue;
-                                const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
-                                const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
-                                const preMoneyValuation = currentTerm ? parseFloat(currentTerm.pre_money_valuation) : 0;
-                                const raiseAmount = currentTerm ? parseFloat(currentTerm.raise_amount) : 0;
-                                const totalPaidInvestment = paidPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
-                                const equityPercentage = preMoneyValuation && raiseAmount ?
-                                  ((totalPaidInvestment / (preMoneyValuation + raiseAmount)) * 100) : 0;
-                                backedCompanies.push({
-                                  ...company,
-                                  payments: paidPayments,
-                                  preMoneyValuation: preMoneyValuation,
-                                  raiseAmount: raiseAmount,
-                                  equityPercentage: equityPercentage,
-                                  invested: totalPaidInvestment,
-                                  investedDate: paidPayments[0].payment_date,
-                                  investmentHistory: paidPayments.map(payment => ({
-                                    date: new Date(payment.payment_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-                                    value: parseFloat(payment.amount)
-                                  }))
-                                });
-                              } catch (err) {
-                                continue;
+                      <Typography variant="h6">Backed Companies</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconButton onClick={() => {
+                          // Refresh Backed Companies
+                          setAllCompaniesLoading(true);
+                          setAllCompaniesError('');
+                          const fetchAllCompanies = async () => {
+                            try {
+                              const user = authService.getCurrentUser();
+                              const userId = user?.id || user?.user_id || user?.pk;
+                              if (!userId) return;
+                              const companies = await companyService.getCompanies({ company_status: '' });
+                              if (!companies || companies.length === 0) {
+                                setAllCompanies([]);
+                                return;
                               }
+                              const backedCompanies = [];
+                              for (const company of companies) {
+                                try {
+                                  const payments = await companyService.getUserPayments(company.id);
+                                  if (!payments || payments.length === 0) continue;
+                                  // Filter payments by current user AND paid status
+                                  const paidPayments = payments.filter(payment =>
+                                    payment.payment_status === 'paid' &&
+                                    payment.user &&
+                                    (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
+                                  );
+                                  if (paidPayments.length === 0) continue;
+                                  const fundraiseTerms = await companyService.getFundraiseTerms(company.id);
+                                  const currentTerm = fundraiseTerms && fundraiseTerms.results && fundraiseTerms.results.length > 0 ? fundraiseTerms.results[0] : null;
+                                  const preMoneyValuation = currentTerm ? parseFloat(currentTerm.pre_money_valuation) : 0;
+                                  const raiseAmount = currentTerm ? parseFloat(currentTerm.raise_amount) : 0;
+                                  const totalPaidInvestment = paidPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+                                  const equityPercentage = preMoneyValuation && raiseAmount ?
+                                    ((totalPaidInvestment / (preMoneyValuation + raiseAmount)) * 100) : 0;
+                                  backedCompanies.push({
+                                    ...company,
+                                    payments: paidPayments,
+                                    preMoneyValuation: preMoneyValuation,
+                                    raiseAmount: raiseAmount,
+                                    equityPercentage: equityPercentage,
+                                    invested: totalPaidInvestment,
+                                    investedDate: paidPayments[0].payment_date,
+                                    investmentHistory: paidPayments.map(payment => ({
+                                      date: new Date(payment.payment_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                                      value: parseFloat(payment.amount)
+                                    }))
+                                  });
+                                } catch (err) {
+                                  continue;
+                                }
+                              }
+                              setAllCompanies(backedCompanies);
+                            } catch (err) {
+                              setAllCompaniesError('Failed to load companies');
+                            } finally {
+                              setAllCompaniesLoading(false);
                             }
-                            setAllCompanies(backedCompanies);
-                          } catch (err) {
-                            setAllCompaniesError('Failed to load companies');
-                          } finally {
-                            setAllCompaniesLoading(false);
-                          }
-                        };
-                        fetchAllCompanies();
-                      }}>
-                        <RefreshIcon sx={{ color: '#888' }} />
-                      </IconButton>
-                      <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
-                        {allCompanies.length} companies
-                    </Typography>
+                          };
+                          fetchAllCompanies();
+                        }}>
+                          <RefreshIcon sx={{ color: '#888' }} />
+                        </IconButton>
+                        <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
+                          {allCompanies.length} companies
+                        </Typography>
                       </Box>
                     </Box>
                     {allCompaniesLoading ? (
@@ -2492,6 +2544,16 @@ const Dashboard = () => {
                                     >
                                       View
                                     </Button>
+                                    <Button
+                                    variant="outlined"
+                                    startIcon={<ChatIcon />}
+                                    size="small"
+                                    //sx={{ borderRadius: 2, ml: 'auto' }}
+                                    sx={{ display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}
+                                    onClick={() => handleContactFounder(company)}
+                                  >
+                                    Contact Founder
+                                  </Button>
                                   </Box>
                                 </CardContent>
                               </Card>
@@ -2520,9 +2582,9 @@ const Dashboard = () => {
                                       const payments = await companyService.getUserPayments(company.id);
                                       if (!payments || payments.length === 0) continue;
                                       // Filter payments by current user AND paid status
-                                      const paidPayments = payments.filter(payment => 
-                                        payment.payment_status === 'paid' && 
-                                        payment.user && 
+                                      const paidPayments = payments.filter(payment =>
+                                        payment.payment_status === 'paid' &&
+                                        payment.user &&
                                         (payment.user.id === userId || payment.user.user_id === userId || payment.user.pk === userId)
                                       );
                                       if (paidPayments.length === 0) continue;
@@ -2681,7 +2743,7 @@ const Dashboard = () => {
                                 const posts = await fetchCommunityPosts(currentUser.access);
                                 setCommunityPosts(posts);
                               }
-                            } catch (err) {}
+                            } catch (err) { }
                           };
                           loadPosts();
                         }}>
@@ -2721,13 +2783,13 @@ const Dashboard = () => {
                           Share Post
                         </Button>*/}
                         <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ fontWeight: 700 }}
-                        onClick={() => setOpenShareIdea(true)}
-                      >
+                          variant="contained"
+                          color="primary"
+                          sx={{ fontWeight: 700 }}
+                          onClick={() => setOpenShareIdea(true)}
+                        >
                           + Share Post
-                      </Button>
+                        </Button>
                       </Box>
                     </Box>
                     {/* Search box with clear (cross) icon */}
@@ -4124,6 +4186,7 @@ const Dashboard = () => {
                   Investment Tracking Dashboard
                 </Typography>
               </Box>
+              {/*
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   variant="outlined"
@@ -4134,6 +4197,7 @@ const Dashboard = () => {
                   Contact Founder
                 </Button>
               </Box>
+              */}
             </DialogTitle>
             <DialogContent sx={{ pt: 3 }}>
               {/* Notice from Track Progress */}
@@ -4582,7 +4646,7 @@ const Dashboard = () => {
       </Dialog>
 
       {/* Permit Dialog */}
-      <Dialog open={permitDialogOpen} onClose={handleClosePermitDialog} maxWidth="md" fullWidth>
+      <Dialog open={permitDialogOpen} onClose={handleClosePermitDialog} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, fontSize: 22 }}>Users Management</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
@@ -4630,8 +4694,34 @@ const Dashboard = () => {
                 ).map(user => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar sx={{ width: 36, height: 36, bgcolor: '#1976d2', fontWeight: 700 }}>{user.user.first_name[0]}{user.user.last_name[0]}</Avatar>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {(() => {
+                          const profilePic = user.user.profile_picture || user.user.profile_pic;
+                          const fullUrl = profilePic ? 
+                            (profilePic.startsWith('http') ? profilePic : 
+                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                            null;
+
+                          return (
+                            <Avatar 
+                              src={fullUrl}
+                              alt={`${user.user.first_name || ''} ${user.user.last_name || ''}`.trim()}
+                              sx={{ 
+                                width: 40, 
+                                height: 40, 
+                                bgcolor: fullUrl ? 'transparent' : '#1976d2',
+                                fontWeight: 700,
+                                fontSize: fullUrl ? 'inherit' : '1rem'
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = null;
+                              }}
+                            >
+                              {!fullUrl && `${user.user.first_name?.[0]?.toUpperCase() || ''}${user.user.last_name?.[0]?.toUpperCase() || ''}`}
+                            </Avatar>
+                          );
+                        })()}
                         <Box>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{user.user.first_name} {user.user.last_name}</Typography>
                           <Typography variant="caption" color="text.secondary">{user.user.user_type}</Typography>
@@ -4690,14 +4780,53 @@ const Dashboard = () => {
       </Dialog>
 
       {/* Permit User Detail Dialog */}
-      <Dialog open={permitUserDetailOpen} onClose={() => setPermitUserDetailOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={permitUserDetailOpen} onClose={() => setPermitUserDetailOpen(false)} maxWidth="lg" fullWidth>
         <DialogTitle>User Details</DialogTitle>
         <DialogContent>
           {permitUserDetail && (
             <>
               {/* Top: Image, Name, Title+Company, Location */}
               <Box display="flex" alignItems="center" gap={3} mb={3}>
-                <Avatar src={permitUserDetail.profile_pic} sx={{ width: 80, height: 80 }} />
+                {(() => {
+                  const profilePic = permitUserDetail.profile_picture || permitUserDetail.profile_pic;
+                  const fullUrl = profilePic ? 
+                    (profilePic.startsWith('http') ? profilePic : 
+                    `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                    null;
+
+                  return (
+                    <Avatar 
+                      src={fullUrl}
+                      alt={permitUserDetail.full_name || 'User'}
+                      sx={{ 
+                        width: 80, 
+                        height: 80,
+                        bgcolor: fullUrl ? 'transparent' : '#1976d2',
+                        fontSize: '2rem',
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '2.5rem'
+                        }
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = null;
+                      }}
+                    >
+                      {!fullUrl && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <Typography variant="h4" component="div" sx={{ 
+                            lineHeight: 1,
+                            color: 'white',
+                            fontWeight: 700,
+                            textTransform: 'uppercase'
+                          }}>
+                            {permitUserDetail.full_name?.split(' ').map(n => n[0]).join('')}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Avatar>
+                  );
+                })()}
                 <Box>
                   <Typography variant="h5">{permitUserDetail.full_name}</Typography>
                   <Typography variant="subtitle1">
@@ -5141,7 +5270,7 @@ const Dashboard = () => {
         </DialogActions>
       </Dialog>
       {/* Company Users Dialog */}
-      <Dialog open={openCompanyUsersDialog} onClose={() => setOpenCompanyUsersDialog(false)} maxWidth="md" fullWidth>
+      <Dialog open={openCompanyUsersDialog} onClose={() => setOpenCompanyUsersDialog(false)} maxWidth="lg" fullWidth>
         <DialogTitle>Company Users - {selectedCompanyForUsers?.product_name}</DialogTitle>
         <DialogContent>
           {companyUsersLoading ? (
@@ -5171,9 +5300,48 @@ const Dashboard = () => {
                     const latestPayment = u.payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0];
                     return (
                       <TableRow key={u.user_id}>
-                        <TableCell>{u.user?.first_name} {u.user?.last_name}</TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {(() => {
+                              const profilePic = u.user?.profile_picture || u.user?.profile_pic;
+                              const fullUrl = profilePic ? 
+                                (profilePic.startsWith('http') ? profilePic : 
+                                `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                                null;
+                              
+                              // Log the user object and profile picture URL for debugging
+                              console.log('Company User Object:', u.user);
+                              console.log('Profile Picture URL:', fullUrl);
+
+                              return (
+                                <Avatar 
+                                  src={fullUrl}
+                                  alt={`${u.user?.first_name || ''} ${u.user?.last_name || ''}`.trim()}
+                                  sx={{ 
+                                    width: 40, 
+                                    height: 40, 
+                                    bgcolor: fullUrl ? 'transparent' : '#1976d2',
+                                    fontWeight: 700,
+                                    fontSize: fullUrl ? 'inherit' : '1rem'
+                                  }}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = null;
+                                  }}
+                                >
+                                  {!fullUrl && `${u.user?.first_name?.[0]?.toUpperCase() || ''}${u.user?.last_name?.[0]?.toUpperCase() || ''}`}
+                                </Avatar>
+                              );
+                            })()}
+                            <Box>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{u.user?.first_name} {u.user?.last_name}</Typography>
+                              <Typography variant="caption" color="text.secondary">{u.user?.user_type || 'User'}</Typography>
+                            </Box>
+                          </Box>
+                        </TableCell>
                         <TableCell>{u.user?.email}<br />{u.user?.phone}</TableCell>
-                        <TableCell>{u.user?.address || u.user?.city || '-'}</TableCell>
+                        <TableCell>
+{[u.user?.address, u.user?.city, u.user?.country].filter(Boolean).join(', ')} </TableCell> 
                         <TableCell>
                           <Chip
                             label={latestPayment.payment_status}
@@ -5221,6 +5389,24 @@ const Dashboard = () => {
           <Button onClick={() => setOpenUserProfileDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+      {/* user Chat delete*/}
+      {/* Chat user menu */}
+      <Menu
+        anchorEl={chatMenuAnchorEl}
+        open={Boolean(chatMenuAnchorEl)}
+        onClose={() => setChatMenuAnchorEl(null)}
+      >
+        <MenuItem
+          onClick={() => {
+            // Delete from chat
+            setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
+            setChatMenuAnchorEl(null);
+            if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
+          }}
+        >
+          Delete from Chat
+        </MenuItem>
+      </Menu>
     </>
   );
 };
