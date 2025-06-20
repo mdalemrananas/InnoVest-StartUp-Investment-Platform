@@ -19,9 +19,28 @@ class CompanyFundraiseTermsSerializer(serializers.ModelSerializer):
         fields = ['raise_amount', 'pre_money_valuation', 'max_investors', 'duration', 'investment_type']
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+    profile_pic = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city']
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country', 'profile_picture', 'profile_pic']
+
+    def get_profile_picture(self, obj):
+        if obj.profile_picture:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_picture.url)
+            return obj.profile_picture.url
+        return None
+
+    def get_profile_pic(self, obj):
+        if obj.profile_pic:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_pic.url)
+            return obj.profile_pic.url
+        return None
 
 class CompanyPaymentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
