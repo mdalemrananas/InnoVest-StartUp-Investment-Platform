@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from backend.models import CompanyBusinessPlan, CompanyFundraiseTerms, CompanyContact, CompanyPayment, Company, CustomUserKYC
@@ -14,6 +14,14 @@ import traceback
 import os
 import uuid
 from payments.views import send_payment_confirmation_email
+from django.shortcuts import render
+from django.db.models import Sum, Count
+from authentication.models import CustomUser
+import json
+from datetime import datetime, timedelta
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 logger = logging.getLogger(__name__)
 
@@ -292,4 +300,45 @@ def handle_uploaded_file(file, folder):
     except Exception as e:
         logger.error(f"Error handling file upload: {str(e)}")
         logger.error(traceback.format_exc())
-        raise 
+        raise
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def statistics(request):
+    """
+    Get platform statistics for the home page
+    """
+    try:
+        # Get total approved companies
+        total_companies = Company.objects.filter(company_status='Approved').count()
+        
+        # Get total active users (excluding admins)
+        total_users = CustomUser.objects.filter(
+            is_active=True,
+            user_type='user'
+        ).count()
+        
+        # Get total paid payments count (startups funded)
+        total_paid_payments = CompanyPayment.objects.filter(
+            payment_status='paid'
+        ).count()
+        
+        # Fixed success rate as requested
+        success_rate = 85
+        
+        return Response({
+            'status': 'success',
+            'data': {
+                'total_companies': total_companies,
+                'total_users': total_users,
+                'total_paid_payments': total_paid_payments,
+                'success_rate': success_rate
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching statistics: {str(e)}")
+        return Response({
+            'status': 'error',
+            'message': 'Failed to fetch statistics'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 

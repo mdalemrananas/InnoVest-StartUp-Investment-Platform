@@ -142,6 +142,37 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @action(detail=True, methods=['get'], url_path='paid_investors_count')
+    def paid_investors_count(self, request, pk=None):
+        try:
+            company = self.get_object()
+            logger.info(f"Getting paid investors count for company: {company.id} - {company.product_name}")
+            
+            # Count distinct users who have paid payments for this company
+            paid_investors_count = CompanyPayment.objects.filter(
+                company=company,
+                payment_status='paid'
+            ).values('user').distinct().count()
+            
+            logger.info(f"Found {paid_investors_count} paid investors for company {company.id}")
+            
+            return Response({
+                'status': 'success',
+                'count': paid_investors_count
+            })
+        except Company.DoesNotExist:
+            logger.error(f"Company not found with ID: {pk}")
+            return Response({
+                'status': 'error',
+                'message': 'Company not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error getting paid investors count: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=True, methods=['get'], url_path='user_payments')
     def user_payments(self, request, pk=None):
         try:
