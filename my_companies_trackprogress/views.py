@@ -7,7 +7,7 @@ class CompanyTrackProgressListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         company_id = self.request.query_params.get('company_id')
-        return CompanyTrackProgress.objects.filter(company_id=company_id)
+        return CompanyTrackProgress.objects.filter(company_id=company_id).order_by('-created_at')
 
 class CompanyTrackProgressRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = CompanyTrackProgress.objects.all()
