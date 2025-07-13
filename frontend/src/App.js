@@ -14,6 +14,7 @@ import Home from './components/Home';
 import CompanyProfile from './components/company/CompanyProfile';
 import Contact from './components/Contact';
 import Faq from './components/Faq';
+import HelpCenter from './components/HelpCenter';
 import BrowseCompanies from './components/company/BrowseCompanies';
 import About from './components/About';
 import ProfileManagement from './components/profile/ProfileManagement';
@@ -29,6 +30,7 @@ import InvestmentFlow from './components/investment/InvestmentFlow';
 import PaymentSuccess from './components/payment/PaymentSuccess';
 import EmailForm from './EmailForm';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsAndConditions from './components/TermsAndConditions';
 import CompanyView from './components/company/CompanyView';
 
 function App() {
@@ -106,6 +108,8 @@ function App() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/email" element={<EmailForm />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/help" element={<HelpCenter />} />
       </Routes>
     </Layout>
   );
