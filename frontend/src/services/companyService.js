@@ -165,7 +165,11 @@ const createCompanyForm = (formData) =>
     axiosInstance.get('track-progress/', { params: { company_id: companyId } });
   
   const createTrackProgress = (data) =>
-    axiosInstance.post('track-progress/', data);
+    axiosInstance.post('track-progress/', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
   
   const updateTrackProgress = (id, data) =>
     axiosInstance.put(`track-progress/${id}/`, data);
@@ -222,6 +226,27 @@ const getUserPayments = async (companyId) => {
     }
 };
 
+const getPaidInvestorsCount = async (companyId) => {
+    try {
+        console.log('Fetching paid investors count for company:', companyId);
+        const response = await axiosInstance.get(`companies/${companyId}/paid_investors_count/`);
+        console.log('Paid investors count response:', response.data);
+        
+        if (response.data && response.data.status === 'success') {
+            return response.data.count;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error fetching paid investors count:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            config: error.config
+        });
+        return 0;
+    }
+};
+
 // Upload an image file
 const uploadImage = async (formData) => {
     try {
@@ -263,6 +288,7 @@ const companyService = {
     getCompanyUpdates,
     createCompanyUpdate,
     updateCompanyUpdate,
+    getPaidInvestorsCount,
 };
 
 export default companyService; 

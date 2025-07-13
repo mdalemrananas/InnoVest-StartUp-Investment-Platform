@@ -152,6 +152,17 @@ class ChatService {
             throw error;
         }
     }
+
+    // Edit a message
+    async editMessage(messageId, newText) {
+        try {
+            const response = await axiosInstance.patch(`messages/${messageId}/`, { message: newText });
+            return response.data;
+        } catch (error) {
+            console.error('Error editing message:', error);
+            throw error;
+        }
+    }
 }
 
 export default new ChatService(); 

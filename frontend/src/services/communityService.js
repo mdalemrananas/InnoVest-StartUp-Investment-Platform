@@ -53,10 +53,10 @@ api.interceptors.request.use(
 );
 
 const communityService = {
-  // Get all posts
-  getPosts: async () => {
+  // Get all posts (optionally filtered)
+  getPosts: async (filters = {}) => {
     try {
-      const response = await api.get('/posts/');
+      const response = await api.get('/posts/', { params: filters });
       return response.data;
     } catch (error) {
       console.error('Error fetching posts:', error);
