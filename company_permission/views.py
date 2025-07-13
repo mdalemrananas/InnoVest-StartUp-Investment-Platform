@@ -6,6 +6,8 @@ from .serializers import CompanyPermissionSerializer
 import logging
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from authentication.models import CustomUser
+from backend.models import CompanyPayment
 
 logger = logging.getLogger(__name__)
 
@@ -77,3 +79,22 @@ def get_company_permission(request, company_id):
         return Response({'company_permission': perm.company_permission})
     except CompanyPermission.DoesNotExist:
         return Response({'company_permission': 'no'})
+
+@api_view(['GET'])
+def company_users_with_permission(request):
+    company_id = request.GET.get('company')
+    permission = request.GET.get('permission')
+    if not company_id or not permission:
+        return Response([], status=400)
+    permissions = CompanyPermission.objects.filter(company_id=company_id, company_permission=permission)
+    paid_user_ids = set(CompanyPayment.objects.filter(company_id=company_id, payment_status='paid').values_list('user_id', flat=True))
+    users = [
+        {
+            'id': perm.user.id,
+            'name': getattr(perm.user, 'name', ''),
+            'email': getattr(perm.user, 'email', '')
+        }
+        for perm in permissions.select_related('user')
+        if perm.user.id not in paid_user_ids
+    ]
+    return Response(users)
