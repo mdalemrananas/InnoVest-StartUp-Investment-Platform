@@ -73,6 +73,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import LinkIcon from '@mui/icons-material/Link';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { format } from 'date-fns';
 import FundingSetup from './company/FundingSetup';
 import CloseIcon from '@mui/icons-material/Close';
@@ -98,6 +100,36 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import Analysis from './Analysis';
+import AddUserDialog from './company/AddUserDialog';
+import CompanyUpdateLog from './company/CompanyUpdateLog';
+import { subMonths, isAfter } from 'date-fns';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend
+} from 'chart.js';
+import CheckIcon from '@mui/icons-material/Check';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import HomeIcon from '@mui/icons-material/Home';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import PublicIcon from '@mui/icons-material/Public';
+import TitleIcon from '@mui/icons-material/Title';
+import LabelIcon from '@mui/icons-material/Label';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+//import InputAdornment from '@mui/material/InputAdornment';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
 
 const API_URL = 'http://localhost:8000/api/auth/profile/';
 
@@ -149,16 +181,6 @@ const Dashboard = () => {
   });
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [followedCompanies, setFollowedCompanies] = useState([
-    {
-      id: 1,
-      name: 'MSolar Glass, LLC',
-      description: 'Advanced manufacturing facility dedicated to producing Solar Panels & Glass',
-      image: 'https://placehold.co/400x200',
-      status: 'Following',
-      following: true,
-    }
-  ]);
   const [backedCompanies, setBackedCompanies] = useState([
     {
       id: 2,
@@ -228,38 +250,206 @@ const Dashboard = () => {
   const [editTaskId, setEditTaskId] = useState(null);
   const [editTaskText, setEditTaskText] = useState('');
   const [todos, setTodos] = useState([]);
-  const analyticsData = {
-    totalEarnings: 559250,
-    earningsChange: 1824,
-    totalOrders: 36894,
-    ordersChange: -357,
-    totalCustomers: 183350000,
-    customersChange: 2908000,
-    myBalance: 165890,
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState({
+    totalCompanies: 0,
+    totalInvestors: 0,
+    totalPosts: 0,
+    totalBalance: 0,
+    earningsChange: 0,
+    ordersChange: 0,
+    customersChange: 0,
     balanceChange: 0,
-    revenueOrders: 7585,
-    revenueEarnings: 22890,
-    revenueRefunds: 367,
-    conversionRatio: 1892,
+    revenueOrders: 0,
+    revenueEarnings: 0,
+    revenueRefunds: 0,
+    conversionRatio: 0,
     revenueByMonth: [
-      { name: 'Jan', Orders: 80, Earnings: 22, Refunds: 10 },
-      { name: 'Feb', Orders: 100, Earnings: 25, Refunds: 12 },
-      { name: 'Mar', Orders: 60, Earnings: 18, Refunds: 8 },
-      { name: 'Apr', Orders: 110, Earnings: 30, Refunds: 15 },
-      { name: 'May', Orders: 70, Earnings: 20, Refunds: 9 },
-      { name: 'Jun', Orders: 85, Earnings: 23, Refunds: 11 },
-      { name: 'Jul', Orders: 50, Earnings: 15, Refunds: 6 },
-      { name: 'Aug', Orders: 30, Earnings: 10, Refunds: 3 },
-      { name: 'Sep', Orders: 90, Earnings: 27, Refunds: 13 },
-      { name: 'Oct', Orders: 95, Earnings: 28, Refunds: 14 },
-    ],
-    salesByLocation: [
-      { name: 'Canada', percent: 75, color: '#233876' },
-      { name: 'Greenland', percent: 47, color: '#82ca9d' },
-      { name: 'Russia', percent: 82, color: '#f87171' },
-      { name: 'Palestine', percent: 39, color: '#fbbf24' },
-    ],
+      { name: 'Jan', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Feb', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Mar', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Apr', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'May', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Jun', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Jul', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Aug', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Sep', Orders: 0, Earnings: 0, Refunds: 0 },
+      { name: 'Oct', Orders: 0, Earnings: 0, Refunds: 0 },
+    ]
+  });
+
+  // Format date to readable format
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Fetch user analytics data
+  const fetchUserAnalytics = async () => {
+    try {
+      setLoading(true);
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        throw new Error('User not authenticated');
+      }
+
+      // Fetch user's companies
+      const companiesResponse = await companyService.getCompanies({ user: currentUser.id });
+      const companies = Array.isArray(companiesResponse) ? companiesResponse : [];
+
+      // Initialize metrics
+      let totalInvestors = 0;
+      let totalBalance = 0;
+      let totalPosts = 0;
+
+      // Calculate total investors and balance from companies
+      for (const company of companies) {
+        try {
+          const payments = await companyService.getUserPayments(company.id);
+          totalInvestors += payments.length;
+          totalBalance += payments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
+        } catch (err) {
+          console.error(`Error fetching payments for company ${company.id}:`, err);
+        }
+      }
+
+
+      // Fetch user's posts
+      try {
+        const posts = await communityService.getPosts({ author: currentUser.id });
+        totalPosts = posts.length;
+      } catch (err) {
+        console.error('Error fetching user posts:', err);
+      }
+
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalCompanies: companies.length,
+        totalInvestors,
+        totalPosts,
+        totalBalance,
+        // For now, using placeholder values for changes
+        earningsChange: 12.5,
+        ordersChange: -3.2,
+        customersChange: 7.8,
+        balanceChange: 5.2
+      }));
+
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+      setError(error.message || 'Failed to load analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to check if registration is ending soon (within 7 days)
+  const isRegistrationEndingSoon = (endDate) => {
+    if (!endDate) return false;
+    const now = new Date();
+    const end = new Date(endDate);
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
+    return end > now && end <= sevenDaysFromNow;
+  };
+
+  // Fetch upcoming events with registration ending soon
+  const fetchUpcomingEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const currentUser = authService.getCurrentUser();
+
+      if (!currentUser?.access) {
+        console.warn('No access token found. User might not be authenticated.');
+        return;
+      }
+
+      // Try different endpoints in case the path is different
+      const endpoints = [
+        'http://localhost:8000/api/events/upcoming/',
+        'http://localhost:8000/api/events/',
+        'http://localhost:8000/api/company-events/upcoming/'
+      ];
+
+      let eventsData = [];
+      let lastError = null;
+
+      // Try each endpoint until one works
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Trying endpoint: ${endpoint}`);
+          const response = await axios.get(endpoint, {
+            headers: {
+              'Authorization': `Bearer ${currentUser.access}`,
+              'Content-Type': 'application/json'
+            },
+            params: {
+              limit: 10,  // Get more events to filter for registration end date
+              upcoming: true
+            }
+          });
+
+          // Handle different response formats
+          let rawEvents = [];
+          if (Array.isArray(response.data)) {
+            rawEvents = response.data;
+          } else if (response.data.results) {
+            rawEvents = response.data.results;
+          } else if (response.data.data) {
+            rawEvents = response.data.data;
+          }
+
+          // Filter events where registration is ending soon (within 7 days)
+          eventsData = rawEvents.filter(event => {
+            return event.registration_end && isRegistrationEndingSoon(event.registration_end);
+          });
+
+          // Sort by registration end date (soonest first)
+          eventsData.sort((a, b) => new Date(a.registration_end) - new Date(b.registration_end));
+
+          // Take only the 2 most urgent events
+          eventsData = eventsData.slice(0, 2);
+
+        } catch (err) {
+          console.warn(`Error with endpoint ${endpoint}:`, err.message);
+          lastError = err;
+          continue;
+        }
+      }
+
+      // If no events with registration ending soon, show a message
+      if (eventsData.length === 0) {
+        console.log('No events with registration ending soon found');
+        if (lastError) {
+          throw lastError;
+        }
+      }
+
+      console.log('Fetched events:', eventsData);
+      setUpcomingEvents(eventsData);
+
+    } catch (error) {
+      console.error('Error fetching upcoming events:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      }
+      // Set empty array to prevent errors in the UI
+      setUpcomingEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Fetch all data when component mounts
+  useEffect(() => {
+    fetchUserAnalytics();
+    fetchUpcomingEvents();
+  }, []);
   const [language, setLanguage] = useState('English');
   const [langAnchorEl, setLangAnchorEl] = useState(null);
   const [chatTab, setChatTab] = useState('chats');
@@ -268,7 +458,6 @@ const Dashboard = () => {
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState([]);
   const messagesContainerRef = useRef(null);
-  const [loading, setLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState(0);
   // Live date and clock state
   const [now, setNow] = useState(new Date());
@@ -403,6 +592,9 @@ const Dashboard = () => {
   });
   const [trackProgressLoading, setTrackProgressLoading] = useState(false);
   const [trackProgressId, setTrackProgressId] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [companyUpdateId, setCompanyUpdateId] = useState(null);
   const [lastSavedCompanyUpdate, setLastSavedCompanyUpdate] = useState('');
   const [companyToDelete, setCompanyToDelete] = useState(null);
@@ -430,46 +622,67 @@ const Dashboard = () => {
   const [selectedCompanyForUsers, setSelectedCompanyForUsers] = useState(null);
   // Add state for visibility filter
   const [ideaVisibilityFilter, setIdeaVisibilityFilter] = useState('');
-  
+  const [companyUserSearch, setCompanyUserSearch] = useState('');
+  const [companyUserAmountRange, setCompanyUserAmountRange] = useState([0, 1000000]);
+
+  // User to be deleted
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+
+  const [updateLogOpen, setUpdateLogOpen] = useState(false);
+  const [updateLogCompany, setUpdateLogCompany] = useState(null);
+
+  // Add state at the top of Dashboard component
+  const [permitDeleteSnackbar, setPermitDeleteSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // Function to show snackbar messages
+  const showSnackbar = (message, severity = 'success') => {
+    setSettingsSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
   // Contact founder handler
   const handleContactFounder = async (company) => {
     try {
       setLoading(true);
-      
+
       // Get the company details to find the owner
       const companyDetails = await companyService.getCompanyById(company.id);
       const ownerId = companyDetails.user_id;
-      
+
       if (!ownerId) {
         console.error('Owner ID not found for company:', company.id);
         alert('Could not find the company owner. Please try again later.');
         return;
       }
-      
+
       // Get all users to find the owner
       const users = await userService.getAllUsers();
       const owner = users.find(u => u.id === ownerId);
-      
+
       if (!owner) {
         console.error('Owner not found in user list:', ownerId);
         alert('Could not load the company owner\'s details. Please try again later.');
         return;
       }
-      
+
       // Check if user already exists in chat users
       const existingUser = chatUsers.find(u => u.id === owner.id);
-      
+
       if (!existingUser) {
         // Add user to chat users if not already there
         setChatUsers(prev => [...prev, owner]);
       }
-      
+
       // Switch to chat tab (assuming tab index 5 is the chat tab)
-      setValue(6);
-      
+      setValue(5);
+
       // Select the chat with the owner
       setSelectedChat(existingUser || owner);
-      
+
     } catch (error) {
       console.error('Error contacting founder:', error);
       alert('Failed to open chat with the founder. Please try again.');
@@ -774,9 +987,14 @@ const Dashboard = () => {
       setUsersError(null);
       // Fetch all users (for search suggestions)
       const allUsersFetched = await chatService.getUsers();
-      setAllUsers(allUsersFetched);
-      // Set all users as chat users
-      setChatUsers(allUsersFetched);
+      // Filter out admin users
+      const nonAdminUsers = allUsersFetched.filter(u => u.user_type !== 'admin');
+      // Get deleted chat users from localStorage
+      const deletedChatUsers = JSON.parse(localStorage.getItem('deletedChatUsers') || '[]');
+      // Filter out deleted users from chat sidebar
+      const filteredUsers = nonAdminUsers.filter(u => !deletedChatUsers.includes(u.id));
+      setAllUsers(nonAdminUsers); // for search suggestions, keep all non-admins
+      setChatUsers(filteredUsers); // for sidebar, hide deleted
       // Fetch chat requests for status
       const requests = await chatService.getMyRequests();
       setChatRequests(requests);
@@ -1077,16 +1295,26 @@ const Dashboard = () => {
       setChatSuggestions([]);
       return;
     }
-    // Filter all registered users
+    // Filter all registered users, exclude admins
     const lower = value.toLowerCase();
-    const suggestions = allUsers.filter(u =>
-      (u.first_name && u.first_name.toLowerCase().includes(lower)) ||
-      (u.last_name && u.last_name.toLowerCase().includes(lower)) ||
-      (u.email && u.email.toLowerCase().includes(lower))
-    );
+    const suggestions = allUsers
+      .filter(u => u.user_type !== 'admin')
+      .filter(u =>
+        (u.first_name && u.first_name.toLowerCase().includes(lower)) ||
+        (u.last_name && u.last_name.toLowerCase().includes(lower)) ||
+        (u.email && u.email.toLowerCase().includes(lower))
+      );
     setChatSuggestions(suggestions);
   };
   const handleChatSuggestionClick = (user) => {
+    // Prevent admin users from being added or selected
+    if (user.user_type === 'admin') return;
+    // Remove from deletedChatUsers if present
+    const deletedChatUsers = JSON.parse(localStorage.getItem('deletedChatUsers') || '[]');
+    if (deletedChatUsers.includes(user.id)) {
+      const updated = deletedChatUsers.filter(id => id !== user.id);
+      localStorage.setItem('deletedChatUsers', JSON.stringify(updated));
+    }
     // If not already in chatUsers, add
     if (!chatUsers.find(u => u.id === user.id)) {
       setChatUsers(prev => [...prev, user]);
@@ -1624,6 +1852,30 @@ const Dashboard = () => {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setCompanyToDelete(null);
+    setUserToDelete(null);
+  };
+
+  const handleDeleteUser = async () => {
+    if (userToDelete) {
+      try {
+        // Call your user deletion API here
+        // await userService.deleteUser(userToDelete.id);
+
+        // Update the UI by removing the deleted user
+        setCompanyUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+
+        // Close the dialog and reset the state
+        setDeleteDialogOpen(false);
+
+        // Show success message
+        showSnackbar('User deleted successfully!', 'success');
+
+        setUserToDelete(null);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        showSnackbar('Failed to delete user. Please try again.', 'error');
+      }
+    }
   };
 
   const handleStatusClick = (company) => {
@@ -1653,7 +1905,11 @@ const Dashboard = () => {
   const handleDocumentUpload = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newDocs = Array.from(files).map(file => ({ file, name: file.name }));
+      const newDocs = Array.from(files).map(file => ({
+        file: file,
+        name: file.name,
+        preview: URL.createObjectURL(file)
+      }));
       setTrackProgressForm(prev => ({ ...prev, documents: [...prev.documents, ...newDocs] }));
     }
     e.target.value = '';
@@ -1673,43 +1929,59 @@ const Dashboard = () => {
   const handleSaveTrackProgress = async () => {
     if (!trackProgressCompany) return;
     setTrackProgressLoading(true);
-    // Prepare data
-    const progressData = {
-      company_id: trackProgressCompany.id,
-      notice: trackProgressForm.exitEvent.notice,
-      current_company_valuation: trackProgressForm.kpis.revenue,
-      revenue_rate: trackProgressForm.kpis.revenueRate,
-      burn_rate: trackProgressForm.kpis.burnRate,
-      retention_rate: trackProgressForm.kpis.retention,
-      investment_documents: JSON.stringify(trackProgressForm.documents),
-    };
+    // Prepare form data for file upload
+    const formData = new FormData();
+    formData.append('company_id', trackProgressCompany.id);
+    formData.append('notice', trackProgressForm.exitEvent.notice);
+    formData.append('current_company_valuation', trackProgressForm.kpis.revenue);
+    formData.append('revenue_rate', trackProgressForm.kpis.revenueRate);
+    formData.append('burn_rate', trackProgressForm.kpis.burnRate);
+    formData.append('retention_rate', trackProgressForm.kpis.retention);
+
+    // Add files to form data
+    trackProgressForm.documents.forEach(doc => {
+      if (doc.file) {
+        formData.append('investment_documents', doc.file, doc.name);
+      }
+    });
+
     // Company Update: Only update if text is non-empty and changed
-    const updateText = trackProgressForm.updates[0]?.text?.trim() || '';
+    const updateText = trackProgressForm.updates[0]?.text || '';
     if (updateText && updateText !== lastSavedCompanyUpdate) {
       const updateData = {
         company_id: trackProgressCompany.id,
         title: updateText,
       };
-      if (companyUpdateId) {
-        await companyService.updateCompanyUpdate(companyUpdateId, updateData);
-      } else {
+      try {
+        // Always create new update entry
         const res = await companyService.createCompanyUpdate(updateData);
         setCompanyUpdateId(res.data.id);
+        setLastSavedCompanyUpdate(updateText);
+      } catch (err) {
+        console.error('Error saving company update:', err);
       }
-      setLastSavedCompanyUpdate(updateText);
     }
     try {
-      // Track Progress
-      if (trackProgressId) {
-        await companyService.updateTrackProgress(trackProgressId, progressData);
-      } else {
-        const res = await companyService.createTrackProgress(progressData);
-        setTrackProgressId(res.data.id);
-      }
-      alert('Progress updated!');
+      // Always create new track progress entry
+      await companyService.createTrackProgress(formData);
+      // Show success snackbar
+      setSnackbarMessage('Track progress updated successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      
       setOpenTrackProgressDialog(false);
+      // Clear form after successful save
+      setTrackProgressForm({
+        exitEvent: { notice: '' },
+        kpis: { revenue: '', revenueRate: '', burnRate: '', retention: '' },
+        documents: [],
+        updates: [{ text: '' }]
+      });
     } catch (err) {
-      alert('Error saving progress');
+      console.error('Error saving progress:', err);
+      setSnackbarMessage('Error saving progress. Please try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
     setTrackProgressLoading(false);
   };
@@ -1731,6 +2003,28 @@ const Dashboard = () => {
       // Fetch track progress
       const res = await companyService.getTrackProgress(company.id);
       const results = res.data.results || [];
+
+      // Process track progress data
+      if (results.length > 0) {
+        const latestProgress = results[0];
+        setTrackProgressForm(prev => ({
+          ...prev,
+          exitEvent: { notice: latestProgress.notice || '' },
+          kpis: {
+            revenue: latestProgress.current_company_valuation || '',
+            revenueRate: latestProgress.revenue_rate || '',
+            burnRate: latestProgress.burn_rate || '',
+            retention: latestProgress.retention_rate || ''
+          },
+          documents: latestProgress.investment_documents ? [
+            {
+              name: latestProgress.investment_documents.split('/').pop(),
+              preview: latestProgress.investment_documents,
+              file: null // We don't have the actual file, just the URL
+            }
+          ] : []
+        }));
+      }
       if (results.length > 0) {
         const progress = results[0];
         setTrackProgressId(progress.id);
@@ -1743,7 +2037,13 @@ const Dashboard = () => {
             burnRate: progress.burn_rate || '',
             retention: progress.retention_rate || '',
           },
-          documents: progress.investment_documents ? JSON.parse(progress.investment_documents) : [],
+          documents: progress.investment_documents ? [
+            {
+              name: progress.investment_documents.split('/').pop(),
+              preview: progress.investment_documents,
+              file: null // We don't have the actual file, just the URL
+            }
+          ] : []
         }));
       }
       // Fetch company update
@@ -1793,7 +2093,13 @@ const Dashboard = () => {
           burnRate: progress.burn_rate || null,
           retention: progress.retention_rate || null,
         };
-        mergedCompany.documents = progress.investment_documents ? JSON.parse(progress.investment_documents) : [];
+        mergedCompany.documents = progress.investment_documents ? [
+          {
+            name: progress.investment_documents.split('/').pop(),
+            preview: progress.investment_documents,
+            file: null // We don't have the actual file, just the URL
+          }
+        ] : [];
       } else {
         mergedCompany.notice = null;
         mergedCompany.kpis = { revenue: null, revenueRate: null, burnRate: null, retention: null };
@@ -1937,6 +2243,142 @@ const Dashboard = () => {
     setOpenUserProfileDialog(true);
   };
 
+  const handleCompanyUserAmountRangeChange = (event, newValue) => {
+    setCompanyUserAmountRange(newValue);
+  };
+
+  // Add this function to fetch and filter last 3 months of progress for a company
+  const getLast3MonthsProgress = (progresses, companyId) => {
+    const threeMonthsAgo = subMonths(new Date(), 3);
+    return progresses
+      .filter(p => p.company_id === companyId && isAfter(new Date(p.created_at), threeMonthsAgo))
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  };
+
+  // Inside your Dashboard component, add state for track progress
+  const [trackProgress, setTrackProgress] = useState([]);
+
+  // Fetch progress for selected company
+  useEffect(() => {
+    if (selectedCompany) {
+      companyService.getTrackProgress(selectedCompany.id).then(res => {
+        setTrackProgress(res.data?.results || []);
+      });
+    }
+  }, [selectedCompany]);
+
+  // Filter for last 3 months
+  const last3MonthsProgress = trackProgress
+    .filter(p => isAfter(new Date(p.created_at), subMonths(new Date(), 3)))
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  const chartData = {
+    labels: last3MonthsProgress.map(p => new Date(p.created_at).toLocaleDateString()),
+    datasets: [
+      {
+        label: 'Valuation',
+        data: last3MonthsProgress.map(p => p.current_company_valuation),
+        borderColor: '#1976d2',
+        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+        tension: 0.3,
+        fill: false,
+      },
+      {
+        label: 'Revenue Rate',
+        data: last3MonthsProgress.map(p => p.revenue_rate),
+        borderColor: '#388e3c',
+        backgroundColor: 'rgba(56, 142, 60, 0.1)',
+        tension: 0.3,
+        fill: false,
+      },
+      {
+        label: 'Burn Rate',
+        data: last3MonthsProgress.map(p => p.burn_rate),
+        borderColor: '#d32f2f',
+        backgroundColor: 'rgba(211, 47, 47, 0.1)',
+        tension: 0.3,
+        fill: false,
+      },
+      {
+        label: 'Retention Rate',
+        data: last3MonthsProgress.map(p => p.retention_rate),
+        borderColor: '#fbc02d',
+        backgroundColor: 'rgba(251, 192, 45, 0.1)',
+        tension: 0.3,
+        fill: false,
+      },
+    ],
+  };
+
+  // Add to component state
+  const [messageMenuAnchorEl, setMessageMenuAnchorEl] = useState(null);
+  const [messageMenuMsgId, setMessageMenuMsgId] = useState(null);
+  const [editMessageId, setEditMessageId] = useState(null);
+  const [editMessageText, setEditMessageText] = useState('');
+  const [chatDeleteMessageId, setChatDeleteMessageId] = useState(null);
+  const [chatDeleteDialogOpen, setChatDeleteDialogOpen] = useState(false);
+
+  // Add handler for editing a message
+  const handleEditMessage = async (messageId, newText) => {
+    try {
+      setLoading(true);
+      await chatService.editMessage(messageId, newText);
+      if (selectedChat) {
+        await fetchConversation(selectedChat.id);
+      }
+    } catch (error) {
+      setUsersError('Failed to edit message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add at the top of the Dashboard component
+  const [activityLog, setActivityLog] = useState([
+    {
+      type: 'investment',
+      company: 'Acme Corp',
+      amount: 500,
+      time: '2024-05-01T14:30:00Z'
+    },
+    {
+      type: 'post',
+      title: 'New AI Startup',
+      time: '2024-05-02T09:15:00Z'
+    },
+    {
+      type: 'investment',
+      company: 'Beta Ltd',
+      amount: 1200,
+      time: '2024-05-03T11:00:00Z'
+    },
+    {
+      type: 'post',
+      title: 'How to grow your business',
+      time: '2024-05-04T16:45:00Z'
+    },
+  ]);
+
+  // Add state for Edit Post tag input
+  const [editTagInput, setEditTagInput] = useState('');
+
+  // Handler to add tags in Edit Post dialog
+  const handleEditTagAdd = (e) => {
+    if (e.type === 'blur' || e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+      const value = (editTagInput || '').trim().replace(/^#/, '');
+      if (value && !(editForm.tags || []).includes(value)) {
+        setEditForm(f => ({ ...f, tags: [...(f.tags || []), value] }));
+      }
+      setEditTagInput('');
+      if (e.key) e.preventDefault();
+    }
+  };
+
+  // Handler to delete tags in Edit Post dialog
+  const handleEditTagDelete = (tagToDelete) => {
+    setEditForm(f => ({ ...f, tags: (f.tags || []).filter(t => t !== tagToDelete) }));
+  };
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -2014,11 +2456,6 @@ const Dashboard = () => {
                   label="Backed"
                 />
                 <Tab
-                  icon={<WorkIcon sx={{ fontSize: 20 }} />}
-                  iconPosition="start"
-                  label="Following"
-                />
-                <Tab
                   icon={<GroupsIcon sx={{ fontSize: 20 }} />}
                   iconPosition="start"
                   label="Community"
@@ -2053,7 +2490,7 @@ const Dashboard = () => {
                               {format(now, 'dd MMM, yyyy')} &nbsp;|&nbsp; {format(now, 'hh:mm:ss a')}
                             </Typography>
                           </Box>
-                          <Button
+                          {/*<Button
                             variant="contained"
                             color="success"
                             startIcon={<AddIcon />}
@@ -2061,7 +2498,7 @@ const Dashboard = () => {
                             onClick={() => setOpenAddTask(true)}
                           >
                             Add Task
-                          </Button>
+                          </Button>*/}
                         </Grid>
                       </Grid>
                     </Container>
@@ -2070,46 +2507,38 @@ const Dashboard = () => {
                       <Grid container spacing={3}>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">TOTAL EARNINGS</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">TOTAL COMPANIES</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              ${analyticsData.totalEarnings}
+                              {loading ? <CircularProgress size={24} /> : analyticsData.totalCompanies}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
-                              +{analyticsData.earningsChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">ORDERS</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">TOTAL INVESTORS</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              {analyticsData.totalOrders}
+                              {loading ? <CircularProgress size={24} /> : analyticsData.totalInvestors.toLocaleString()}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 700 }}>
-                              {analyticsData.ordersChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">CUSTOMERS</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">MY POSTS</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              {analyticsData.totalCustomers}
+                              {loading ? <CircularProgress size={24} /> : analyticsData.totalPosts.toLocaleString()}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
-                              +{analyticsData.customersChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">MY BALANCE</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">TOTAL BALANCE</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              ${analyticsData.myBalance}
+                              {loading ? <CircularProgress size={24} /> : `৳${analyticsData.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
-                              {analyticsData.balanceChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                       </Grid>
@@ -2117,77 +2546,104 @@ const Dashboard = () => {
                     {/* Revenue and Sales by Location Section */}
                     <Container maxWidth={false} disableGutters sx={{ mb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
                       <Grid container spacing={3}>
-                        {/* Revenue Chart Section */}
-                        <Grid item xs={12} md={8}>
-                          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
+                        {/* Activity Log Section */}
+                        {/*<Grid item xs={12} md={8}>
+                          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3', minHeight: 320 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Revenue</Typography>
-                              <Box sx={{ display: 'flex', gap: 3 }}>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Orders</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{analyticsData.revenueOrders}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Earnings</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>${analyticsData.revenueEarnings}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Refunds</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{analyticsData.revenueRefunds}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Conversion Ratio</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main' }}>{analyticsData.conversionRatio}%</Typography>
-                                </Box>
-                              </Box>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Activity Log</Typography>
                             </Box>
-                            {/* Revenue Bar Chart */}
-                            <Box sx={{ height: 260 }}>
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={analyticsData.revenueByMonth}>
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis dataKey="name" />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Bar dataKey="Orders" fill="#233876" radius={[4, 4, 0, 0]} />
-                                  <Bar dataKey="Earnings" fill="#82ca9d" radius={[4, 4, 0, 0]} />
-                                  <Bar dataKey="Refunds" fill="#f87171" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                              </ResponsiveContainer>
+                            <Box sx={{ maxHeight: 260, overflowY: 'auto' }}>
+                              {activityLog.length === 0 ? (
+                                <Typography color="text.secondary">No recent activity.</Typography>
+                              ) : (
+                                activityLog.map((activity, idx) => (
+                                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2, borderRadius: 2, background: '#f7f9fb' }}>
+                                    {activity.type === 'investment' ? (
+                                      <MonetizationOnIcon color="primary" />
+                                    ) : (
+                                      <LightbulbIcon color="warning" />
+                                    )}
+                                    <Box>
+                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        {activity.type === 'investment'
+                                          ? `You invested $${activity.amount} in ${activity.company}`
+                                          : `You posted an idea: "${activity.title}"`}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {new Date(activity.time).toLocaleString()}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                ))
+                              )}
                             </Box>
                           </Paper>
-                        </Grid>
-                        {/* Sales by Location Section */}
+                        </Grid>*/}
+                        {/* Events Section */}
                         <Grid item xs={12} md={4}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3', height: '100%' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Sales by Locations</Typography>
-                              <Button size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}>Export Report</Button>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Upcoming Events (next 7 days)</Typography>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                                onClick={() => navigate('/events')}
+                              >
+                                View All
+                              </Button>
                             </Box>
-                            {/* Map Placeholder */}
-                            <Box sx={{ width: '100%', height: 120, background: '#f3f6fa', borderRadius: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b8c1', fontWeight: 700 }}>
-                              Map
-                            </Box>
-                            {/* Progress Bars for Locations */}
-                            <Box>
-                              {analyticsData.salesByLocation.map(loc => (
-                                <React.Fragment key={loc.name}>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                    <Typography variant="body2">{loc.name}</Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{loc.percent}%</Typography>
+
+                            {eventsLoading ? (
+                              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                <CircularProgress size={24} />
+                              </Box>
+                            ) : upcomingEvents.length > 0 ? (
+                              <Box>
+                                {upcomingEvents.map((event) => (
+                                  <Box
+                                    key={event.id}
+                                    sx={{
+                                      mb: 2,
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: '#f8fafc',
+                                      borderLeft: '3px solid #3f51b5',
+                                      '&:hover': {
+                                        background: '#f1f5f9',
+                                        cursor: 'pointer'
+                                      }
+                                    }}
+                                    onClick={() => navigate(`/events/${event.id}`)}
+                                  >
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                      {event.title}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: '0.8rem', mb: 0.5 }}>
+                                      <EventAvailableIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                                      {formatDate(event.registration_end)}
+                                    </Box>
+                                    {event.location && (
+                                      <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: '0.8rem' }}>
+                                        <RoomIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                                        {event.location}
+                                      </Box>
+                                    )}
                                   </Box>
-                                  <Box sx={{ background: '#e3e8ef', borderRadius: 1, height: 8, mb: 2 }}>
-                                    <Box sx={{ width: `${loc.percent}%`, height: '100%', background: loc.color, borderRadius: 1 }} />
-                                  </Box>
-                                </React.Fragment>
-                              ))}
-                            </Box>
+                                ))}
+                              </Box>
+                            ) : (
+                              <Box sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
+                                <EventAvailableIcon sx={{ fontSize: '2.5rem', mb: 1, opacity: 0.5 }} />
+                                <Typography>No upcoming events</Typography>
+                              </Box>
+                            )}
                           </Paper>
                         </Grid>
                       </Grid>
                     </Container>
                     {/* To-Do List Section */}
-                    <Container maxWidth={false} disableGutters sx={{ mb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
+                    {/*<Container maxWidth={false} disableGutters sx={{ mb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
                       <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>To-Do List</Typography>
                         <List>
@@ -2203,7 +2659,26 @@ const Dashboard = () => {
                             }>
                               <Checkbox checked={todo.completed} onChange={() => handleToggleComplete(todo.id)} />
                               {editTaskId === todo.id ? (
-                                <TextField size="small" value={editTaskText} onChange={e => setEditTaskText(e.target.value)} onBlur={handleSaveEditTask} onKeyDown={e => { if (e.key === 'Enter') handleSaveEditTask(); }} autoFocus sx={{ mr: 2 }} />
+                                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                  <TextField
+                                    value={editTaskText}
+                                    onChange={e => setEditTaskText(e.target.value)}
+                                    onBlur={handleSaveEditTask}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') handleSaveEditTask();
+                                    }}
+                                    size="small"
+                                    autoFocus
+                                    sx={{ width: '100%' }}
+                                  />
+                                  <IconButton
+                                    color="primary"
+                                    sx={{ ml: 1 }}
+                                    onClick={handleSaveEditTask}
+                                  >
+                                    <CheckIcon />
+                                  </IconButton>
+                                </Box>
                               ) : (
                                 <Typography sx={{ textDecoration: todo.completed ? 'line-through' : 'none', flex: 1 }}>{todo.text}</Typography>
                               )}
@@ -2211,7 +2686,7 @@ const Dashboard = () => {
                           ))}
                         </List>
                       </Paper>
-                    </Container>
+                    </Container>*/}
                     <Dialog open={openAddTask} onClose={() => setOpenAddTask(false)}>
                       <DialogTitle>Add Task</DialogTitle>
                       <DialogContent>
@@ -2290,6 +2765,21 @@ const Dashboard = () => {
                           onClick={() => setOpenCreateCompanyDialog(true)}
                         >
                           Create Company
+                        </Button>
+                        <Button
+                          variant="contained"
+                          startIcon={<PersonIcon />}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            borderRadius: '8px',
+                            px: 3,
+                            background: '#1976d2',
+                            ml: 1
+                          }}
+                          onClick={() => setAddUserDialogOpen(true)}
+                        >
+                          Add user
                         </Button>
                       </Box>
                     </Box>
@@ -2402,21 +2892,10 @@ const Dashboard = () => {
                                     View
                                   </Button>
                                   <Button variant="outlined" size="small" color="success" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleOpenTrackProgressDialog(company)}>Update</Button>
-                                  <Button variant="outlined" size="small" color="error" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleDeleteClick(company)}>Delete</Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    color="info"
-                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
-                                    onClick={() => handleOpenCompanyUsers(company)}
-                                  >
-                                    Users
-                                  </Button>
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none', background: '#bdbdbd', color: '#fff', '&:hover': { background: '#757575' } }} onClick={() => handleOpenPermitDialog(company)}>Permit</Button>
-                                  
+                                  <Button variant="outlined" size="small" color="info" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => { setUpdateLogCompany(company); setUpdateLogOpen(true); }}>Update Log</Button>
+                                  {/*<Button variant="outlined" size="small" color="error" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleDeleteClick(company)}>Delete</Button>*/}
+                                  <Button variant="outlined" size="small" color="info" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }} onClick={() => handleOpenCompanyUsers(company)} > Investors </Button>
+                                  <Button variant="contained" size="small" sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none', background: '#bdbdbd', color: '#fff', '&:hover': { background: '#757575' } }} onClick={() => handleOpenPermitDialog(company)}>Permit</Button>
                                 </Box>
                               </CardContent>
                             </Card>
@@ -2545,15 +3024,15 @@ const Dashboard = () => {
                                       View
                                     </Button>
                                     <Button
-                                    variant="outlined"
-                                    startIcon={<ChatIcon />}
-                                    size="small"
-                                    //sx={{ borderRadius: 2, ml: 'auto' }}
-                                    sx={{ display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}
-                                    onClick={() => handleContactFounder(company)}
-                                  >
-                                    Contact Founder
-                                  </Button>
+                                      variant="outlined"
+                                      startIcon={<ChatIcon />}
+                                      size="small"
+                                      //sx={{ borderRadius: 2, ml: 'auto' }}
+                                      sx={{ display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}
+                                      onClick={() => handleContactFounder(company)}
+                                    >
+                                      Contact Founder
+                                    </Button>
                                   </Box>
                                 </CardContent>
                               </Card>
@@ -2662,74 +3141,8 @@ const Dashboard = () => {
                     )}
                   </Box>
                 )}
-                {/* Following Tab */}
-                {value === 3 && (
-                  <Box>
-                    <Typography variant="h6" gutterBottom>
-                      Following Companies
-                    </Typography>
-                    {followedCompanies.length > 0 ? (
-                      <Grid container spacing={3}>
-                        {followedCompanies.map((company) => (
-                          <Grid item xs={12} key={company.id}>
-                            <Card
-                              elevation={0}
-                              sx={{
-                                display: 'flex',
-                                borderRadius: 2,
-                                border: '1px solid',
-                                borderColor: 'rgba(0, 0, 0, 0.12)',
-                              }}
-                            >
-                              <CardMedia
-                                component="img"
-                                sx={{ width: 200, height: 140 }}
-                                image={company.image}
-                                alt={company.name}
-                              />
-                              <CardContent sx={{ flex: 1 }}>
-                                <Typography variant="h6" gutterBottom>
-                                  {company.name}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" paragraph>
-                                  {company.description}
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                  <Button
-                                    variant={company.following ? 'contained' : 'outlined'}
-                                    color={company.following ? 'primary' : 'inherit'}
-                                    size="small"
-                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
-                                    onClick={() => {
-                                      setFollowedCompanies(prev => prev.map(c =>
-                                        c.id === company.id ? { ...c, following: !c.following } : c
-                                      ));
-                                    }}
-                                  >
-                                    {company.following ? 'Following' : 'Follow'}
-                                  </Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
-                                  >
-                                    View
-                                  </Button>
-                                </Box>
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    ) : (
-                      <Typography color="text.secondary">
-                        You are not following any companies yet.
-                      </Typography>
-                    )}
-                  </Box>
-                )}
                 {/* Community Tab */}
-                {value === 4 && (
+                {value === 3 && (
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6">Community</Typography>
@@ -2750,7 +3163,12 @@ const Dashboard = () => {
                           <RefreshIcon sx={{ color: '#888' }} />
                         </IconButton>
                         <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, ml: 0.5 }}>
-                          {communityPosts.length} posts
+                          {communityPosts.filter(post =>
+                            post.user && (typeof post.user === 'object'
+                              ? post.user.id === userProfile?.id
+                              : String(post.user) === String(userProfile?.id)
+                            )
+                          ).length} posts
                         </Typography>
                         {/* Notification Icon with Badge */}
                         <IconButton color="inherit" onClick={handleOpenNotificationPopup} sx={{ position: 'relative' }} aria-label="Show notifications">
@@ -2808,6 +3226,11 @@ const Dashboard = () => {
                         }}
                         InputProps={{
                           sx: { background: '#f7f9fb', borderRadius: 2, fontSize: 16 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon color="action" />
+                            </InputAdornment>
+                          ),
                         }}
                       />
                       <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -2927,11 +3350,11 @@ const Dashboard = () => {
                   </Box>
                 )}
                 {/* Analysis Tab */}
-                {value === 5 && (
+                {value === 4 && (
                   <Analysis />
                 )}
                 {/* Chat Tab */}
-                {value === 6 && (
+                {value === 5 && (
                   <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
                     {/* Left: Chat List */}
                     <Box sx={{
@@ -2952,10 +3375,17 @@ const Dashboard = () => {
                           onChange={handleChatSearchChange}
                           sx={{ mb: 2, background: '#fff', borderRadius: 2 }}
                           fullWidth
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
                         />
                         {chatSuggestions.length > 0 && (
                           <Paper sx={{ position: 'absolute', zIndex: 10, width: '90%', left: '5%', mt: '-8px', maxHeight: 200, overflowY: 'auto' }}>
-                            {chatSuggestions.map(user => (
+                            {chatSuggestions.filter(user => user.user_type !== 'admin').map(user => (
                               <Box
                                 key={user.id}
                                 sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: '#f0f4fa' }, display: 'flex', alignItems: 'center', gap: 2 }}
@@ -3033,6 +3463,7 @@ const Dashboard = () => {
                           </Box>
                         ) : (
                           chatUsers
+                            .filter(userItem => userItem.user_type !== 'admin')
                             .filter(userItem => {
                               const req = getRequestStatus(userItem.id);
                               if (chatFilter === 'accepted') {
@@ -3267,41 +3698,93 @@ const Dashboard = () => {
                                         {msg.self && !msg.text.includes('This message was deleted by') && (
                                           <IconButton
                                             size="small"
-                                            onClick={() => handleDeleteMessage(msg.id)}
+                                            onClick={e => {
+                                              e.stopPropagation();
+                                              setMessageMenuAnchorEl(e.currentTarget);
+                                              setMessageMenuMsgId(msg.id);
+                                              setEditMessageText(msg.text || ''); // Set the text for editing
+                                            }}
                                             sx={{
-                                              color: 'error.main',
+                                              color: 'grey.700',
                                               mr: 1,
                                               alignSelf: 'center',
                                               transition: 'color 0.2s, background 0.2s',
                                               '&:hover': {
-                                                color: 'white',
-                                                background: 'error.main',
+                                                color: 'primary.main',
+                                                background: 'rgba(0,0,0,0.04)',
                                               },
                                               flexShrink: 0
                                             }}
                                           >
-                                            <DeleteIcon sx={{ fontSize: '1.2rem' }} />
+                                            <MoreVertIcon sx={{ fontSize: '1.2rem' }} />
                                           </IconButton>
                                         )}
                                         {/* Message bubble */}
                                         <Box sx={{
                                           flex: '0 1 auto',
-                                          maxWidth: { xs: '80%', sm: '60%', md: '420px' },
-                                          px: 2,
-                                          py: 1.5,
-                                          borderRadius: 2,
+                                          width: 'fit-content',
+                                          minWidth: '2.5em',
+                                          maxWidth: msg.text && msg.text.length > 15 ? { xs: '80%', sm: '60%', md: '420px' } : 'none',
+                                          px: 1.2,
+                                          py: 0.7,
+                                          borderRadius: msg.self ? '1.5em 1.5em 0.5em 1.5em' : '1.5em 1.5em 1.5em 0.5em',
                                           background: msg.self ? 'primary.main' : 'background.paper',
                                           color: msg.self ? 'white' : 'text.primary',
                                           boxShadow: 1,
                                           position: 'relative',
                                           wordBreak: 'break-word',
                                           overflow: 'hidden',
+                                          minHeight: '2.5em',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          textAlign: 'center',
                                         }}>
                                           {/* Message text */}
-                                          {msg.text && (
-                                            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                                              {msg.text}
-                                            </Typography>
+                                          {editMessageId === msg.id ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                              <TextField
+                                                value={editMessageText}
+                                                onChange={e => setEditMessageText(e.target.value)}
+                                                onKeyDown={async e => {
+                                                  if (e.key === 'Enter') {
+                                                    setMessages(prev =>
+                                                      prev.map(m =>
+                                                        m.id === msg.id ? { ...m, text: editMessageText } : m
+                                                      )
+                                                    );
+                                                    await handleEditMessage(msg.id, editMessageText);
+                                                    setEditMessageId(null);
+                                                  } else if (e.key === 'Escape') {
+                                                    setEditMessageId(null);
+                                                  }
+                                                }}
+                                                size="small"
+                                                autoFocus
+                                                sx={{ width: '100%' }}
+                                              />
+                                              <IconButton
+                                                color="primary"
+                                                sx={{ ml: 1 }}
+                                                onClick={async () => {
+                                                  setMessages(prev =>
+                                                    prev.map(m =>
+                                                      m.id === msg.id ? { ...m, text: editMessageText } : m
+                                                    )
+                                                  );
+                                                  await handleEditMessage(msg.id, editMessageText);
+                                                  setEditMessageId(null);
+                                                }}
+                                              >
+                                                <CheckIcon />
+                                              </IconButton>
+                                            </Box>
+                                          ) : (
+                                            msg.text && (
+                                              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0, width: '100%' }}>
+                                                {msg.text}
+                                              </Typography>
+                                            )
                                           )}
                                           {/* File preview or download (only if not deleted) */}
                                           {msg.file && !msg.text.includes('This message was deleted by') && (
@@ -3316,7 +3799,7 @@ const Dashboard = () => {
                                                 }}
                                               >
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: msg.self ? 1 : 0, ml: msg.self ? 0 : 1 }}>
-                                                  <IconButton
+                                                  {/*<IconButton
                                                     component="a"
                                                     href={msg.file}
                                                     target="_blank"
@@ -3331,7 +3814,7 @@ const Dashboard = () => {
                                                     }}
                                                   >
                                                     <VisibilityIcon />
-                                                  </IconButton>
+                                                  </IconButton>*/}
                                                   <IconButton
                                                     onClick={() => handleImageDownload(msg.file, msg.fileName)}
                                                     sx={{
@@ -3345,11 +3828,14 @@ const Dashboard = () => {
                                                     <DownloadIcon />
                                                   </IconButton>
                                                 </Box>
-                                                <img
-                                                  src={msg.file}
-                                                  alt="attachment"
-                                                  style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, display: 'block' }}
-                                                />
+                                                <a href={msg.file} target="_blank" rel="noopener noreferrer">
+                                                  <img
+                                                    src={msg.file}
+                                                    alt="attachment"
+                                                    //style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, display: 'block' }}
+                                                    style={{ maxWidth: 220, maxHeight: 220, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'block' }}
+                                                  />
+                                                </a>
                                               </Box>
                                             ) : (
                                               <Box sx={{ mt: 1, mb: 1 }}>
@@ -3369,27 +3855,26 @@ const Dashboard = () => {
                                               </Box>
                                             )
                                           )}
+                                          {/* Status row, minimal margin */}
                                           <Box sx={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
+                                            justifyContent: 'flex-end',
                                             alignItems: 'center',
                                             gap: 1,
-                                            mt: 1
+                                            mt: 0.25 // minimal margin
                                           }}>
                                             {msg.self && (
-                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography
-                                                  variant="caption"
-                                                  sx={{
-                                                    color: msg.self ? 'rgba(255,255,255,0.7)' : 'text.secondary',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 0.5
-                                                  }}
-                                                >
-                                                  {msg.is_read ? 'Read' : 'Sent'}
-                                                </Typography>
-                                              </Box>
+                                              <Typography
+                                                variant="caption"
+                                                sx={{
+                                                  color: msg.self ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: 0.5
+                                                }}
+                                              >
+                                                {msg.is_read ? 'Read' : 'Sent'}
+                                              </Typography>
                                             )}
                                           </Box>
                                         </Box>
@@ -3452,7 +3937,6 @@ const Dashboard = () => {
                                 ) : (
                                   <Typography variant="body2">{pendingAttachment.name}</Typography>
                                 )}
-                                <Button variant="contained" color="primary" size="small" onClick={handleSendAttachment}>Send</Button>
                                 <Button variant="outlined" color="error" size="small" onClick={handleCancelAttachment}>Cancel</Button>
                               </Box>
                             )}
@@ -3466,10 +3950,15 @@ const Dashboard = () => {
                                   e.preventDefault();
                                   handleSendChat();
                                 }
+                                // If Enter is pressed and there is a pending attachment, send the attachment
+                                if (e.key === 'Enter' && !e.shiftKey && getRequestStatus(selectedChat.id)?.status === 'accepted' && pendingAttachment) {
+                                  e.preventDefault();
+                                  handleSendAttachment();
+                                }
                               }}
                               multiline
                               maxRows={4}
-                              disabled={!selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted' || !!pendingAttachment}
+                              disabled={!selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted'}
                               sx={{
                                 '& .MuiOutlinedInput-root': {
                                   borderRadius: 2,
@@ -3479,8 +3968,8 @@ const Dashboard = () => {
                             />
                             <IconButton
                               color="primary"
-                              onClick={handleSendChat}
-                              disabled={!chatInput.trim() || loading || !selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted' || !!pendingAttachment}
+                              onClick={pendingAttachment ? handleSendAttachment : handleSendChat}
+                              disabled={(!chatInput.trim() && !pendingAttachment) || loading || !selectedChat || getRequestStatus(selectedChat.id)?.status !== 'accepted'}
                               sx={{
                                 bgcolor: 'primary.main',
                                 color: 'white',
@@ -3514,7 +4003,7 @@ const Dashboard = () => {
                   </Box>
                 )}
                 {/* Settings Tab */}
-                {value === 7 && (
+                {value === 6 && (
                   <Box sx={{ background: '#fff', borderRadius: 3, p: 0, minHeight: 500 }}>
                     <Container maxWidth={false} disableGutters sx={{ pt: 2, pb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
                       <Paper elevation={3} sx={{ borderRadius: 3, p: 0 }}>
@@ -3566,6 +4055,13 @@ const Dashboard = () => {
                                   name="first_name"
                                   value={settingsFormData.first_name || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PersonIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3576,6 +4072,13 @@ const Dashboard = () => {
                                   name="last_name"
                                   value={settingsFormData.last_name || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PersonIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3586,6 +4089,13 @@ const Dashboard = () => {
                                   name="phone"
                                   value={settingsFormData.phone || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PhoneIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3598,6 +4108,11 @@ const Dashboard = () => {
                                   onChange={handleSettingsChange}
                                   InputProps={{
                                     readOnly: true,
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <EmailIcon color="action" />
+                                      </InputAdornment>
+                                    ),
                                   }}
                                 />
                               </Grid>
@@ -3609,6 +4124,11 @@ const Dashboard = () => {
                                   value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : ''}
                                   InputProps={{
                                     readOnly: true,
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CalendarMonthIcon color="action" />
+                                      </InputAdornment>
+                                    ),
                                   }}
                                   sx={{ mb: 2 }}
                                 />
@@ -3625,6 +4145,13 @@ const Dashboard = () => {
                                   InputLabelProps={{
                                     shrink: true,
                                   }}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CalendarMonthIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3635,6 +4162,13 @@ const Dashboard = () => {
                                   name="title"
                                   value={settingsFormData.title || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <WorkIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3645,6 +4179,13 @@ const Dashboard = () => {
                                   name="website"
                                   value={settingsFormData.website || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LanguageIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3655,6 +4196,13 @@ const Dashboard = () => {
                                   name="address"
                                   value={settingsFormData.address || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <HomeIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3665,6 +4213,13 @@ const Dashboard = () => {
                                   name="city"
                                   value={settingsFormData.city || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LocationCityIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3675,6 +4230,13 @@ const Dashboard = () => {
                                   name="country"
                                   value={settingsFormData.country || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PublicIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3687,6 +4249,13 @@ const Dashboard = () => {
                                   rows={3}
                                   value={settingsFormData.bio || ''}
                                   onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <InfoOutlinedIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </Grid>
 
@@ -3745,6 +4314,11 @@ const Dashboard = () => {
                                   value={passwordData.old_password}
                                   onChange={handlePasswordInputChange}
                                   InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LockOutlinedIcon color="action" />
+                                      </InputAdornment>
+                                    ),
                                     endAdornment: (
                                       <InputAdornment position="end">
                                         <IconButton
@@ -3768,6 +4342,11 @@ const Dashboard = () => {
                                   value={passwordData.new_password}
                                   onChange={handlePasswordInputChange}
                                   InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <VpnKeyIcon color="action" />
+                                      </InputAdornment>
+                                    ),
                                     endAdornment: (
                                       <InputAdornment position="end">
                                         <IconButton
@@ -3791,6 +4370,11 @@ const Dashboard = () => {
                                   value={passwordData.confirm_password}
                                   onChange={handlePasswordInputChange}
                                   InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CheckCircleIcon color="action" />
+                                      </InputAdornment>
+                                    ),
                                     endAdornment: (
                                       <InputAdornment position="end">
                                         <IconButton
@@ -3863,7 +4447,7 @@ const Dashboard = () => {
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem', pb: 1, borderBottom: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
           Share Post
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
@@ -3891,6 +4475,13 @@ const Dashboard = () => {
                     onChange={e => setShareIdeaForm(prev => ({ ...prev, type: e.target.value }))}
                     sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
                     helperText="What kind of post is this?"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LightbulbIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   >
                     <MenuItem value="Discussion">💬 Discussion</MenuItem>
                     <MenuItem value="Project Update">📢 Project Update</MenuItem>
@@ -3910,6 +4501,13 @@ const Dashboard = () => {
                     onChange={e => setShareIdeaForm(prev => ({ ...prev, visibility: e.target.value }))}
                     sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
                     helperText="Who can see this post?"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <VisibilityIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   >
                     <MenuItem value="public">🌍 Public</MenuItem>
                     <MenuItem value="private">🔒 Private</MenuItem>
@@ -3925,6 +4523,13 @@ const Dashboard = () => {
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontWeight: 600, fontSize: '1.15rem' } }}
                   inputProps={{ maxLength: 100 }}
                   helperText="Give your post a clear, descriptive title."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <TitleIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -3939,7 +4544,13 @@ const Dashboard = () => {
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                   helperText="Press Enter or comma to add a tag."
                   InputProps={{
-                    startAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
+                    //startAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LabelIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (shareIdeaForm.tags || []).map((tag, idx) => (
                       <Chip
                         key={tag}
                         label={`#${tag}`}
@@ -4015,6 +4626,13 @@ const Dashboard = () => {
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                   placeholder="What's on your mind? Share your thoughts..."
                   helperText="Describe your post in detail."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <InfoOutlinedIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -4267,7 +4885,9 @@ const Dashboard = () => {
                           (parseFloat(selectedCompany.fundraise_terms.pre_money_valuation) +
                             selectedCompany.payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0)) * 100) *
                           parseFloat(selectedCompany.kpis.revenue) / 100).toLocaleString()}`
-                        : 'N/A'}
+                        : selectedCompany?.payments ?
+                          `$${selectedCompany.payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toLocaleString()}`
+                          : 'N/A'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {selectedCompany && selectedCompany.kpis && selectedCompany.kpis.revenue ?
@@ -4355,16 +4975,24 @@ const Dashboard = () => {
                 <Grid item xs={12} md={8}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Investment Performance</Typography>
-                    <Box sx={{ height: 300 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={selectedCompany.investmentHistory || []}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="value" fill="#233876" radius={[6, 6, 6, 6]} />
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <Box sx={{ width: '100%', minWidth: 600, height: 350 }}>
+                      <Line
+                        data={chartData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { position: 'top' },
+                            title: { display: false },
+                          },
+                          scales: {
+                            x: { title: { display: true, text: 'Date' } },
+                            y: { title: { display: true, text: 'Value' }, beginAtZero: true },
+                          },
+                        }}
+                        height={350}
+                        width={900}
+                      />
                     </Box>
                   </Paper>
                 </Grid>
@@ -4429,7 +5057,7 @@ const Dashboard = () => {
                             <Box sx={{ mr: 2, mt: 0.5 }}>
                               <EventIcon color="primary" />
                             </Box>
-                            <Box>
+                            <Box sx={{ flex: 1 }}>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {update.text}
                               </Typography>
@@ -4437,6 +5065,19 @@ const Dashboard = () => {
                                 {update.date}
                               </Typography>
                             </Box>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                borderRadius: '0.5rem',
+                                color: '#6c63ff',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(108, 99, 255, 0.04)',
+                                  transform: 'scale(1.05)',
+                                },
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         </ListItem>
                       ))}
@@ -4450,13 +5091,16 @@ const Dashboard = () => {
                       {(selectedCompany.documents || []).map((doc, index) => (
                         <ListItem key={index} sx={{ px: 0, py: 1 }}>
                           <Button
-                            startIcon={<LinkIcon />}
-                            sx={{
-                              textTransform: 'none',
-                              color: 'primary.main',
-                              '&:hover': { textDecoration: 'underline' }
+                            onClick={() => {
+                              // Extract filename from the preview URL
+                              const filename = doc.preview.split('/').pop();
+                              // Use the API URL from environment variable or fallback to localhost
+                              const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+                              // Open the document in a new tab
+                              window.open(`${apiUrl}/media/investment_documents/${filename}`, '_blank');
                             }}
-                            href={doc.url}
+                            variant="text"
+                            startIcon={<DescriptionIcon />}
                           >
                             {doc.name}
                           </Button>
@@ -4484,16 +5128,83 @@ const Dashboard = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle>Delete Company</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this company? This action cannot be undone.
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">Delete</Button>
-        </DialogActions>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxWidth: 400,
+            mx: 'auto',
+            p: 3
+          }
+        }}
+      >
+        <Box sx={{ textAlign: 'center', p: 2 }}>
+          <Box sx={{
+            width: 70,
+            height: 70,
+            borderRadius: '50%',
+            backgroundColor: '#FEE2E2',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+          }}>
+            <DeleteIcon color="error" sx={{ fontSize: 36 }} />
+          </Box>
+
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            Are you Sure ?
+          </Typography>
+
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontSize: '0.9375rem' }}>
+            Are you Sure You want to Delete this {userToDelete ? 'User' : 'Post'} ?
+          </Typography>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={handleDeleteCancel}
+              sx={{
+                textTransform: 'none',
+                borderColor: '#D1D5DB',
+                color: '#374151',
+                borderRadius: '0.5rem',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  borderColor: '#9CA3AF',
+                  backgroundColor: 'transparent',
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={userToDelete ? handleDeleteUser : handleDeleteConfirm}
+              sx={{
+                textTransform: 'none',
+                backgroundColor: '#EF4444',
+                borderRadius: '0.5rem',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  backgroundColor: '#DC2626',
+                },
+                boxShadow: 'none',
+              }}
+            >
+              Yes, Delete It!
+            </Button>
+          </Box>
+        </Box>
       </Dialog>
+
+
 
       {/* Status Dialog */}
       <Dialog open={statusDialogOpen} onClose={handleStatusClose}>
@@ -4517,6 +5228,27 @@ const Dashboard = () => {
       </Dialog>
 
       {/* Track Progress Update Dialog */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{
+          '& .MuiSnackbar-anchorOriginTopCenter': {
+            top: '24px',
+          },
+        }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+          icon={snackbarSeverity === 'success' ? <CheckCircleIcon /> : <WarningAmberIcon />}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+      
       <Dialog open={openTrackProgressDialog} onClose={() => setOpenTrackProgressDialog(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, fontSize: 22, display: 'flex', alignItems: 'center', gap: 1 }}>
           <TrendingUpIcon color="primary" sx={{ mr: 1 }} /> Update Track Progress
@@ -4544,6 +5276,13 @@ const Dashboard = () => {
                       fullWidth
                       multiline
                       minRows={2}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <InfoOutlinedIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -4554,16 +5293,68 @@ const Dashboard = () => {
                 </Box>
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={12} md={6}>
-                    <TextField label="Current Company Valuation" placeholder="$10,000" value={trackProgressForm.kpis.revenue} onChange={e => handleTrackProgressKPIChange('revenue', e.target.value)} fullWidth />
+                    <TextField
+                      label="Current Company Valuation"
+                      placeholder="$10,000"
+                      value={trackProgressForm.kpis.revenue}
+                      onChange={e => handleTrackProgressKPIChange('revenue', e.target.value)}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AttachMoneyIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <TextField label="Revenue Rate" placeholder="25%" value={trackProgressForm.kpis.revenueRate} onChange={e => handleTrackProgressKPIChange('revenueRate', e.target.value)} fullWidth />
+                    <TextField
+                      label="Revenue Rate"
+                      placeholder="25%"
+                      value={trackProgressForm.kpis.revenueRate}
+                      onChange={e => handleTrackProgressKPIChange('revenueRate', e.target.value)}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <TrendingUpIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <TextField label="Burn Rate" placeholder="$2,000" value={trackProgressForm.kpis.burnRate} onChange={e => handleTrackProgressKPIChange('burnRate', e.target.value)} fullWidth />
+                    <TextField
+                      label="Burn Rate"
+                      placeholder="$2,000"
+                      value={trackProgressForm.kpis.burnRate}
+                      onChange={e => handleTrackProgressKPIChange('burnRate', e.target.value)}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LocalFireDepartmentIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <TextField label="Retention Rate" placeholder="85%" value={trackProgressForm.kpis.retention} onChange={e => handleTrackProgressKPIChange('retention', e.target.value)} fullWidth />
+                    <TextField
+                      label="Retention Rate"
+                      placeholder="85%"
+                      value={trackProgressForm.kpis.retention}
+                      onChange={e => handleTrackProgressKPIChange('retention', e.target.value)}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <RepeatIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
                   </Grid>
                 </Grid>
               </Paper>
@@ -4630,7 +5421,14 @@ const Dashboard = () => {
                           handleTrackProgressFormChange('updates', newArr);
                         }}
                         fullWidth
-                        InputProps={{ sx: { fontWeight: 500 } }}
+                        InputProps={{
+                          sx: { fontWeight: 500 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <DescriptionIcon color="action" />
+                            </InputAdornment>
+                          )
+                        }}
                       />
                     </Paper>
                   </Grid>
@@ -4655,9 +5453,16 @@ const Dashboard = () => {
               placeholder="Search by name or email..."
               value={permitSearch}
               onChange={e => setPermitSearch(e.target.value)}
-              sx={{ flex: 1, background: '#f7f9fb', borderRadius: 2 }}
+              sx={{ width: 320, background: '#f7f9fb', borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 16, pl: 1 } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
             />
-            <FormControl size="small" sx={{ minWidth: 180 }}>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
               <Select
                 value={permitStatusFilter}
                 displayEmpty
@@ -4697,18 +5502,18 @@ const Dashboard = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         {(() => {
                           const profilePic = user.user.profile_picture || user.user.profile_pic;
-                          const fullUrl = profilePic ? 
-                            (profilePic.startsWith('http') ? profilePic : 
-                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                          const fullUrl = profilePic ?
+                            (profilePic.startsWith('http') ? profilePic :
+                              `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) :
                             null;
 
                           return (
-                            <Avatar 
+                            <Avatar
                               src={fullUrl}
                               alt={`${user.user.first_name || ''} ${user.user.last_name || ''}`.trim()}
-                              sx={{ 
-                                width: 40, 
-                                height: 40, 
+                              sx={{
+                                width: 40,
+                                height: 40,
                                 bgcolor: fullUrl ? 'transparent' : '#1976d2',
                                 fontWeight: 700,
                                 fontSize: fullUrl ? 'inherit' : '1rem'
@@ -4789,17 +5594,17 @@ const Dashboard = () => {
               <Box display="flex" alignItems="center" gap={3} mb={3}>
                 {(() => {
                   const profilePic = permitUserDetail.profile_picture || permitUserDetail.profile_pic;
-                  const fullUrl = profilePic ? 
-                    (profilePic.startsWith('http') ? profilePic : 
-                    `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                  const fullUrl = profilePic ?
+                    (profilePic.startsWith('http') ? profilePic :
+                      `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) :
                     null;
 
                   return (
-                    <Avatar 
+                    <Avatar
                       src={fullUrl}
                       alt={permitUserDetail.full_name || 'User'}
-                      sx={{ 
-                        width: 80, 
+                      sx={{
+                        width: 80,
                         height: 80,
                         bgcolor: fullUrl ? 'transparent' : '#1976d2',
                         fontSize: '2rem',
@@ -4814,7 +5619,7 @@ const Dashboard = () => {
                     >
                       {!fullUrl && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <Typography variant="h4" component="div" sx={{ 
+                          <Typography variant="h4" component="div" sx={{
                             lineHeight: 1,
                             color: 'white',
                             fontWeight: 700,
@@ -4874,27 +5679,32 @@ const Dashboard = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={permitDeleteDialogOpen} onClose={() => setPermitDeleteDialogOpen(false)}>
-        <DialogTitle>Delete User</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this user info? This action cannot be undone.
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPermitDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={async () => {
-              if (permitUserToDelete) {
-                await handlePermitUserDelete(permitUserToDelete.id);
-              }
-              setPermitDeleteDialogOpen(false);
-              setPermitUserToDelete(null);
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
+      <Dialog open={permitDeleteDialogOpen} onClose={() => setPermitDeleteDialogOpen(false)} maxWidth="xs" fullWidth>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 4, minWidth: 340 }}>
+          <Box sx={{ background: '#ffeaea', borderRadius: '50%', p: 2, mb: 2 }}>
+            <DeleteIcon sx={{ color: '#e53935', fontSize: 48 }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Are you Sure ?</Typography>
+          <Typography sx={{ mb: 3, color: '#555' }}>Are you Sure You want to Delete this User ?</Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button variant="outlined" onClick={() => setPermitDeleteDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="contained"
+              color="error"
+              sx={{ fontWeight: 600 }}
+              onClick={async () => {
+                if (permitUserToDelete) {
+                  await handlePermitUserDelete(permitUserToDelete.id);
+                  setPermitDeleteSnackbar({ open: true, message: 'User deleted successfully!', severity: 'success' });
+                }
+                setPermitDeleteDialogOpen(false);
+                setPermitUserToDelete(null);
+              }}
+            >
+              Yes, Delete It!
+            </Button>
+          </Box>
+        </Box>
       </Dialog>
       {/* Settings Snackbar */}
       <Snackbar
@@ -5110,145 +5920,271 @@ const Dashboard = () => {
 
       {/* Edit Post Dialog */}
       <Dialog open={!!editPost} onClose={() => setEditPost(null)} maxWidth="sm" fullWidth
-        PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(80,80,180,0.10)',
+            background: '#fff',
+          }
+        }}
+      >
         <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EditIcon color="primary" sx={{ fontSize: 26, mr: 1 }} /> Edit Post
+          Edit Post
         </DialogTitle>
-        <DialogContent sx={{ pt: 3, pb: 2 }}>
-          {/* Attachment preview and upload */}
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Attachment:</Typography>
-            {(() => {
-              let fileUrl = '';
-              let fileName = '';
-              let showOld = false;
-              if (editPost && editPost.attachment && (!editForm.attachment || typeof editForm.attachment === 'string')) {
-                fileUrl = editPost.attachment;
-                fileName = typeof editPost.attachment === 'string' ? editPost.attachment.split('/').pop() : '';
-                showOld = true;
-                if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
-                  fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
-                  fileUrl = `http://localhost:8000/media/${fileUrl}`;
-                }
-              } else if (editForm.attachment && typeof editForm.attachment === 'string') {
-                fileUrl = editForm.attachment;
-                fileName = editForm.attachment.split('/').pop();
-                showOld = true;
-                if (fileUrl && !/^https?:\/\//.test(fileUrl)) {
-                  fileUrl = fileUrl.replace(/^\/?media[\\/]/, '');
-                  fileUrl = `http://localhost:8000/media/${fileUrl}`;
-                }
-              } else if (editForm.attachment && editForm.attachment.name) {
-                fileName = editForm.attachment.name;
-              }
-              return (
+        <DialogContent sx={{ pt: 3 }}>
+          <Box component="form" sx={{ mt: 1 }}>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Avatar
+                    src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+                    alt="Profile"
+                    sx={{ width: 44, height: 44, bgcolor: 'primary.main', fontWeight: 700 }}
+                  />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'User'} {userProfile?.last_name || ''}</Typography>
+                    <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Member'}</Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <TextField
+                    select
+                    label="Type"
+                    value={editForm.type || ''}
+                    onChange={e => setEditForm(prev => ({ ...prev, type: e.target.value }))}
+                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                    helperText="What kind of post is this?"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LightbulbIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  >
+                    <MenuItem value="Discussion">💬 Discussion</MenuItem>
+                    <MenuItem value="Project Update">📢 Project Update</MenuItem>
+                    <MenuItem value="Question">❓ Question</MenuItem>
+                    <MenuItem value="Idea">🧠 Idea</MenuItem>
+                    <MenuItem value="Other">🗂️ Other</MenuItem>
+                    <MenuItem value="Event"><EventIcon sx={{ fontSize: 18, mr: 1, verticalAlign: 'middle' }} />Event</MenuItem>
+                  </TextField>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <TextField
+                    select
+                    label="Visibility"
+                    value={editForm.visibility || 'public'}
+                    onChange={e => setEditForm(prev => ({ ...prev, visibility: e.target.value }))}
+                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
+                    helperText="Who can see this post?"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <VisibilityIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  >
+                    <MenuItem value="public">🌍 Public</MenuItem>
+                    <MenuItem value="private">🔒 Private</MenuItem>
+                  </TextField>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={editForm.title}
+                  onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontWeight: 600, fontSize: '1.15rem' } }}
+                  inputProps={{ maxLength: 100 }}
+                  helperText="Give your post a clear, descriptive title."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <TitleIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Tags"
+                  value={editTagInput}
+                  onChange={e => setEditTagInput(e.target.value.replace(/\s/g, ''))}
+                  onKeyDown={handleEditTagAdd}
+                  onBlur={handleEditTagAdd}
+                  placeholder="Add tags (e.g. #Fintech, #Africa, #StartupFunding)"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  helperText="Press Enter or comma to add a tag."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LabelIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (editForm.tags || []).map((tag, idx) => (
+                      <Chip
+                        key={tag}
+                        label={`#${tag}`}
+                        onDelete={() => handleEditTagDelete(tag)}
+                        sx={{ mx: 0.25 }}
+                      />
+                    ))
+                  }}
+                />
+              </Grid>
+              {editForm.type === 'Event' && (
                 <>
-                  {showOld && fileUrl && fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
-                    <Box sx={{ mt: 1 }}>
-                      <a href={fileUrl} download={fileName} style={{ display: 'inline-block' }}>
-                        <img src={fileUrl} alt={fileName} style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', cursor: 'pointer' }} />
-                      </a>
-                      <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
-                        <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName}</a>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location"
+                      value={editForm.eventLocation || ''}
+                      onChange={e => setEditForm(prev => ({ ...prev, eventLocation: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><RoomIcon color="action" /></InputAdornment> }}
+                      helperText="Where will the event take place? (e.g. Convention Center, City)"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location Link"
+                      value={editForm.eventLocationLink || ''}
+                      onChange={e => setEditForm(prev => ({ ...prev, eventLocationLink: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      type="url"
+                      placeholder="https://maps.example.com/..."
+                      InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
+                      helperText="Paste a Google Maps or website link for the location."
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Start Date & Time"
+                      type="datetime-local"
+                      value={editForm.eventStartDateTime || ''}
+                      onChange={e => setEditForm(prev => ({ ...prev, eventStartDateTime: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                      helperText="When does the event start?"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="End Date & Time"
+                      type="datetime-local"
+                      value={editForm.eventEndDateTime || ''}
+                      onChange={e => setEditForm(prev => ({ ...prev, eventEndDateTime: e.target.value }))}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><EventIcon color="action" /></InputAdornment> }}
+                      helperText="When does the event end?"
+                    />
+                  </Grid>
+                </>
+              )}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={editForm.description}
+                  onChange={e => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  placeholder="What's on your mind? Share your thoughts..."
+                  helperText="Describe your post in detail."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <InfoOutlinedIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<AttachFileIcon />}
+                  sx={{
+                    flexShrink: 0,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
+                    mb: 1,
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    bgcolor: '#f7f9fb',
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    borderWidth: 2,
+                    borderStyle: 'dashed',
+                    borderColor: '#90caf9',
+                    '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' }
+                  }}
+                >
+                  {editForm.attachment ? 'Change Media or File' : 'Add Media or File'}
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    hidden
+                    onChange={e => setEditForm(prev => ({ ...prev, attachment: e.target.files[0] }))}
+                  />
+                </Button>
+                <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                  Share an image, PDF, or document with your post.
+                </Typography>
+                {editForm.attachment && (
+                  <Box sx={{
+                    mt: 2, mb: 1, p: 2, display: 'flex', alignItems: 'center', gap: 2,
+                    border: '1.5px solid #1976d2', borderRadius: 2, bgcolor: '#f3f8fd',
+                    boxShadow: 1, position: 'relative',
+                    minHeight: 56
+                  }}>
+                    {editForm.attachment.type && editForm.attachment.type.startsWith('image/') ? (
+                      <img
+                        src={URL.createObjectURL(editForm.attachment)}
+                        alt="preview"
+                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                      />
+                    ) : (
+                      <AttachFileIcon sx={{ fontSize: 36, color: '#1976d2' }} />
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#233876', wordBreak: 'break-all' }}>{editForm.attachment.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {editForm.attachment.type || 'File'}
                       </Typography>
                     </Box>
-                  )}
-                  {showOld && fileUrl && !fileUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) && (
-                    <Box sx={{ mt: 1 }}>
-                      <a href={fileUrl} download={fileName} style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 600 }}>{fileName || 'Download Attachment'}</a>
-                    </Box>
-                  )}
-                  {editForm.attachment && editForm.attachment.name && (
-                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="body2">New file: {editForm.attachment.name}</Typography>
-                      <IconButton size="small" color="error" onClick={() => setEditForm(f => ({ ...f, attachment: null }))}><DeleteIcon /></IconButton>
-                    </Box>
-                  )}
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    startIcon={<AttachFileIcon />}
-                    sx={{ mt: 2, borderRadius: 2, textTransform: 'none', borderColor: 'rgba(0, 0, 0, 0.12)', bgcolor: '#f7f9fb', fontWeight: 600, color: 'primary.main', borderWidth: 2, borderStyle: 'dashed', borderColor: '#90caf9', '&:hover': { borderColor: 'primary.main', bgcolor: '#e3f2fd' } }}
-                  >
-                    {editForm.attachment ? 'Change Media or File' : 'Add Media or File'}
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                      hidden
-                      onChange={e => setEditForm(f => ({ ...f, attachment: e.target.files[0] }))}
-                    />
-                  </Button>
-                </>
-              );
-            })()}
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => setEditForm(prev => ({ ...prev, attachment: null }))}
+                      sx={{ ml: 1 }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
           </Box>
-          <TextField fullWidth label="Title" sx={{ my: 2 }} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 18 } }} />
-          {/* Type: read-only */}
-          <TextField fullWidth label="Type" sx={{ my: 2 }} value={editForm.type} InputProps={{ readOnly: true, sx: { borderRadius: 2, fontWeight: 600, fontSize: 16, bgcolor: '#f7f9fb' } }} />
-          {/* Visibility: select dropdown */}
-          <FormControl fullWidth sx={{ my: 2 }}>
-            <TextField
-              select
-              label="Visibility"
-              value={editForm.visibility || 'public'}
-              onChange={e => setEditForm(f => ({ ...f, visibility: e.target.value }))}
-              sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: 2 } }}
-            >
-              <MenuItem value="public">🌍 Public</MenuItem>
-              <MenuItem value="private">🔒 Private</MenuItem>
-            </TextField>
-          </FormControl>
-          {/* Tags: chips input, pre-filled and editable */}
-          <TextField
-            fullWidth
-            label="Tags"
-            value={editForm.tagInput || ''}
-            onChange={e => setEditForm(f => ({ ...f, tagInput: e.target.value.replace(/\s/g, '') }))}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
-                const value = (editForm.tagInput || '').trim().replace(/^#/, '');
-                if (value && !(editForm.tags || []).includes(value)) {
-                  setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
-                } else {
-                  setEditForm(f => ({ ...f, tagInput: '' }));
-                }
-                e.preventDefault();
-              }
-            }}
-            onBlur={e => {
-              const value = (editForm.tagInput || '').trim().replace(/^#/, '');
-              if (value && !(editForm.tags || []).includes(value)) {
-                setEditForm(f => ({ ...f, tags: [...(f.tags || []), value], tagInput: '' }));
-              } else {
-                setEditForm(f => ({ ...f, tagInput: '' }));
-              }
-            }}
-            placeholder="Add tags (e.g. #Fintech, #Startup)"
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-            helperText="Press Enter or comma to add a tag."
-            InputProps={{
-              startAdornment: (editForm.tags || []).map((tag, idx) => (
-                <Chip
-                  key={tag}
-                  label={`#${tag}`}
-                  onDelete={() => setEditForm(f => ({ ...f, tags: (f.tags || []).filter(t => t !== tag) }))}
-                  sx={{ mx: 0.25 }}
-                />
-              ))
-            }}
-          />
-          <TextField fullWidth label="Description" sx={{ my: 2 }} multiline rows={4} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontSize: 16 } }} />
-          {/* Event fields if type is Event, always shown and pre-filled */}
-          {editForm.type === 'Event' && (
-            <>
-              <TextField fullWidth label="Event Location" sx={{ my: 2 }} value={editForm.eventLocation || ''} onChange={e => setEditForm(f => ({ ...f, eventLocation: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
-              <TextField fullWidth label="Event Location Link" sx={{ my: 2 }} value={editForm.eventLocationLink || ''} onChange={e => setEditForm(f => ({ ...f, eventLocationLink: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} />
-              <TextField fullWidth label="Event Start Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventStartDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventStartDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
-              <TextField fullWidth label="Event End Date & Time" sx={{ my: 2 }} type="datetime-local" value={editForm.eventEndDateTime || ''} onChange={e => setEditForm(f => ({ ...f, eventEndDateTime: e.target.value }))} InputProps={{ sx: { borderRadius: 2, fontWeight: 600, fontSize: 16 } }} InputLabelProps={{ shrink: true }} />
-            </>
-          )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
           <Button onClick={() => setEditPost(null)} variant="outlined" color="error" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
           <Button onClick={handleEditPost} variant="contained" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Saving...' : 'Save'}</Button>
         </DialogActions>
@@ -5256,17 +6192,30 @@ const Dashboard = () => {
 
       {/* Delete Post Dialog */}
       <Dialog open={!!deletePost} onClose={() => setDeletePost(null)} maxWidth="xs"
-        PaperProps={{ sx: { borderRadius: 3, boxShadow: 8, p: 0 } }}>
-        <DialogTitle sx={{ fontWeight: 700, fontSize: 22, pb: 1, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DeleteIcon color="error" sx={{ fontSize: 28, mr: 1 }} /> Delete Post
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3, pb: 2 }}>
-          <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>Are you sure you want to delete this post?</Typography>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'error.main', mb: 1 }}>{deletePost?.title}</Typography>
+        PaperProps={{ sx: { borderRadius: 4, boxShadow: 8, p: 0, minWidth: 380 } }}>
+        <DialogContent sx={{ pt: 5, pb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box sx={{
+            background: '#ffe5e5',
+            borderRadius: '50%',
+            width: 100,
+            height: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 3
+          }}>
+            <DeleteIcon sx={{ color: '#e53935', fontSize: 54 }} />
+          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, textAlign: 'center', color: '#222' }}>Are you Sure ?</Typography>
+          <Typography variant="body1" sx={{ color: '#888', mb: 4, textAlign: 'center', fontWeight: 500 }}>
+            Are you Sure You want to Delete this Post ?
+          </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-          <Button onClick={() => setDeletePost(null)} variant="outlined" color="primary" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}>Cancel</Button>
-          <Button onClick={() => handleDeletePost(deletePost.id)} color="error" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 4 }} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete'}</Button>
+        <DialogActions sx={{ justifyContent: 'center', pb: 4, gap: 2 }}>
+          <Button onClick={() => setDeletePost(null)} variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, px: 5, color: '#444', borderColor: '#e0e0e0', background: '#fff', boxShadow: 'none', '&:hover': { background: '#f5f5f5', borderColor: '#bdbdbd' } }}>Cancel</Button>
+          <Button onClick={() => handleDeletePost(deletePost.id)} variant="contained" sx={{ borderRadius: 2, fontWeight: 700, px: 5, background: '#f44336', color: '#fff', boxShadow: 'none', '&:hover': { background: '#d32f2f' } }} disabled={actionLoading}>
+            {actionLoading ? 'Deleting...' : 'Yes, Delete It!'}
+          </Button>
         </DialogActions>
       </Dialog>
       {/* Company Users Dialog */}
@@ -5295,31 +6244,41 @@ const Dashboard = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {companyUsers.map(u => {
-                    // Find latest payment for status/amount
-                    const latestPayment = u.payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0];
-                    return (
+                  {companyUsers
+                    .filter(u => {
+                      const name = `${u.user?.first_name || ''} ${u.user?.last_name || ''}`.toLowerCase();
+                      const email = (u.user?.email || '').toLowerCase();
+                      const search = companyUserSearch.toLowerCase();
+                      const latestPayment = (u.payments && u.payments.length > 0) ? u.payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))[0] : { amount: 0, payment_status: 'unpaid' };
+                      const amount = parseFloat(latestPayment.amount) || 0;
+                      return (
+                        (!search || name.includes(search) || email.includes(search)) &&
+                        amount >= companyUserAmountRange[0] &&
+                        amount <= companyUserAmountRange[1]
+                      );
+                    })
+                    .map(u => (
                       <TableRow key={u.user_id}>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             {(() => {
                               const profilePic = u.user?.profile_picture || u.user?.profile_pic;
-                              const fullUrl = profilePic ? 
-                                (profilePic.startsWith('http') ? profilePic : 
-                                `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                              const fullUrl = profilePic ?
+                                (profilePic.startsWith('http') ? profilePic :
+                                  `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) :
                                 null;
-                              
+
                               // Log the user object and profile picture URL for debugging
                               console.log('Company User Object:', u.user);
                               console.log('Profile Picture URL:', fullUrl);
 
                               return (
-                                <Avatar 
+                                <Avatar
                                   src={fullUrl}
                                   alt={`${u.user?.first_name || ''} ${u.user?.last_name || ''}`.trim()}
-                                  sx={{ 
-                                    width: 40, 
-                                    height: 40, 
+                                  sx={{
+                                    width: 40,
+                                    height: 40,
                                     bgcolor: fullUrl ? 'transparent' : '#1976d2',
                                     fontWeight: 700,
                                     fontSize: fullUrl ? 'inherit' : '1rem'
@@ -5341,25 +6300,38 @@ const Dashboard = () => {
                         </TableCell>
                         <TableCell>{u.user?.email}<br />{u.user?.phone}</TableCell>
                         <TableCell>
-{[u.user?.address, u.user?.city, u.user?.country].filter(Boolean).join(', ')} </TableCell> 
+                          {[u.user?.address, u.user?.city, u.user?.country].filter(Boolean).join(', ')}
+                        </TableCell>
                         <TableCell>
                           <Chip
-                            label={latestPayment.payment_status}
-                            color={latestPayment.payment_status === 'paid' ? 'success' : 'warning'}
+                            label={(u.payments && u.payments.length > 0) ? u.payments[0].payment_status : 'unpaid'}
+                            color={(u.payments && u.payments.length > 0 && u.payments[0].payment_status === 'paid') ? 'success' : 'warning'}
                             size="small"
                           />
                         </TableCell>
                         <TableCell>
-                          {latestPayment.amount}
+                          {(u.payments && u.payments.length > 0) ? u.payments[0].amount : 'N/A'}
                         </TableCell>
                         <TableCell>
-                          <IconButton size="small" onClick={() => handleViewUserProfile(u.user)}>
-                            <VisibilityIcon />
-                          </IconButton>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <IconButton size="small" onClick={() => handleViewUserProfile(u.user)}>
+                              <VisibilityIcon />
+                            </IconButton>
+                           {/* <IconButton
+                              size="small"
+                              color="error"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUserToDelete(u);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton> */}
+                          </Box>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -5400,6 +6372,12 @@ const Dashboard = () => {
           onClick={() => {
             // Delete from chat
             setChatUsers(prev => prev.filter(u => u.id !== chatMenuUser.id));
+            // Persist deleted user in localStorage
+            const deletedChatUsers = JSON.parse(localStorage.getItem('deletedChatUsers') || '[]');
+            if (!deletedChatUsers.includes(chatMenuUser.id)) {
+              deletedChatUsers.push(chatMenuUser.id);
+              localStorage.setItem('deletedChatUsers', JSON.stringify(deletedChatUsers));
+            }
             setChatMenuAnchorEl(null);
             if (selectedChat?.id === chatMenuUser.id) setSelectedChat(null);
           }}
@@ -5407,6 +6385,115 @@ const Dashboard = () => {
           Delete from Chat
         </MenuItem>
       </Menu>
+      <AddUserDialog
+        open={addUserDialogOpen}
+        onClose={() => setAddUserDialogOpen(false)}
+        onSubmit={async (data) => {
+          try {
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser?.access) {
+              showSnackbar('Authentication token not found', 'error');
+              return;
+            }
+            if (!data.company || !data.name || !data.amount || !data.paymentMethod) {
+              showSnackbar('Please fill all fields', 'error');
+              return;
+            }
+            const payload = {
+              user_id: data.name.value,
+              company_id: data.company.value,
+              amount: data.amount,
+              payment_method: data.paymentMethod,
+            };
+            const response = await axios.post(
+              'http://localhost:8000/api/company-add-user/add/',
+              payload,
+              {
+                headers: {
+                  'Authorization': `Bearer ${currentUser.access}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            if (response.data && response.data.success) {
+              showSnackbar('User added and payment recorded successfully!', 'success');
+              if (selectedCompanyForUsers) {
+                await handleOpenCompanyUsers(selectedCompanyForUsers);
+              }
+            } else {
+              showSnackbar(response.data?.message || 'Failed to add user', 'error');
+            }
+          } catch (err) {
+            showSnackbar(err.response?.data?.message || 'Error adding user', 'error');
+          } finally {
+            setAddUserDialogOpen(false);
+          }
+        }}
+      />
+      <CompanyUpdateLog open={updateLogOpen} onClose={() => setUpdateLogOpen(false)} company={updateLogCompany} />
+      {/* Add Menu for message actions (outside the map, near the end of chat messages rendering) */}
+      <Menu
+        anchorEl={messageMenuAnchorEl}
+        open={Boolean(messageMenuAnchorEl)}
+        onClose={() => setMessageMenuAnchorEl(null)}
+      >
+        {(() => {
+          const msg = messages.find(m => m.id === messageMenuMsgId);
+          const now = new Date();
+          const sentTime = msg?.timestamp ? new Date(msg.timestamp) : null;
+          const canEdit = msg && msg.text && !msg.file && !msg.text.includes('This message was deleted by') &&
+            sentTime && ((now - sentTime) / 1000 < 10); // less than 10 seconds
+          //sentTime && ((now - sentTime) / 1000 < 60); // less than 60 seconds (1 minute)
+
+          if (canEdit) {
+            return (
+              <MenuItem onClick={() => {
+                setEditMessageId(messageMenuMsgId);
+                setEditMessageText(msg.text || '');
+                setMessageMenuAnchorEl(null);
+              }}>
+                <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit message
+              </MenuItem>
+            );
+          }
+          return null;
+        })()}
+        <MenuItem onClick={() => {
+          setChatDeleteMessageId(messageMenuMsgId);
+          setChatDeleteDialogOpen(true);
+          setMessageMenuAnchorEl(null);
+        }}>
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete message
+        </MenuItem>
+      </Menu>
+      {/* Add Dialog for delete confirmation (outside the map, near the end of chat messages rendering) */}
+      <Dialog open={chatDeleteDialogOpen} onClose={() => setChatDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Message</DialogTitle>
+        <DialogContent>Are you sure you want to delete this message? This action cannot be undone.</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setChatDeleteDialogOpen(false)} color="primary">Cancel</Button>
+          <Button onClick={async () => {
+            await handleDeleteMessage(chatDeleteMessageId);
+            setChatDeleteDialogOpen(false);
+            setChatDeleteMessageId(null);
+          }} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Permit Delete Snackbar */}
+      <Snackbar
+        open={permitDeleteSnackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setPermitDeleteSnackbar({ ...permitDeleteSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setPermitDeleteSnackbar({ ...permitDeleteSnackbar, open: false })}
+          severity={permitDeleteSnackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {permitDeleteSnackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

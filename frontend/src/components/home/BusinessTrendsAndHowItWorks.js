@@ -176,23 +176,25 @@ export default function BusinessTrendsAndHowItWorks() {
             <Typography color="text.secondary" mb={3} sx={{ fontSize: isXs ? '1rem' : '1.1rem' }}>
               A fundraising company typically works by partnering with organisations, charities, or individuals to help them raise money for a specific cause or project. The company provides a variety of fundraising services, such as marketing, event planning, and donor management, to help their clients achieve their fundraising.
             </Typography>
-            <Button
+            {/*<Button
               variant="contained"
               onClick={handleCreateAccount}
               sx={{
-                background: '#0066ff',
-                color: '#fff',
-                fontWeight: 700,
-                borderRadius: 8,
-                px: 4,
-                py: 1.2,
-                fontSize: { xs: '1rem', sm: '1.1rem' },
-                boxShadow: 1,
-                '&:hover': { background: '#0052cc' },
+                fontWeight: 600,
+                px: { xs: 3, sm: 4 },
+                py: { xs: 1.25, sm: 1.5 },
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                borderRadius: 2,
+                textTransform: 'none',
+                boxShadow: '0 4px 14px rgba(95, 95, 255, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 6px 20px rgba(95, 95, 255, 0.4)'
+                },
+                minWidth: 200
               }}
             >
               Create an Account
-            </Button>
+            </Button>*/}
           </Grid>
           <Grid item xs={12} md={7}>
             <Grid

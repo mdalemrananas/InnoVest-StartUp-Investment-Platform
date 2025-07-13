@@ -1340,9 +1340,9 @@ function InvestmentFlow() {
                   </Typography>
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Minimum investment: ${fundraiseTerms?.min_investment_amount?.toLocaleString() || 'N/A'}
+                      Minimum investment: ৳{fundraiseTerms?.min_investment_amount?.toLocaleString() || 'N/A'}
                       {fundraiseTerms?.raise_amount &&
-                        ` | Maximum investment: $${Number(fundraiseTerms.raise_amount).toLocaleString()}`}
+                        ` | Maximum investment: ৳${Number(fundraiseTerms.raise_amount).toLocaleString()}`}
                     </Typography>
                     <TextField
                       fullWidth
@@ -1353,7 +1353,7 @@ function InvestmentFlow() {
                       error={!!investmentError}
                       helperText={investmentError}
                       InputProps={{
-                        startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                        startAdornment: <Typography sx={{ mr: 1 }}>৳</Typography>,
                       }}
                       sx={{ mb: 2 }}
                     />
@@ -1373,7 +1373,7 @@ function InvestmentFlow() {
                     <Box>
                       <Typography variant="subtitle2" color="text.secondary"><b>Your Investment:</b></Typography>
                       <Typography variant="h6" color="primary.main">
-                        ${Number(investmentAmount || 0).toLocaleString()}
+                        ৳{Number(investmentAmount || 0).toLocaleString()}
                       </Typography>
                     </Box>
                     {/*<Box>
@@ -1409,7 +1409,7 @@ function InvestmentFlow() {
                     <Box>
                       <Typography variant="subtitle2" color="text.secondary">Investment Amount</Typography>
                       <Typography variant="h6" color="primary.main">
-                        ${Number(investmentAmount).toLocaleString()}
+                        ৳{Number(investmentAmount).toLocaleString()}
                       </Typography>
                     </Box>
                     {paymentError && (

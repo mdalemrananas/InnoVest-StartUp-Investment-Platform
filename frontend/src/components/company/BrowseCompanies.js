@@ -58,11 +58,19 @@ const industryOptions = [
     { value: 'other', label: 'Other' },
 ];
 
+const tabOptions = [
+    { label: 'Featured', value: 0 },
+    // { label: 'Trending', value: 1 }, // Hidden for now
+    { label: 'Recently Funded', value: 1 },
+    //{ label: 'New & Noteworthy', value: 2 },
+];
+
 const BrowseCompanies = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [companies, setCompanies] = useState([]);
     const [displayedCompanies, setDisplayedCompanies] = useState([]);
+    const [allFilteredCompanies, setAllFilteredCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState('');
@@ -72,6 +80,7 @@ const BrowseCompanies = () => {
     const [favorites, setFavorites] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [page, setPage] = useState(1);
+    const [recentlyFundedCompanies, setRecentlyFundedCompanies] = useState([]);
 
     const fetchCompanies = async () => {
         try {
@@ -79,8 +88,29 @@ const BrowseCompanies = () => {
             setError('');
             const data = await companyService.getCompanies();
             const allCompanies = Array.isArray(data) ? data : [];
-            setCompanies(allCompanies);
-            setDisplayedCompanies(allCompanies.slice(0, ITEMS_PER_PAGE));
+            
+            // Fetch paid investors count for each company
+            const companiesWithInvestorCount = await Promise.all(
+                allCompanies.map(async (company) => {
+                    try {
+                        const paidInvestorsCount = await companyService.getPaidInvestorsCount(company.id);
+                        return {
+                            ...company,
+                            paidInvestorsCount
+                        };
+                    } catch (error) {
+                        console.error(`Error fetching paid investors count for company ${company.id}:`, error);
+                        return {
+                            ...company,
+                            paidInvestorsCount: 0
+                        };
+                    }
+                })
+            );
+            
+            setCompanies(companiesWithInvestorCount);
+            setAllFilteredCompanies(companiesWithInvestorCount);
+            setDisplayedCompanies(companiesWithInvestorCount.slice(0, ITEMS_PER_PAGE));
         } catch (err) {
             console.error('Error details:', err);
             setError(err.message || 'Failed to load companies. Please try again later.');
@@ -96,55 +126,139 @@ const BrowseCompanies = () => {
     const handleLoadMore = () => {
         setLoadingMore(true);
         const nextPage = page + 1;
-        const startIndex = 0;
         const endIndex = nextPage * ITEMS_PER_PAGE;
+        
+        const companiesToDisplay = activeTab === 1 ? recentlyFundedCompanies : allFilteredCompanies;
+
+        // Show loading state for a minimum time to prevent flickering
+        const minLoadingTime = 300;
+        const startTime = Date.now();
 
         setTimeout(() => {
-            setDisplayedCompanies(companies.slice(startIndex, endIndex));
+            setDisplayedCompanies(companiesToDisplay.slice(0, endIndex));
             setPage(nextPage);
-            setLoadingMore(false);
-        }, 500); // Simulate loading delay
+            
+            const elapsed = Date.now() - startTime;
+            const remainingTime = Math.max(0, minLoadingTime - elapsed);
+            
+            if (remainingTime > 0) {
+                setTimeout(() => {
+                    setLoadingMore(false);
+                }, remainingTime);
+            } else {
+                setLoadingMore(false);
+            }
+        }, 100);
     };
 
     const handleRetry = () => {
         fetchCompanies();
     };
 
-    const handleTabChange = (event, newValue) => {
+    const handleTabChange = async (event, newValue) => {
         setActiveTab(newValue);
+        setPage(1);
+
+        if (tabOptions[newValue].label === 'Recently Funded') {
+            setLoading(true);
+            setError('');
+            try {
+                const response = await fetch('http://localhost:8000/api/companies/recently-funded/');
+                if (!response.ok) {
+                    setError('Failed to load recently funded companies (bad status).');
+                    setLoading(false);
+                    return;
+                }
+                const data = await response.json();
+                let companiesList = [];
+                if (Array.isArray(data)) {
+                    companiesList = data;
+                } else if (data && Array.isArray(data.data)) {
+                    companiesList = data.data;
+                }
+                
+                // Fetch paid investors count for each recently funded company
+                const companiesWithInvestorCount = await Promise.all(
+                    companiesList.map(async (company) => {
+                        try {
+                            const paidInvestorsCount = await companyService.getPaidInvestorsCount(company.id);
+                            return {
+                                ...company,
+                                paidInvestorsCount
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching paid investors count for company ${company.id}:`, error);
+                            return {
+                                ...company,
+                                paidInvestorsCount: 0
+                            };
+                        }
+                    })
+                );
+                
+                setRecentlyFundedCompanies(companiesWithInvestorCount);
+                setDisplayedCompanies(companiesWithInvestorCount.slice(0, ITEMS_PER_PAGE));
+                setPage(1);
+                setError(companiesWithInvestorCount.length === 0 ? 'No recently funded companies found.' : '');
+            } catch (err) {
+                setError('Failed to load recently funded companies. ' + err.message);
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            const filtered = filterCompanies(searchQuery, selectedIndustry, newValue);
+            setAllFilteredCompanies(filtered);
+            setDisplayedCompanies(filtered.slice(0, ITEMS_PER_PAGE));
+            setPage(1);
+            setError('');
+        }
     };
 
-    const filterCompanies = (query, industry) => {
-        return companies.filter(company => {
+    const filterCompanies = (query, industry, tabIdx) => {
+        let filtered = companies.filter(company => {
             const searchTerm = query.toLowerCase().trim();
             const matchesSearch = !searchTerm || 
                 (company.product_name && company.product_name.toLowerCase().includes(searchTerm)) ||
                 (company.quick_description && company.quick_description.toLowerCase().includes(searchTerm));
-                
             const companyIndustry = company.industry ? company.industry.trim().toLowerCase() : '';
             const selectedIndustryValue = industry?.value ? industry.value.trim().toLowerCase() : '';
             const matchesIndustry = !industry || !selectedIndustryValue || 
                                  companyIndustry === selectedIndustryValue;
-            
-            console.log('Filtering - Company:', company.product_name);
-            console.log('  Industry:', companyIndustry, 'Selected:', selectedIndustryValue, 'Match:', matchesIndustry);
-            
             return matchesSearch && matchesIndustry;
         });
+        // Tab filtering logic
+        switch (tabIdx) {
+            case 1: // Trending
+                // Example: sort by a 'popularity' field if available
+                filtered = [...filtered].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+                break;
+            case 2: // Recently Funded
+                // Example: sort by a 'funded_at' date if available
+                filtered = [...filtered].sort((a, b) => new Date(b.funded_at || 0) - new Date(a.funded_at || 0));
+                break;
+            case 3: // New & Noteworthy
+                // Example: sort by a 'created_at' date if available
+                filtered = [...filtered].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                break;
+            default:
+                // Featured: could filter by a flag, or just show all
+                break;
+        }
+        return filtered;
     };
 
     const handleSearch = (event) => {
         const query = event.target.value;
         setSearchQuery(query);
         setPage(1);
-        const filtered = filterCompanies(query, selectedIndustry);
+        const filtered = filterCompanies(query, selectedIndustry, activeTab);
         setDisplayedCompanies(filtered.slice(0, ITEMS_PER_PAGE));
     };
 
     const handleIndustryChange = (event, newValue) => {
         setSelectedIndustry(newValue);
         setPage(1);
-        const filtered = filterCompanies(searchQuery, newValue);
+        const filtered = filterCompanies(searchQuery, newValue, activeTab);
         setDisplayedCompanies(filtered.slice(0, ITEMS_PER_PAGE));
     };
 
@@ -179,7 +293,17 @@ const BrowseCompanies = () => {
         );
     }
 
-    const hasMoreCompanies = displayedCompanies.length < companies.length;
+    const hasMoreCompanies = () => {
+        if (loading || loadingMore) return false;
+        
+        if (activeTab === 1) { // Recently Funded tab
+            return recentlyFundedCompanies.length > 0 && 
+                   displayedCompanies.length < recentlyFundedCompanies.length;
+        } else { // Featured tab
+            return allFilteredCompanies.length > 0 && 
+                   displayedCompanies.length < allFilteredCompanies.length;
+        }
+    };
 
     return (
         <Box sx={{ bgcolor: '#F5F7FA', minHeight: '100vh' }}>
@@ -240,90 +364,157 @@ const BrowseCompanies = () => {
             </Box>
 
             {/* Filter/Search Bar */}
-            <Container maxWidth="md" sx={{ mt: -5, mb: 5, position: 'relative', zIndex: 3 }}>
+            <Container maxWidth="lg" sx={{ mt: -5, mb: 5, position: 'relative', zIndex: 3 }}>
                 <Box
                     sx={{
                         background: '#fff',
                         borderRadius: 3,
                         boxShadow: '0 2px 12px 0 rgba(80, 80, 180, 0.08)',
+                        border: '1px solid #e0e3ea',
                         p: 2,
                         display: 'flex',
                         gap: 2,
                         alignItems: 'center',
                         flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                        minHeight: 56,
+                        width: '100%',
+                        maxWidth: 1200,
+                        mx: 'auto',
                     }}
                 >
-                    <TextField
-                        size="small"
-                        placeholder="Search by company name or keyword..."
-                        value={searchQuery}
-                        onChange={handleSearch}
-                        variant="outlined"
+                    {/* Tabs on the left */}
+                    <Tabs
+                        value={activeTab}
+                        onChange={handleTabChange}
+                        variant="fullWidth"
+                        aria-label="Company filter tabs"
                         sx={{
-                            flex: 2,
-                            background: '#f7f9fb',
-                            borderRadius: 2,
-                            '& .MuiOutlinedInput-root': {
-                                background: 'transparent',
-                                borderRadius: 2,
-                                border: '1px solid #e0e3ea',
-                                boxShadow: 'none',
-                                '& fieldset': { border: 'none' },
-                            },
-                            '& .MuiInputBase-input': {
-                                background: 'transparent',
-                                border: 'none',
-                                boxShadow: 'none',
-                            },
-                        }}
-                    />
-                    <Autocomplete
-                        size="small"
-                        options={industryOptions}
-                        value={selectedIndustry}
-                        onChange={handleIndustryChange}
-                        getOptionLabel={(option) => option.label || ''}
-                        isOptionEqualToValue={(option, value) => option.value === value?.value}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Select Industry"
-                                variant="outlined"
-                                sx={{
-                                    minWidth: 180,
-                                    '& .MuiOutlinedInput-root': {
-                                        background: '#f7f9fb',
-                                        borderRadius: 2,
-                                        border: '1px solid #e0e3ea',
-                                        '& fieldset': { border: 'none' },
-                                    },
-                                }}
-                            />
-                        )}
-                        sx={{
-                            '& .MuiAutocomplete-popupIndicator': {
-                                color: 'text.secondary',
-                            },
-                        }}
-                    />
-                    <Button
-                        variant="contained"
-                        //startIcon={<FilterListIcon />}
-                        startIcon={<SearchIcon />}
-                        sx={{
-                            background: '#2d3e70',
-                            color: '#fff',
-                            borderRadius: 2,
-                            px: 3,
-                            fontWeight: 700,
-                            boxShadow: 'none',
-                            textTransform: 'none',
+                            minHeight: 40,
                             height: 40,
-                            '&:hover': { background: '#1a2650' },
+                            '& .MuiTabs-flexContainer': {
+                                gap: 0.5,
+                            },
+                            '& .MuiTab-root': {
+                                minHeight: 40,
+                                height: 40,
+                                minWidth: 120,
+                                fontWeight: 700,
+                                color: '#888',
+                                bgcolor: '#f2f4f8',
+                                borderRadius: 0,
+                                px: 2.5,
+                                textTransform: 'none',
+                                transition: 'background 0.2s, color 0.2s',
+                                '&:hover': {
+                                    bgcolor: '#e3e8ef',
+                                    color: '#2d8cff',
+                                },
+                                '&.Mui-selected': {
+                                    color: '#fff',
+                                    bgcolor: '#2d8cff',
+                                    boxShadow: '0 2px 8px 0 rgba(45,140,255,0.10)',
+                                },
+                            },
+                            '& .MuiTab-root:first-of-type': {
+                                borderTopLeftRadius: 8,
+                                borderBottomLeftRadius: 8,
+                            },
+                            '& .MuiTab-root:last-of-type': {
+                                borderTopRightRadius: 8,
+                                borderBottomRightRadius: 8,
+                            },
+                            flex: 2,
+                            mr: { xs: 0, sm: 2 },
+                            overflowX: 'auto',
                         }}
                     >
-                        Search
-                    </Button>
+                        {tabOptions.map((tab, idx) => (
+                            <Tab key={tab.value} label={tab.label} disableRipple />
+                        ))}
+                    </Tabs>
+                    {/* Search and filters */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', flex: 4, gap: 2, minWidth: 0 }}>
+                        <TextField
+                            size="small"
+                            placeholder="Search by company name..."
+                            value={searchQuery}
+                            onChange={handleSearch}
+                            variant="outlined"
+                            sx={{
+                                flex: 3,
+                                background: '#f7f9fb',
+                                borderRadius: 2,
+                                '& .MuiOutlinedInput-root': {
+                                    background: 'transparent',
+                                    borderRadius: 2,
+                                    border: '1px solid #e0e3ea',
+                                    boxShadow: 'none',
+                                    '& fieldset': { border: 'none' },
+                                },
+                                '& .MuiInputBase-input': {
+                                    background: 'transparent',
+                                    border: 'none',
+                                    boxShadow: 'none',
+                                },
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon color="action" />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <Autocomplete
+                            size="small"
+                            options={industryOptions}
+                            value={selectedIndustry}
+                            onChange={handleIndustryChange}
+                            getOptionLabel={(option) => option.label || ''}
+                            isOptionEqualToValue={(option, value) => option.value === value?.value}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Select Industry"
+                                    variant="outlined"
+                                    sx={{
+                                        minWidth: 200,
+                                        flex: 2,
+                                        '& .MuiOutlinedInput-root': {
+                                            background: '#f7f9fb',
+                                            borderRadius: 2,
+                                            border: '1px solid #e0e3ea',
+                                            '& fieldset': { border: 'none' },
+                                        },
+                                    }}
+                                />
+                            )}
+                            sx={{
+                                flex: 2,
+                                '& .MuiAutocomplete-popupIndicator': {
+                                    color: 'text.secondary',
+                                },
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            startIcon={<SearchIcon />}
+                            sx={{
+                                background: '#2d3e70',
+                                color: '#fff',
+                                borderRadius: 2,
+                                px: 3,
+                                fontWeight: 700,
+                                boxShadow: 'none',
+                                textTransform: 'none',
+                                height: 40,
+                                minWidth: 120,
+                                '&:hover': { background: '#1a2650' },
+                            }}
+                        >
+                            Search
+                        </Button>
+                    </Box>
                 </Box>
             </Container>
 
@@ -332,7 +523,9 @@ const BrowseCompanies = () => {
                     <Alert
                         severity="error"
                         sx={{
-                            mb: 3,
+                            mt: 3,
+                            display: 'flex',
+                            alignItems: 'center',
                             borderRadius: 2,
                             '& .MuiAlert-message': { flex: 1 }
                         }}
@@ -352,24 +545,44 @@ const BrowseCompanies = () => {
                 )}
 
                 {displayedCompanies.length === 0 ? (
-                    <Paper
-                        sx={{
-                            p: 4,
-                            textAlign: 'center',
-                            borderRadius: 2,
-                            bgcolor: 'rgba(0,0,0,0.02)'
-                        }}
-                    >
-                        <Typography variant="h6" color="text.secondary" gutterBottom>
-                            No Companies Found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Try adjusting your search or filters to find what you're looking for.
-                        </Typography>
-                    </Paper>
+                    <Grid container spacing={3} sx={{ mt: 4 }}>
+                        <Grid item xs={12}>
+                            <Typography variant="h6" color="text.secondary" textAlign="center">
+                                No companies found matching your criteria.
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Paper
+                                sx={{
+                                    p: 4,
+                                    textAlign: 'center',
+                                    borderRadius: 2,
+                                    bgcolor: 'rgba(0,0,0,0.02)'
+                                }}
+                            >
+                                <Typography variant="body2" color="text.secondary">
+                                    Try adjusting your search or filters to find what you're looking for.
+                                </Typography>
+                            </Paper>
+                        </Grid>
+                    </Grid>
                 ) : (
-                    <>
-                        <Grid container spacing={3}>
+                    <Box sx={{ position: 'relative' }}>
+                        {/* Spinner overlay when loading */}
+                        {loading && (
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0, left: 0, right: 0, bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                bgcolor: 'rgba(255,255,255,0.6)',
+                                zIndex: 10,
+                            }}>
+                                <CircularProgress />
+                            </Box>
+                        )}
+                        <Grid container spacing={3} sx={{ opacity: loading ? 0.5 : 1 }}>
                             {displayedCompanies.map((company) => (
                                 <Grid item xs={12} sm={6} md={3} key={company.id}>
                                     <Card
@@ -487,8 +700,8 @@ const BrowseCompanies = () => {
                                                 <Box sx={{ textAlign: 'center', flex: 1 }}>
                                                     <Typography variant="caption" sx={{ color: '#888', fontWeight: 500 }}>Investors</Typography>
                                                     <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#222' }}>
-                                                        {company.fundraise_terms && company.fundraise_terms.max_investors
-                                                            ? company.fundraise_terms.max_investors
+                                                        {company.paidInvestorsCount !== undefined
+                                                            ? company.paidInvestorsCount
                                                             : '0'}
                                                     </Typography>
                                                 </Box>
@@ -499,34 +712,38 @@ const BrowseCompanies = () => {
                             ))}
                         </Grid>
 
-                        {hasMoreCompanies && (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                        {hasMoreCompanies() && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6, mb: 4 }}>
                                 <Button
                                     variant="outlined"
                                     size="small"
                                     onClick={handleLoadMore}
                                     disabled={loadingMore}
                                     sx={{
-                                        px: 2.5,
-                                        py: 0.5,
+                                        px: 3,
+                                        py: 1,
                                         borderRadius: 2,
                                         bgcolor: '#f8fbff',
                                         color: theme.palette.primary.main,
                                         border: `2px solid ${theme.palette.primary.main}`,
-                                        fontWeight: 700,
-                                        textTransform: 'uppercase',
+                                        fontWeight: 600,
+                                        textTransform: 'none',
                                         fontSize: '0.95rem',
-                                        minWidth: 0,
+                                        minWidth: 200,
                                         '&:hover': {
                                             bgcolor: '#f0f6ff',
                                             border: `2px solid ${theme.palette.primary.dark}`,
                                             color: theme.palette.primary.dark,
+                                        },
+                                        '&.Mui-disabled': {
+                                            border: '2px solid #e0e0e0',
+                                            color: '#9e9e9e'
                                         }
                                     }}
                                 >
                                     {loadingMore ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <CircularProgress size={20} color="inherit" />
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                            <CircularProgress size={18} color="inherit" />
                                             <span>Loading...</span>
                                         </Box>
                                     ) : (
@@ -535,7 +752,7 @@ const BrowseCompanies = () => {
                                 </Button>
                             </Box>
                         )}
-                    </>
+                    </Box>
                 )}
             </Container>
         </Box>

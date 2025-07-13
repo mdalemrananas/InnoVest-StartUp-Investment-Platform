@@ -8,8 +8,13 @@ import {
     Button,
     Alert,
     Paper,
-    Link as MuiLink
+    Link as MuiLink,
+    InputAdornment
 } from '@mui/material';
+import {
+    Email,
+    Lock
+} from '@mui/icons-material';
 import authService from '../../services/authService';
 
 const ForgotPassword = () => {
@@ -36,7 +41,7 @@ const ForgotPassword = () => {
     };
 
     return (
-        <Container component="main" maxWidth="xs" sx={{ mt: 12 }}>
+        <Container component="main" maxWidth="xs" sx={{ mt: 4, mb: 4 }}>
             <Box
                 sx={{
                     display: 'flex',
@@ -45,9 +50,12 @@ const ForgotPassword = () => {
                 }}
             >
                 <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-                    <Typography component="h1" variant="h5" sx={{ mb: 3, textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
-                        Forgot Password
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+                        <Lock sx={{ fontSize: 40, color: '#1976d2', mr: 2 }} />
+                        <Typography component="h1" variant="h5" sx={{ textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
+                            Forgot Password
+                        </Typography>
+                    </Box>
 
                     {error && (
                         <Alert severity="error" sx={{ mb: 2 }}>
@@ -73,6 +81,13 @@ const ForgotPassword = () => {
                             autoFocus
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Email color="action" />
+                                    </InputAdornment>
+                                ),
+                            }}
                         />
                         <Button
                             type="submit"

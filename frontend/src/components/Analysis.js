@@ -13,10 +13,19 @@ import {
   Select, 
   MenuItem, 
   Alert, 
-  Divider 
+  Divider,
+  InputAdornment
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import BusinessIcon from '@mui/icons-material/Business';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import PublicIcon from '@mui/icons-material/Public';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const API_URL = 'http://localhost:8000/api/';
 
@@ -64,7 +73,7 @@ const Analysis = () => {
 
   // Available options
   const industries = ['AI', 'FinTech', 'HealthTech', 'EdTech', 'IoT', 'Gaming', 'E-Commerce', 'Cybersecurity'];
-  const regions = ['North America', 'Europe', 'Asia', 'South America', 'Africa', 'Australia'];
+  const regions = ['North America', 'Europe', 'Asia', 'South America', 'Australia'];
   const exitStatuses = ['', 'Private', 'IPO', 'Acquired'];
 
   const handleInputChange = (e) => {
@@ -202,6 +211,11 @@ const Analysis = () => {
                       onChange={handleInputChange}
                       label="Industry"
                       required
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <BusinessIcon color="action" />
+                        </InputAdornment>
+                      }
                     >
                       {industries.map((industry) => (
                         <MenuItem key={industry} value={industry}>
@@ -223,6 +237,13 @@ const Analysis = () => {
                     size="small"
                     sx={{ mb: 2 }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MonetizationOnIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -237,6 +258,13 @@ const Analysis = () => {
                     size="small"
                     sx={{ mb: 2 }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MonetizationOnIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -251,6 +279,13 @@ const Analysis = () => {
                     size="small"
                     sx={{ mb: 2 }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <TrendingUpIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -265,6 +300,13 @@ const Analysis = () => {
                     size="small"
                     sx={{ mb: 2 }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <TrendingUpIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -279,6 +321,13 @@ const Analysis = () => {
                     size="small"
                     sx={{ mb: 2 }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <GroupsIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -294,6 +343,13 @@ const Analysis = () => {
                     sx={{ mb: 2 }}
                     inputProps={{ step: "0.01" }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PieChartIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -309,6 +365,13 @@ const Analysis = () => {
                     sx={{ mb: 2 }}
                     inputProps={{ min: "1900", max: new Date().getFullYear().toString() }}
                     required
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarMonthIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -321,6 +384,11 @@ const Analysis = () => {
                       onChange={handleInputChange}
                       label="Region"
                       required
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <PublicIcon color="action" />
+                        </InputAdornment>
+                      }
                     >
                       {regions.map((region) => (
                         <MenuItem key={region} value={region}>
@@ -339,6 +407,11 @@ const Analysis = () => {
                       value={formData.exit_status}
                       onChange={handleInputChange}
                       label="Exit Status"
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <ExitToAppIcon color="action" />
+                        </InputAdornment>
+                      }
                     >
                       {exitStatuses.map((status) => (
                         <MenuItem key={status || 'none'} value={status || ''}>

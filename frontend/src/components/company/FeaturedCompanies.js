@@ -13,7 +13,8 @@ import {
   Chip,
   IconButton,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Fade
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -74,6 +75,11 @@ const FeaturedCompanies = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const sliderRef = useRef(null);
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+  }, []);
 
   // Auto-slide settings
   useEffect(() => {
@@ -143,7 +149,27 @@ const FeaturedCompanies = () => {
         const sortedCompanies = Array.isArray(data)
           ? data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10)
           : [];
-        setCompanies(sortedCompanies);
+        
+        // Fetch paid investors count for each company
+        const companiesWithInvestorCount = await Promise.all(
+          sortedCompanies.map(async (company) => {
+            try {
+              const paidInvestorsCount = await companyService.getPaidInvestorsCount(company.id);
+              return {
+                ...company,
+                paidInvestorsCount
+              };
+            } catch (error) {
+              console.error(`Error fetching paid investors count for company ${company.id}:`, error);
+              return {
+                ...company,
+                paidInvestorsCount: 0
+              };
+            }
+          })
+        );
+        
+        setCompanies(companiesWithInvestorCount);
       } catch (err) {
         console.error('Error fetching companies:', err);
         setError('Failed to load featured companies');
@@ -174,24 +200,21 @@ const FeaturedCompanies = () => {
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#fff' }}>
       <Container maxWidth="xl">
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 6
-        }}>
-          <Typography
-            variant="h3"
-            component="h2"
-            sx={{
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              fontWeight: 600,
-              color: '#1E1E1E'
-            }}
-          >
-            Featured Companies on Innovest
-          </Typography>
-        </Box>
+        {/* Featured Companies Component */}
+      <Box sx={{ py: 4, background: '#fff' }}>
+        <Container maxWidth="auto">
+          <Fade in={animate} timeout={2000}>
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+              <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: '#2c3e50' }}>
+                Featured Startups
+              </Typography>
+              <Typography variant="h6" sx={{ color: '#7f8c8d', maxWidth: 600, mx: 'auto' }}>
+                Discover innovative companies raising funds on our platform
+              </Typography>
+            </Box>
+          </Fade>
+        </Container>
+      </Box>
 
         <Box sx={{ position: 'relative', width: '100%', px: { xs: 1, sm: 2 } }}>
           <Slider ref={sliderRef} {...settings}>
@@ -321,8 +344,8 @@ const FeaturedCompanies = () => {
                       <Box sx={{ textAlign: 'center', flex: 1 }}>
                         <Typography variant="caption" sx={{ color: '#888', fontWeight: 500 }}>Investors</Typography>
                         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#222' }}>
-                          {company.fundraise_terms && company.fundraise_terms.max_investors
-                            ? company.fundraise_terms.max_investors
+                          {company.paidInvestorsCount !== undefined
+                            ? company.paidInvestorsCount
                             : '0'}
                         </Typography>
                       </Box>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   Box,
   Container,
@@ -66,6 +66,150 @@ const postTypeOptions = [
   { value: 'Other', label: '🗂️ Other' },
 ];
 
+const MemoizedCommentItem = memo(function CommentItem({ comment, postId, level = 0, replyingTo, setReplyingTo, replyInputs, setReplyInputs, handleSendComment, handleDeleteComment, currentUser }) {
+  const commentUserId = comment.user?.id || comment.user_id;
+  const currentUserId = currentUser?.user?.id || currentUser?.id;
+  const isCommentOwner = String(commentUserId) === String(currentUserId);
+  const isReply = level > 0;
+  return (
+    <Box
+      sx={{
+        ml: isReply ? 5 : 0,
+        mb: 1.5,
+        pl: isReply ? 2 : 0,
+        bgcolor: isReply ? '#f6f8fa' : '#fff',
+        borderRadius: 3,
+        boxShadow: isReply ? 'none' : '0 1px 4px 0 rgba(80,80,180,0.06)',
+        transition: 'background 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          bgcolor: isReply ? '#f0f4ff' : '#f7fafd',
+          boxShadow: isReply ? 'none' : '0 2px 8px 0 rgba(80,80,180,0.10)'
+        },
+        position: 'relative',
+        py: 1.5,
+        px: 2,
+        mt: isReply ? 0.5 : 0,
+      }}
+    >
+      {/* Facebook-style thread line and L-shape with > for replies */}
+      {isReply && (
+        <>
+          {/* Vertical line */}
+          <Box sx={{
+            position: 'absolute',
+            left: -18,
+            top: 0,
+            bottom: 0,
+            width: 12,
+            display: 'flex',
+            alignItems: 'flex-start',
+            zIndex: 1
+          }}>
+            <Box sx={{ width: 2, height: '100%', bgcolor: '#d1d5db', borderRadius: 1 }} />
+          </Box>
+          {/* Horizontal L-shape with > to avatar */}
+          <Box sx={{
+            position: 'absolute',
+            left: -18,
+            top: 32,
+            width: 28,
+            height: 2,
+            bgcolor: 'transparent',
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <Box sx={{ width: 22, height: 2, bgcolor: '#d1d5db', borderRadius: 1 }} />
+            <Box sx={{ color: '#b0b3b8', fontSize: 18, fontWeight: 700, ml: 0.5, userSelect: 'none', pointerEvents: 'none' }}>{'>'}</Box>
+          </Box>
+        </>
+      )}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Avatar
+          src={comment.user?.profile_picture || comment.user?.profile_pic || 'https://placehold.co/40x40'}
+          alt={comment.user?.first_name ? `${comment.user.first_name} ${comment.user.last_name || ''}`.trim() : 'User'}
+          sx={{ width: 38, height: 38, mt: 0.5, border: '2px solid #e3e8ef', boxShadow: 1, zIndex: 3 }}
+          onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/40x40'; }}
+        />
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.2 }}>
+            <Typography sx={{ fontWeight: 700, color: '#232946', fontSize: '1.05rem', mr: 1 }}>
+              {comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : comment.user?.username || 'Anonymous'}
+            </Typography>
+            <Typography sx={{ color: '#888', fontSize: '0.92rem', fontWeight: 400 }}>
+              {new Date(comment.created_at).toLocaleString()}
+            </Typography>
+            {isCommentOwner && (
+              <Button size="small" onClick={() => handleDeleteComment(postId, comment.id)} sx={{ color: '#f44336', textTransform: 'none', fontWeight: 700, borderRadius: 2, ml: 1, fontSize: '0.95rem', p: 0, minWidth: 0, '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.08)' } }}>
+                <DeleteIcon fontSize="small" />
+              </Button>
+            )}
+          </Box>
+          <Typography sx={{ color: '#232946', fontSize: '1.05rem', mb: 0.5, wordBreak: 'break-word' }}>{comment.content}</Typography>
+          <Box sx={{ mt: 0.5, display: 'flex', gap: 1 }}>
+            <Button
+              size="small"
+              sx={{
+                color: '#1976d2',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.93rem',
+                p: 0,
+                minWidth: 0,
+                background: 'none',
+                '&:hover': { textDecoration: 'underline', background: 'none', color: '#1251a3' },
+                opacity: 0.85
+              }}
+              onClick={() => setReplyingTo(prev => ({ ...prev, [comment.id]: !prev[comment.id] }))}
+            >
+              Reply
+            </Button>
+          </Box>
+          {replyingTo[comment.id] && (
+            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1, ml: 0 }}>
+              <TextField
+                key={`reply-input-${comment.id}`}
+                size="small"
+                placeholder="Write a reply..."
+                value={replyInputs[comment.id] || ''}
+                onChange={e => setReplyInputs(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                onKeyDown={e => { if (e.key === 'Enter') handleSendComment(postId, comment.id); }}
+                sx={{ flex: 1, bgcolor: '#f7fafd', borderRadius: 2, fontSize: '0.97rem' }}
+                InputProps={{
+                  endAdornment: (
+                    <Button size="small" color="primary" onClick={() => handleSendComment(postId, comment.id)} sx={{ minWidth: 0, px: 2, ml: 1, textTransform: 'none', fontWeight: 700, borderRadius: 2, bgcolor: '#1976d2', color: '#fff', boxShadow: 1, '&:hover': { bgcolor: '#1565c0' } }}>
+                      <CustomSendIcon />
+                    </Button>
+                  )
+                }}
+              />
+            </Box>
+          )}
+          {comment.replies && comment.replies.length > 0 && (
+            <Box sx={{ mt: 1.5, mb: 0.5 }}>
+              {comment.replies.map(reply => (
+                <MemoizedCommentItem
+                  key={reply.id}
+                  comment={reply}
+                  postId={postId}
+                  level={level + 1}
+                  replyingTo={replyingTo}
+                  setReplyingTo={setReplyingTo}
+                  replyInputs={replyInputs}
+                  setReplyInputs={setReplyInputs}
+                  handleSendComment={handleSendComment}
+                  handleDeleteComment={handleDeleteComment}
+                  currentUser={currentUser}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+});
+
 const Community = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPostType, setSelectedPostType] = useState({ value: 'all', label: 'All posts' });
@@ -87,6 +231,8 @@ const Community = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [replyInputs, setReplyInputs] = useState({});
+  const [replyingTo, setReplyingTo] = useState({});
 
   const currentUsername = currentUser?.first_name && currentUser?.last_name
     ? `${currentUser.first_name} ${currentUser.last_name}`
@@ -314,71 +460,204 @@ const Community = () => {
     }
   };
 
-  const handleSendComment = async (postId) => {
-    const text = (commentInputs[postId] || '').trim();
-    if (!text) return;
-
-    try {
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser?.access) {
-        setSnackbar({
-          open: true,
-          message: 'You must be logged in to comment.',
-          severity: 'error'
-        });
-        return;
+  // Helper to build a nested comment tree from flat list
+  function buildCommentTree(comments) {
+    const map = {};
+    const roots = [];
+    comments.forEach(comment => {
+      map[comment.id] = { ...comment, replies: [] };
+    });
+    comments.forEach(comment => {
+      if (comment.parent_id) {
+        if (map[comment.parent_id]) {
+          map[comment.parent_id].replies.push(map[comment.id]);
+        }
+      } else {
+        roots.push(map[comment.id]);
       }
+    });
+    return roots;
+  }
 
+  // Update handleSendComment to accept parentId
+  const handleSendComment = async (postId, parentId = null) => {
+    const text = parentId ? (replyInputs[parentId] || '').trim() : (commentInputs[postId] || '').trim();
+    if (!text) return;
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser?.access) {
+      setSnackbar({ open: true, message: 'You must be logged in to comment.', severity: 'error' });
+      return;
+    }
+    // Build optimistic comment object
+    const tempId = 'temp-' + Date.now();
+    const optimisticComment = {
+      id: tempId,
+      post: postId,
+      user: {
+        id: currentUser.id,
+        first_name: currentUser.first_name,
+        last_name: currentUser.last_name,
+        username: currentUser.username,
+        profile_picture: currentUser.profile_picture || currentUser.profile_pic || 'https://placehold.co/40x40',
+      },
+      content: text,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      parent_id: parentId || null,
+      replies: [],
+    };
+    // Optimistically update UI
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== postId) return post;
+      let newComments;
+      if (parentId) {
+        // Add reply to the correct parent
+        const addReply = (comments) => comments.map(c => {
+          if (c.id === parentId) {
+            return { ...c, replies: [...(c.replies || []), optimisticComment] };
+          } else if (c.replies && c.replies.length > 0) {
+            return { ...c, replies: addReply(c.replies) };
+          } else {
+            return c;
+          }
+        });
+        newComments = addReply(buildCommentTree(post.comments || []));
+        // Flatten back to array for storage
+        const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+        newComments = flatten(newComments);
+      } else {
+        // Add top-level comment to the top
+        newComments = [optimisticComment, ...(post.comments || [])];
+      }
+      return { ...post, comments: newComments };
+    }));
+    if (selectedPost && selectedPost.id === postId) {
+      setSelectedPost(prev => {
+        let newComments;
+        if (parentId) {
+          const addReply = (comments) => comments.map(c => {
+            if (c.id === parentId) {
+              return { ...c, replies: [...(c.replies || []), optimisticComment] };
+            } else if (c.replies && c.replies.length > 0) {
+              return { ...c, replies: addReply(c.replies) };
+            } else {
+              return c;
+            }
+          });
+          newComments = addReply(buildCommentTree(prev.comments || []));
+          const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+          newComments = flatten(newComments);
+        } else {
+          newComments = [optimisticComment, ...(prev.comments || [])];
+        }
+        return { ...prev, comments: newComments };
+      });
+    }
+    if (parentId) {
+      setReplyInputs(prev => ({ ...prev, [parentId]: '' }));
+      setReplyingTo(prev => ({ ...prev, [parentId]: false }));
+    } else {
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+    }
+    // Send to backend
+    try {
+      const body = { content: text };
+      if (parentId) body.parent_id = parentId;
       const response = await fetch(`http://localhost:8000/api/community/posts/${postId}/comments/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${currentUser.access}`,
         },
-        body: JSON.stringify({
-          content: text,
-          post: parseInt(postId)
-        }),
+        body: JSON.stringify(body),
       });
-
       let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) { }
-
-      if (!response.ok) {
-        throw new Error(responseData?.detail || responseData?.message || 'Failed to add comment');
-      }
-
-      setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
-      // Update only the comments for this post in the posts state
-      setPosts((prevPosts) => prevPosts.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            comments: [...(post.comments || []), responseData]
-          };
+      try { responseData = await response.json(); } catch (e) { }
+      if (!response.ok) throw new Error(responseData?.detail || responseData?.message || 'Failed to add comment');
+      // Replace temp comment with real one
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id !== postId) return post;
+        let newComments = (post.comments || []).map(c => c.id === tempId ? responseData : c);
+        // For replies, need to update nested structure
+        if (parentId) {
+          const replaceReply = (comments) => comments.map(c => {
+            if (c.id === parentId) {
+              return { ...c, replies: (c.replies || []).map(r => r.id === tempId ? responseData : r) };
+            } else if (c.replies && c.replies.length > 0) {
+              return { ...c, replies: replaceReply(c.replies) };
+            } else {
+              return c;
+            }
+          });
+          newComments = replaceReply(buildCommentTree(newComments));
+          const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+          newComments = flatten(newComments);
         }
-        return post;
+        return { ...post, comments: newComments };
       }));
-      setSnackbar({
-        open: true,
-        message: 'Comment added successfully!',
-        severity: 'success'
-      });
-
       if (selectedPost && selectedPost.id === postId) {
-        setSelectedPost(prev => ({
-          ...prev,
-          comments: [...(prev.comments || []), responseData]
-        }));
+        setSelectedPost(prev => {
+          let newComments = (prev.comments || []).map(c => c.id === tempId ? responseData : c);
+          if (parentId) {
+            const replaceReply = (comments) => comments.map(c => {
+              if (c.id === parentId) {
+                return { ...c, replies: (c.replies || []).map(r => r.id === tempId ? responseData : r) };
+              } else if (c.replies && c.replies.length > 0) {
+                return { ...c, replies: replaceReply(c.replies) };
+              } else {
+                return c;
+              }
+            });
+            newComments = replaceReply(buildCommentTree(newComments));
+            const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+            newComments = flatten(newComments);
+          }
+          return { ...prev, comments: newComments };
+        });
       }
+      setSnackbar({ open: true, message: 'Comment added successfully!', severity: 'success' });
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.message || 'Failed to add comment. Please try again.',
-        severity: 'error'
-      });
+      // Remove temp comment on error
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id !== postId) return post;
+        let newComments = (post.comments || []).filter(c => c.id !== tempId);
+        if (parentId) {
+          const removeReply = (comments) => comments.map(c => {
+            if (c.id === parentId) {
+              return { ...c, replies: (c.replies || []).filter(r => r.id !== tempId) };
+            } else if (c.replies && c.replies.length > 0) {
+              return { ...c, replies: removeReply(c.replies) };
+            } else {
+              return c;
+            }
+          });
+          newComments = removeReply(buildCommentTree(newComments));
+          const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+          newComments = flatten(newComments);
+        }
+        return { ...post, comments: newComments };
+      }));
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost(prev => {
+          let newComments = (prev.comments || []).filter(c => c.id !== tempId);
+          if (parentId) {
+            const removeReply = (comments) => comments.map(c => {
+              if (c.id === parentId) {
+                return { ...c, replies: (c.replies || []).filter(r => r.id !== tempId) };
+              } else if (c.replies && c.replies.length > 0) {
+                return { ...c, replies: removeReply(c.replies) };
+              } else {
+                return c;
+              }
+            });
+            newComments = removeReply(buildCommentTree(newComments));
+            const flatten = (arr) => arr.reduce((acc, c) => acc.concat([{ ...c, replies: undefined }], c.replies ? flatten(c.replies) : []), []);
+            newComments = flatten(newComments);
+          }
+          return { ...prev, comments: newComments };
+        });
+      }
+      setSnackbar({ open: true, message: err.message || 'Failed to add comment. Please try again.', severity: 'error' });
     }
   };
 
@@ -534,6 +813,19 @@ const Community = () => {
     setSelectedPost(null);
   };
 
+  // Helper to count all comments and replies recursively
+  function countAllComments(comments) {
+    if (!comments) return 0;
+    let count = 0;
+    comments.forEach(comment => {
+      count += 1;
+      if (comment.replies && comment.replies.length > 0) {
+        count += countAllComments(comment.replies);
+      }
+    });
+    return count;
+  }
+
   return (
     <Box>
       {/* Banner Section */}
@@ -630,6 +922,11 @@ const Community = () => {
               },
             }}
             InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
               endAdornment: searchQuery && (
                 <InputAdornment position="end">
                   <IconButton
@@ -1179,7 +1476,7 @@ const Community = () => {
                             }
                           }}
                         >
-                          Comments ({post.comments?.length || 0})
+                          Comments ({countAllComments(buildCommentTree(post.comments || []))})
                         </Button>
                       </Box>
                     )}
@@ -1347,7 +1644,7 @@ const Community = () => {
               borderTopRightRadius: 16,
               minHeight: 64
             }}>
-              <Box sx={{ pl: 3, py: 2, flex: 1 }}>
+              <Box sx={{ pl: 3, py: 2, flex: 1}}>
                 Post Details
               </Box>
               <IconButton onClick={handleCloseDialog} size="large" sx={{ color: '#fff', mr: 2 }}>
@@ -1364,7 +1661,7 @@ const Community = () => {
                 border: '1px solid #e3e8ef',
               }}>
                 {/* Post Header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, }}>
                   {(() => {
                     // Get user data either from the post's user object or from the users map
                     let userData;
@@ -1578,68 +1875,29 @@ const Community = () => {
               {/* Divider above comments */}
               <Divider sx={{ my: 3, borderColor: '#e3e8ef' }} />
               {/* Comments Section */}
-              <Box sx={{ mt: 0 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
-                  Comments ({selectedPost.comments?.length || 0})
-                </Typography>
-                {/* Comment Input */}
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  mb: 3,
-                  bgcolor: '#f8faff',
-                  p: 2,
-                  borderRadius: 2,
-                  border: '1px solid #e3e8ef',
-                  boxShadow: 1
-                }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, bgcolor: '#f8faff', p: 2, borderRadius: 2, border: '1px solid #e3e8ef', boxShadow: 1 }}>
                   <Avatar
-                    src={currentUser?.profile_picture || 
-                         (currentUser?.profile_pic ? 
-                           `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${currentUser.profile_pic}` : 
-                           'https://placehold.co/40x40')}
+                    src={currentUser?.profile_picture || (currentUser?.profile_pic ? `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${currentUser.profile_pic}` : 'https://placehold.co/40x40')}
                     alt={`${currentUser?.first_name || 'User'}`}
                     sx={{ width: 40, height: 40 }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://placehold.co/40x40';
-                    }}
+                    onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/40x40'; }}
                   />
                   <TextField
                     fullWidth
                     placeholder="Write a comment..."
                     size="small"
                     value={commentInputs[selectedPost.id] || ''}
-                    onChange={(e) => setCommentInputs((prev) => ({ ...prev, [selectedPost.id]: e.target.value }))}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSendComment(selectedPost.id);
-                    }}
-                    sx={{
-                      bgcolor: '#fff',
-                      borderRadius: 2,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2
-                      }
-                    }}
+                    onChange={e => setCommentInputs((prev) => ({ ...prev, [selectedPost.id]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSendComment(selectedPost.id); }}
+                    sx={{ bgcolor: '#fff', borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                     InputProps={{
                       endAdornment: (
                         <Button
                           size="small"
                           color="primary"
                           onClick={() => handleSendComment(selectedPost.id)}
-                          sx={{
-                            minWidth: 0,
-                            px: 2,
-                            ml: 1,
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            borderRadius: 2,
-                            bgcolor: '#1976d2',
-                            color: '#fff',
-                            boxShadow: 1,
-                            '&:hover': { bgcolor: '#1565c0' }
-                          }}
+                          sx={{ minWidth: 0, px: 2, ml: 1, textTransform: 'none', fontWeight: 700, borderRadius: 2, bgcolor: '#1976d2', color: '#fff', boxShadow: 1, '&:hover': { bgcolor: '#1565c0' } }}
                         >
                           <CustomSendIcon />
                         </Button>
@@ -1647,102 +1905,26 @@ const Community = () => {
                     }}
                   />
                 </Box>
-                {/* Comments List */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {(selectedPost.comments || []).map((comment) => {
-                    console.log('Comment object:', comment);
-                    const commentUserId = comment.user?.id || comment.user_id;
-                    const currentUserId = currentUser?.user?.id || currentUser?.id;
-                    const isCommentOwner = String(commentUserId) === String(currentUserId);
-                    return (
-                      <Box
-                        key={comment.id}
-                        sx={{
-                          display: 'flex',
-                          gap: 2,
-                          p: 2,
-                          borderRadius: 2,
-                          bgcolor: '#f8faff',
-                          border: '1px solid #e3e8ef',
-                          boxShadow: 1,
-                          '&:hover': {
-                            bgcolor: '#f0f4ff'
-                          }
-                        }}
-                      >
-                        {(() => {
-                          const user = comment.user || {};
-                          const profilePic = user.profile_picture || user.profile_pic;
-                          const fullUrl = profilePic ? 
-                            (profilePic.startsWith('http') ? profilePic : 
-                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
-                            null;
-                            
-                          console.log('Avatar debug:', {
-                            userId: user.id,
-                            hasProfilePic: !!profilePic,
-                            profilePic,
-                            fullUrl,
-                            user: user
-                          });
-                          
-                          return (
-                            <Avatar
-                              key={`avatar-${user.id}`}
-                              src={fullUrl || 'https://placehold.co/40x40'}
-                              alt={user.first_name ? 
-                                   `${user.first_name} ${user.last_name || ''}`.trim() : 
-                                   'User'}
-                              sx={{ width: 40, height: 40 }}
-                              onError={(e) => {
-                                console.error('Error loading profile picture:', e.target.src);
-                                e.target.onerror = null;
-                                e.target.src = 'https://placehold.co/40x40';
-                              }}
-                            />
-                          );
-                        })()}
-                        <Box sx={{ flex: 1 }}>
-                          <Box sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mb: 0.5
-                          }}>
-                            <Typography sx={{ fontWeight: 700, color: '#232946' }}>
-                              {comment.user?.first_name && comment.user?.last_name
-                                ? `${comment.user.first_name} ${comment.user.last_name}`
-                                : comment.user?.username || 'Anonymous'}
-                            </Typography>
-                            {isCommentOwner && (
-                              <Button
-                                size="small"
-                                onClick={() => handleDeleteComment(selectedPost.id, comment.id)}
-                                sx={{
-                                  color: '#f44336',
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  borderRadius: 2,
-                                  '&:hover': {
-                                    bgcolor: 'rgba(244, 67, 54, 0.08)'
-                                  }
-                                }}
-                              >
-                                <DeleteIcon />
-                              </Button>
-                            )}
-                          </Box>
-                          <Typography sx={{ color: '#666', fontSize: '0.9rem', mb: 0.5 }}>
-                            {new Date(comment.created_at).toLocaleString()}
-                          </Typography>
-                          <Typography sx={{ color: '#232946', fontSize: '1rem' }}>
-                            {comment.content}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
+                <Divider sx={{ my: 2, borderColor: '#e3e8ef' }} />
+                {buildCommentTree(selectedPost.comments || []).map((comment, idx) => (
+                  <React.Fragment key={comment.id}>
+                    <MemoizedCommentItem
+                      comment={comment}
+                      postId={selectedPost.id}
+                      level={0}
+                      replyingTo={replyingTo}
+                      setReplyingTo={setReplyingTo}
+                      replyInputs={replyInputs}
+                      setReplyInputs={setReplyInputs}
+                      handleSendComment={handleSendComment}
+                      handleDeleteComment={handleDeleteComment}
+                      currentUser={currentUser}
+                    />
+                    {idx < buildCommentTree(selectedPost.comments || []).length - 1 && (
+                      <Divider sx={{ my: 1.5, borderColor: '#e3e8ef' }} />
+                    )}
+                  </React.Fragment>
+                ))}
               </Box>
             </DialogContent>
           </>

@@ -21,6 +21,7 @@ import {
     alpha,
     CardMedia,
     TextField,
+    Tooltip,
 } from '@mui/material';
 import {
     Star as StarIcon,
@@ -35,6 +36,9 @@ import {
     Public as PublicIcon,
     NavigateNext as NavigateNextIcon,
     NavigateBefore as NavigateBeforeIcon,
+    Description as DescriptionIcon,
+    PictureAsPdf as PdfIcon,
+    InsertDriveFile as FileIcon,
 } from '@mui/icons-material';
 import companyService from '../../services/companyService';
 import authService from '../../services/authService';
@@ -67,6 +71,27 @@ function formatLargeNumber(number) {
         return `৳${(number / 1000).toFixed(1)}K`;
     }
     return `৳${number.toLocaleString()}`;
+}
+
+// Helper function to get file type and icon
+function getFileTypeAndIcon(filename) {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    
+    switch (extension) {
+        case 'pdf':
+            return { type: 'PDF', icon: <PdfIcon />, color: '#f44336' };
+        case 'doc':
+        case 'docx':
+            return { type: 'Word', icon: <DescriptionIcon />, color: '#2196f3' };
+        case 'xls':
+        case 'xlsx':
+            return { type: 'Excel', icon: <DescriptionIcon />, color: '#4caf50' };
+        case 'ppt':
+        case 'pptx':
+            return { type: 'PowerPoint', icon: <DescriptionIcon />, color: '#ff9800' };
+        default:
+            return { type: 'File', icon: <FileIcon />, color: '#757575' };
+    }
 }
 
 function CompanyDetails() {
@@ -417,23 +442,7 @@ function CompanyDetails() {
                                 />
                             </Box>
                         </Grid>
-                        <Grid item xs={12} md={4} sx={{ textAlign: 'right' }}>
-                            <Button
-                                variant="contained"
-                                size="large"
-                                startIcon={<StarIcon />}
-                                onClick={toggleStar}
-                                sx={{
-                                    bgcolor: 'white',
-                                    color: theme.palette.primary.main,
-                                    '&:hover': {
-                                        bgcolor: alpha(theme.palette.common.white, 0.9)
-                                    }
-                                }}
-                            >
-                                {isStarred ? 'Following' : 'Follow'}
-                            </Button>
-                        </Grid>
+                        {/* Follow button removed as per request */}
                     </Grid>
                 </Container>
             </Box>
@@ -491,7 +500,9 @@ function CompanyDetails() {
                                         <Box
                                             sx={{
                                                 position: 'relative',
-                                                height: { xs: '400px', md: '500px' },
+                                                width: '100%',
+                                                height: { xs: 'calc(100vw * 0.5625)', md: 'calc(100% * 0.5625)' },
+                                                maxHeight: { xs: '300px', md: '400px' },
                                                 mb: 4,
                                                 borderRadius: 2,
                                                 overflow: 'hidden',
@@ -884,9 +895,123 @@ function CompanyDetails() {
                                                             <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
                                                                 Documents
                                                             </Typography>
-                                                            <Typography variant="body2">
-                                                                {company.documents}
+                                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                                {(() => {
+                                                                    let documents = [];
+                                                                    try {
+                                                                        documents = JSON.parse(company.documents);
+                                                                        if (!Array.isArray(documents)) {
+                                                                            documents = [documents];
+                                                                        }
+                                                                    } catch (e) {
+                                                                        documents = [];
+                                                                    }
+                                                                    return `${documents.length} document${documents.length !== 1 ? 's' : ''} uploaded`;
+                                                                })()}
                                                             </Typography>
+                                                            <Box sx={{ mt: 2 }}>
+                                                                {(() => {
+                                                                    let documents = [];
+                                                                    try {
+                                                                        // Parse the documents JSON string
+                                                                        documents = JSON.parse(company.documents);
+                                                                        if (!Array.isArray(documents)) {
+                                                                            documents = [documents];
+                                                                        }
+                                                                    } catch (e) {
+                                                                        console.warn('Error parsing documents:', e);
+                                                                        documents = [];
+                                                                    }
+
+                                                                    if (documents.length === 0) {
+                                                                        return (
+                                                                            <Typography variant="body2" color="text.secondary">
+                                                                                No documents uploaded.
+                                                                            </Typography>
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <Grid container spacing={2}>
+                                                                            {documents.map((doc, index) => (
+                                                                                <Grid item xs={12} sm={6} md={4} key={index}>
+                                                                                    <Card
+                                                                                        variant="outlined"
+                                                                                        sx={{
+                                                                                            p: 2,
+                                                                                            cursor: 'pointer',
+                                                                                            transition: 'all 0.2s',
+                                                                                            '&:hover': {
+                                                                                                boxShadow: theme.shadows[2],
+                                                                                                transform: 'translateY(-2px)'
+                                                                                            }
+                                                                                        }}
+                                                                                        onClick={() => {
+                                                                                            // Open document in new tab
+                                                                                            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+                                                                                            window.open(`${apiUrl}/media/company_documents/${doc}`, '_blank');
+                                                                                        }}
+                                                                                    >
+                                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                                            <Box
+                                                                                                sx={{
+                                                                                                    width: 40,
+                                                                                                    height: 40,
+                                                                                                    borderRadius: 1,
+                                                                                                    bgcolor: getFileTypeAndIcon(doc).color,
+                                                                                                    display: 'flex',
+                                                                                                    alignItems: 'center',
+                                                                                                    justifyContent: 'center',
+                                                                                                    color: 'white'
+                                                                                                }}
+                                                                                            >
+                                                                                                {getFileTypeAndIcon(doc).icon}
+                                                                                            </Box>
+                                                                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                                                                <Typography
+                                                                                                    variant="body2"
+                                                                                                    sx={{
+                                                                                                        fontWeight: 600,
+                                                                                                        overflow: 'hidden',
+                                                                                                        textOverflow: 'ellipsis',
+                                                                                                        whiteSpace: 'nowrap'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    {doc}
+                                                                                                </Typography>
+                                                                                                <Typography
+                                                                                                    variant="caption"
+                                                                                                    color="text.secondary"
+                                                                                                    sx={{ display: 'block' }}
+                                                                                                >
+                                                                                                    {getFileTypeAndIcon(doc).type} Document
+                                                                                                </Typography>
+                                                                                            </Box>
+                                                                                            <Tooltip title="Download" arrow>
+                                                                                                <Button
+                                                                                                    size="small"
+                                                                                                    variant="outlined"
+                                                                                                    onClick={(e) => {
+                                                                                                        e.stopPropagation();
+                                                                                                        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+                                                                                                        const link = document.createElement('a');
+                                                                                                        link.href = `${apiUrl}/media/company_documents/${doc}`;
+                                                                                                        link.download = doc;
+                                                                                                        link.click();
+                                                                                                    }}
+                                                                                                    sx={{ minWidth: 'auto', px: 1 }}
+                                                                                                >
+                                                                                                    <DescriptionIcon fontSize="small" />
+                                                                                                </Button>
+                                                                                            </Tooltip>
+                                                                                        </Box>
+                                                                                    </Card>
+                                                                                </Grid>
+                                                                            ))}
+                                                                        </Grid>
+                                                                    );
+                                                                })()}
+                                                            </Box>
                                                         </CardContent>
                                                     </Card>
                                                 )}

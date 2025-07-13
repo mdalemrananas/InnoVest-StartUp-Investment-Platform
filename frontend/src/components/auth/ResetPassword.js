@@ -22,7 +22,9 @@ import {
     VisibilityOff,
     CheckCircle,
     Cancel,
-    Info
+    Info,
+    Lock,
+    Key
 } from '@mui/icons-material';
 import authService from '../../services/authService';
 
@@ -40,57 +42,61 @@ const ResetPassword = () => {
     const [showPassword2, setShowPassword2] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({
         score: 0,
-        feedback: []
+        conditions: [],
+        allConditionsMet: false
     });
 
     const checkPasswordStrength = (password) => {
-        const feedback = [];
+        const conditions = [];
         let score = 0;
+        let allConditionsMet = true;
 
         // Length check
-        if (password.length < 8) {
-            feedback.push('Password should be at least 8 characters long');
-        } else {
+        if (password.length >= 8) {
+            conditions.push({ text: 'Password should be at least 8 characters long', met: true });
             score += 1;
+        } else {
+            conditions.push({ text: 'Password should be at least 8 characters long', met: false });
+            allConditionsMet = false;
         }
 
         // Uppercase check
-        if (!/[A-Z]/.test(password)) {
-            feedback.push('Include at least one uppercase letter');
-        } else {
+        if (/[A-Z]/.test(password)) {
+            conditions.push({ text: 'Include at least one uppercase letter', met: true });
             score += 1;
+        } else {
+            conditions.push({ text: 'Include at least one uppercase letter', met: false });
+            allConditionsMet = false;
         }
 
         // Lowercase check
-        if (!/[a-z]/.test(password)) {
-            feedback.push('Include at least one lowercase letter');
-        } else {
+        if (/[a-z]/.test(password)) {
+            conditions.push({ text: 'Include at least one lowercase letter', met: true });
             score += 1;
+        } else {
+            conditions.push({ text: 'Include at least one lowercase letter', met: false });
+            allConditionsMet = false;
         }
 
         // Number check
-        if (!/[0-9]/.test(password)) {
-            feedback.push('Include at least one number');
-        } else {
+        if (/[0-9]/.test(password)) {
+            conditions.push({ text: 'Include at least one number', met: true });
             score += 1;
+        } else {
+            conditions.push({ text: 'Include at least one number', met: false });
+            allConditionsMet = false;
         }
 
         // Special character check
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-            feedback.push('Include at least one special character (!@#$%^&*(),.?":{}|<>)');
-        } else {
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            conditions.push({ text: 'Include at least one special character (!@#$%^&*(),.?":{}|<>)', met: true });
             score += 1;
+        } else {
+            conditions.push({ text: 'Include at least one special character (!@#$%^&*(),.?":{}|<>)', met: false });
+            allConditionsMet = false;
         }
 
-        // Common password check
-        const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'welcome'];
-        if (commonPasswords.includes(password.toLowerCase())) {
-            feedback.push('Avoid using common passwords');
-        } else {
-            score += 1;
-        }
-
-        setPasswordStrength({ score, feedback });
+        setPasswordStrength({ score, conditions, allConditionsMet });
     };
 
     const generatePasswordSuggestion = () => {
@@ -138,8 +144,16 @@ const ResetPassword = () => {
         setSuccess('');
         setLoading(true);
 
-        if (passwordStrength.score < 3) {
-            setError('Please choose a stronger password');
+        // Check if passwords match
+        if (formData.password !== formData.password2) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
+
+        // Check if all password conditions are met
+        if (!passwordStrength.allConditionsMet) {
+            setError('Please ensure your password meets all requirements');
             setLoading(false);
             return;
         }
@@ -163,7 +177,7 @@ const ResetPassword = () => {
 
     return (
         <>
-            <Container component="main" maxWidth="xs" sx={{ mt: 12 }}>
+            <Container component="main" maxWidth="xs" sx={{ mt: 4, mb: 4 }}>
                 <Box
                     sx={{
                         display: 'flex',
@@ -172,9 +186,12 @@ const ResetPassword = () => {
                     }}
                 >
                     <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-                        <Typography component="h1" variant="h5" sx={{ mb: 3, textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
-                            Reset Password
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+                            <Lock sx={{ fontSize: 40, color: '#1976d2', mr: 2 }} />
+                            <Typography component="h1" variant="h5" sx={{ textAlign: 'center', color: '#1976d2', fontWeight: 600 }}>
+                                Reset Password
+                            </Typography>
+                        </Box>
 
                         {error && (
                             <Alert severity="error" sx={{ mb: 2 }}>
@@ -199,6 +216,11 @@ const ResetPassword = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <Lock color="action" />
+                                        </InputAdornment>
+                                    ),
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton
@@ -219,7 +241,7 @@ const ResetPassword = () => {
                                     </Typography>
                                     <LinearProgress 
                                         variant="determinate" 
-                                        value={(passwordStrength.score / 6) * 100}
+                                        value={(passwordStrength.score / 5) * 100}
                                         sx={{
                                             height: 8,
                                             borderRadius: 4,
@@ -230,15 +252,16 @@ const ResetPassword = () => {
                                         }}
                                     />
                                     <List dense>
-                                        {passwordStrength.feedback.map((feedback, index) => (
+                                        {passwordStrength.conditions.map((condition, index) => (
                                             <ListItem key={index}>
                                                 <ListItemIcon>
-                                                    {feedback.includes('should') || feedback.includes('Avoid') ? 
-                                                        <Cancel color="error" /> : 
+                                                    {condition.met ? (
                                                         <CheckCircle color="success" />
-                                                    }
+                                                    ) : (
+                                                        <Cancel color="error" />
+                                                    )}
                                                 </ListItemIcon>
-                                                <ListItemText primary={feedback} />
+                                                <ListItemText primary={condition.text} />
                                             </ListItem>
                                         ))}
                                     </List>
@@ -255,6 +278,11 @@ const ResetPassword = () => {
                                 value={formData.password2}
                                 onChange={handleChange}
                                 InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <Lock color="action" />
+                                        </InputAdornment>
+                                    ),
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton
@@ -268,7 +296,28 @@ const ResetPassword = () => {
                                 }}
                             />
 
-                            <Box sx={{ mt: 2, mb: 2 }}>
+                            {/* Password match indicator */}
+                            {formData.password && formData.password2 && (
+                                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                                    {formData.password === formData.password2 ? (
+                                        <>
+                                            <CheckCircle color="success" sx={{ mr: 1 }} />
+                                            <Typography variant="body2" color="success.main">
+                                                Passwords match
+                                            </Typography>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Cancel color="error" sx={{ mr: 1 }} />
+                                            <Typography variant="body2" color="error.main">
+                                                Passwords do not match
+                                            </Typography>
+                                        </>
+                                    )}
+                                </Box>
+                            )}
+
+                            {/*<Box sx={{ mt: 2, mb: 2 }}>
                                 <Tooltip title="Click to generate a strong password suggestion">
                                     <Button
                                         variant="outlined"
@@ -281,13 +330,13 @@ const ResetPassword = () => {
                                             }));
                                             checkPasswordStrength(suggestion);
                                         }}
-                                        startIcon={<Info />}
+                                        startIcon={<Key />}
                                         fullWidth
                                     >
                                         Generate Strong Password
                                     </Button>
                                 </Tooltip>
-                            </Box>
+                            </Box>*/}
 
                             <Button
                                 type="submit"
@@ -306,7 +355,7 @@ const ResetPassword = () => {
                                         boxShadow: '0 6px 8px rgba(25, 118, 210, 0.35)',
                                     }
                                 }}
-                                disabled={loading || passwordStrength.score < 3}
+                                disabled={loading || !passwordStrength.allConditionsMet || formData.password !== formData.password2 || !formData.password || !formData.password2}
                             >
                                 {loading ? 'Resetting...' : 'Reset Password'}
                             </Button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, Button, Container, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, AppBar, Toolbar, Button, Container, Menu, MenuItem, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -9,16 +9,18 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import EventIcon from '@mui/icons-material/Event';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import HomeIcon from '@mui/icons-material/Home';
 import Footer from './Footer';
-//import CategoriesSection from '../home/CategoriesSection';
-//import HowItWorksSection from '../home/HowItWorksSection';
-//import { Link } from 'react-router-dom';
+import ChatbotWidget from '../ChatbotWidget';
 
 function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
   const [pagesAnchorEl, setPagesAnchorEl] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isAuthenticated = localStorage.getItem('token') !== null;
 
   const handleMenuOpen = (event) => {
@@ -58,8 +60,8 @@ function Layout({ children }) {
     fontSize: '0.95rem',
     fontWeight: 500,
     color: '#4B5563',
-    px: 2,
-    py: 1,
+    px: { xs: 1.5, sm: 2 },
+    py: { xs: 0.75, sm: 1 },
     minHeight: '42px',
     transition: 'all 0.2s ease-in-out',
     '&:hover': {
@@ -67,7 +69,7 @@ function Layout({ children }) {
       color: '#00A4A6',
     },
     '& .MuiSvgIcon-root': {
-      fontSize: '1.2rem',
+      fontSize: { xs: '1rem', sm: '1.2rem' },
       marginRight: '4px',
     },
   };
@@ -102,6 +104,82 @@ function Layout({ children }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Mobile Menu Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 280 },
+            backgroundColor: '#ebdef0',
+            borderLeft: '1px solid rgba(0, 0, 0, 0.08)',
+          }
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight="bold">Innovest</Typography>
+          <IconButton onClick={() => setMobileMenuOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <List>
+          <ListItem
+            button
+            component={RouterLink}
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItem>
+          <ListItem
+            button
+            component={RouterLink}
+            to="/browse-companies"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ListItemIcon>
+              <SearchIcon />
+            </ListItemIcon>
+            <ListItemText primary="Browse Companies" />
+          </ListItem>
+          <ListItem
+            button
+            component={RouterLink}
+            to="/community"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ListItemIcon>
+              <LightbulbOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText primary="Community" />
+          </ListItem>
+          <ListItem
+            button
+            component={RouterLink}
+            to="/events"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ListItemIcon>
+              <EventIcon />
+            </ListItemIcon>
+            <ListItemText primary="Events" />
+          </ListItem>
+          <ListItem
+            button
+            onClick={handlePagesMenuOpen}
+          >
+            <ListItemIcon>
+              <KeyboardArrowDownIcon />
+            </ListItemIcon>
+            <ListItemText primary="Pages" />
+          </ListItem>
+        </List>
+      </Drawer>
+
       <AppBar
         position="fixed"
         color="default"
@@ -113,7 +191,18 @@ function Layout({ children }) {
         }}
       >
         <Container maxWidth="lg">
-          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, sm: 2 }, height: 64 }}>
+          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, sm: 2 }, height: { xs: 56, sm: 64 } }}>
+            {/* Mobile Menu Button */}
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{ display: { sm: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+
             {/* Logo/Brand */}
             <Typography
               variant="h6"
@@ -122,14 +211,23 @@ function Layout({ children }) {
               sx={{
                 textDecoration: 'none',
                 color: 'inherit',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                display: { xs: 'none', sm: 'block' }
               }}
             >
               Innovest
             </Typography>
 
             {/* Navigation Links */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+              <Button
+                component={RouterLink}
+                to="/"
+                startIcon={<HomeIcon />}
+                sx={isActivePath('/') ? activeButtonStyles : commonButtonStyles}
+              >
+                Home
+              </Button>
               <Button
                 component={RouterLink}
                 to="/browse-companies"
@@ -292,6 +390,7 @@ function Layout({ children }) {
         {/* <CategoriesSection /> */}
         {/* <HowItWorksSection /> */}
       </Box>
+      {location.pathname !== '/admin-dashboard' && <ChatbotWidget />}
       <Footer />
     </Box>
   );

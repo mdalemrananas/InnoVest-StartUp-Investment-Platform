@@ -162,7 +162,7 @@ const Footer = () => {
                             }}>
                                 Privacy Policy
                             </Link>
-                            <Link component={RouterLink} to="/terms" sx={{ 
+                            <Link component={RouterLink} to="/terms-and-conditions" sx={{ 
                                 color: '#9E9E9E', 
                                 textDecoration: 'none', 
                                 fontSize: '0.875rem',

@@ -109,6 +109,28 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import RoomIcon from '@mui/icons-material/Room';
 import EventIcon from '@mui/icons-material/Event';
 import CompanyView from '../company/CompanyView';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ShieldIcon from '@mui/icons-material/Shield';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import HomeIcon from '@mui/icons-material/Home';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import PublicIcon from '@mui/icons-material/Public';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import WorkIcon from '@mui/icons-material/Work';
+import LanguageIcon from '@mui/icons-material/Language';
+import TitleIcon from '@mui/icons-material/Title';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 // Recharts
 import {
@@ -131,17 +153,18 @@ import TreeItem from '@mui/lab/TreeItem';
 // Local imports
 import authService from '../../services/authService';
 import communityService from '../../services/communityService';
+import userService from '../../services/userService';
+import companyService from '../../services/companyService';
 import axios from 'axios';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import InputBase from '@mui/material/InputBase';
 import Badge from '@mui/material/Badge';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import LanguageIcon from '@mui/icons-material/Language';
 import AddIcon from '@mui/icons-material/Add';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useNavigate } from 'react-router-dom';
+import KYCPage from './KYCPage';
 
 const API_URL = 'http://localhost:8000/api/';
 const API_BASE_URL = 'http://localhost:8000/api/auth';
@@ -162,6 +185,9 @@ const FilterDialog = styled(MuiDialog)(({ theme }) => ({
 }));
 
 function AdminDashboard() {
+  // Mock activity log for the Activity Log section
+  const [activityLog, setActivityLog] = useState([]);
+
   const [value, setValue] = useState(() => {
     const savedTab = localStorage.getItem('adminDashboardTab');
     return savedTab ? parseInt(savedTab) : 0;
@@ -224,6 +250,85 @@ function AdminDashboard() {
   const [openBatchDeleteConfirm, setOpenBatchDeleteConfirm] = useState(false); // State for user batch delete confirmation
   const [openSingleUserDeleteConfirm, setOpenSingleUserDeleteConfirm] = useState(false); // New state for single user delete confirmation
   const [userToDeleteId, setUserToDeleteId] = useState(null); // State to store the ID of the user to be deleted
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
+  // Helper function to check if registration is ending soon (within 7 days)
+  const isRegistrationEndingSoon = (endDate) => {
+    if (!endDate) return false;
+    const now = new Date();
+    const end = new Date(endDate);
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
+    return end > now && end <= sevenDaysFromNow;
+  };
+
+  // Fetch upcoming events with registration ending soon
+  const fetchUpcomingEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        console.warn('No access token found. User might not be authenticated.');
+        setUpcomingEvents([]);
+        return;
+      }
+      const endpoints = [
+        'http://localhost:8000/api/events/upcoming/',
+        'http://localhost:8000/api/events/',
+        'http://localhost:8000/api/company-events/upcoming/'
+      ];
+      let eventsData = [];
+      let lastError = null;
+      for (const endpoint of endpoints) {
+        try {
+          const response = await axios.get(endpoint, {
+            headers: {
+              'Authorization': `Bearer ${currentUser.access}`,
+              'Content-Type': 'application/json'
+            },
+            params: {
+              limit: 10,
+              upcoming: true
+            }
+          });
+          let rawEvents = [];
+          if (Array.isArray(response.data)) {
+            rawEvents = response.data;
+          } else if (response.data.results) {
+            rawEvents = response.data.results;
+          } else if (response.data.data) {
+            rawEvents = response.data.data;
+          }
+          eventsData = rawEvents.filter(event => {
+            return event.registration_end && isRegistrationEndingSoon(event.registration_end);
+          });
+          eventsData.sort((a, b) => new Date(a.registration_end) - new Date(b.registration_end));
+          eventsData = eventsData.slice(0, 2);
+          if (eventsData.length > 0) break;
+        } catch (err) {
+          lastError = err;
+          continue;
+        }
+      }
+      setUpcomingEvents(eventsData);
+    } catch (error) {
+      setUpcomingEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Fetch upcoming events on mount
+  useEffect(() => {
+    fetchUpcomingEvents();
+  }, []);
+
+  // Format date to readable format
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   // Companies state
   const [companies, setCompanies] = useState([]);
@@ -293,11 +398,17 @@ function AdminDashboard() {
     activityByDate: [],
     totalEarnings: 559250,
     earningsChange: 1824,
-    totalOrders: 36894,
-    ordersChange: -357,
-    totalCustomers: 183350000,
-    customersChange: 2908000,
-    myBalance: 165890,
+    totalCompanies: 0, // Initialize total companies count
+    companiesChange: 0, // Initialize companies change percentage
+    totalUsers: 0, // Initialize total users count
+    usersChange: 0, // Initialize users change percentage
+    totalEvents: 0, // Initialize total events count
+    eventsChange: 0, // Initialize events change percentage
+    totalPosts: 0, // Initialize total posts count
+    postsChange: 0, // Initialize posts change percentage
+    totalPayments: 0, // Initialize total payments amount
+    paymentsChange: 0, // Initialize payments change percentage
+    myBalance: 0,
     balanceChange: 0,
     revenueOrders: 7585,
     revenueEarnings: 22890,
@@ -342,6 +453,170 @@ function AdminDashboard() {
 
   // Add a new state for the company view type
   const [companyView, setCompanyView] = useState('approved'); // 'approved', 'pending', 'rejected'
+
+  // Fetch total number of users
+  const fetchTotalUsers = async () => {
+    try {
+      const users = await userService.getAllUsers();
+      if (Array.isArray(users)) {
+        setAnalyticsData(prev => ({
+          ...prev,
+          totalUsers: users.length,
+          usersChange: 0 // Set a default change value
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  // Fetch total number of companies
+  const fetchTotalCompanies = async () => {
+    try {
+      const companies = await companyService.getCompanies();
+      if (Array.isArray(companies)) {
+        setAnalyticsData(prev => ({
+          ...prev,
+          totalCompanies: companies.length,
+          companiesChange: 0 // Set a default change value
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
+  // Fetch total number of events
+  const fetchTotalEvents = async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}events/`, {
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const events = response.data?.results || response.data || [];
+
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalEvents: Array.isArray(events) ? events.length : 0,
+        eventsChange: 0 // Set a default change value
+      }));
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      // Set default values if API call fails
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalEvents: 0,
+        eventsChange: 0
+      }));
+    }
+  };
+
+  // Fetch total number of posts
+  const fetchTotalPosts = async () => {
+    try {
+      const posts = await communityService.getPosts();
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalPosts: posts.length,
+        postsChange: 0 // Set a default change value
+      }));
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      // Set default values if API call fails
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalPosts: 0,
+        postsChange: 0
+      }));
+    }
+  };
+
+  // Fetch total payment amount
+  const fetchTotalPayments = async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser?.access) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      console.log('Fetching payments from:', `${API_URL}payments/list/`);
+      const response = await axios.get(`${API_URL}payments/list/`, {
+        headers: {
+          'Authorization': `Bearer ${currentUser.access}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Payments API response:', response.data);
+
+      // The response should be an object with a 'payments' array
+      const payments = response.data?.payments || [];
+
+      if (!Array.isArray(payments)) {
+        throw new Error('Invalid response format: payments is not an array');
+      }
+
+      const totalAmount = payments.reduce((sum, payment) => {
+        // Only sum paid payments
+        if (payment.payment_status === 'paid' || payment.payment_status === 'completed') {
+          const amount = parseFloat(payment.amount || 0);
+          console.log(`Adding payment: ${payment.payment_id}, amount: ${amount}, status: ${payment.payment_status}`);
+          return sum + amount;
+        }
+        return sum;
+      }, 0);
+
+      console.log('Fetched payments:', {
+        payments,
+        totalAmount,
+        paymentCount: payments.length,
+        paidPayments: payments.filter(p => p.payment_status === 'paid' || p.payment_status === 'completed')
+      });
+
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalPayments: totalAmount,
+        paymentsChange: 0 // Set a default change value
+      }));
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+
+      // Set default values if API call fails
+      setAnalyticsData(prev => ({
+        ...prev,
+        totalPayments: 0,
+        paymentsChange: 0
+      }));
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchTotalUsers();
+    fetchTotalCompanies();
+    fetchTotalEvents();
+    fetchTotalPosts();
+    fetchTotalPayments();
+  }, []);
 
   // New state for the event creation dialog
   const [openCreateEventDialog, setOpenCreateEventDialog] = useState(false);
@@ -392,6 +667,10 @@ function AdminDashboard() {
   const handleSettingsMenuOpen = (event) => setSettingsAnchorEl(event.currentTarget);
   const handleSettingsMenuClose = () => setSettingsAnchorEl(null);
 
+  const handleSettingsTabChange = (event, newValue) => {
+    setSettingsTab(newValue);
+  };
+
   // Add state for todo list
   const [todos, setTodos] = useState([]);
   const [openAddTask, setOpenAddTask] = useState(false);
@@ -409,6 +688,7 @@ function AdminDashboard() {
 
   // Add state for settings tab
   const [settingsTab, setSettingsTab] = useState(0);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Add state for shared ideas
   const [sharedIdeas, setSharedIdeas] = useState([
@@ -459,7 +739,15 @@ function AdminDashboard() {
         const response = await axios.get('http://localhost:8000/api/events/', {
           headers: { Authorization: `Bearer ${currentUser.access}` }
         });
-        setCompanyEvents(response.data);
+
+        // Sort events by end date in descending order (latest end dates first)
+        const sortedEvents = response.data.sort((a, b) => {
+          const dateA = new Date(a.end_at || a.registration_end || 0);
+          const dateB = new Date(b.end_at || b.registration_end || 0);
+          return dateB - dateA; // Descending order
+        });
+
+        setCompanyEvents(sortedEvents);
       }
     } catch (error) {
       console.error('Error fetching company events:', error);
@@ -471,7 +759,7 @@ function AdminDashboard() {
 
   // Update useEffect to fetch events when tab changes
   useEffect(() => {
-    if (value === 3) { // Events tab (index 3)
+    if (value === 4) { // Events tab (index 4)
       fetchCompanyEvents();
     }
   }, [value]);
@@ -1068,7 +1356,7 @@ function AdminDashboard() {
   };
 
   // Fetch company contacts
-  const fetchCompanyContacts = async (page = 1) => {
+  const fetchCompanyContacts = async (page = 1, showAll = false) => {
     setIsLoadingContacts(true);
     try {
       // Get the access token using authService
@@ -1089,39 +1377,36 @@ function AdminDashboard() {
         return;
       }
 
+      const params = showAll ? { page_size: 1000 } : { page: page };
+
       const response = await axios.get(`http://localhost:8000/api/emails/company-contacts/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         },
-        params: {
-          page: page
-        }
+        params: params
       });
 
-      setCompanyContacts(response.data.results);
-      setContactTotalPages(Math.ceil(response.data.count / 10)); // Assuming 10 items per page
-      setContactPage(page);
-    } catch (error) {
-      // Detailed error logging
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Error response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('No response received:', error.request);
+      if (showAll) {
+        // When showing all, set all results and disable pagination
+        setCompanyContacts(response.data.results);
+        setContactTotalPages(1);
+        setContactPage(1);
       } else {
-        console.error('Error setting up request:', error.message);
+        // Normal pagination
+        setCompanyContacts(response.data.results);
+        setContactTotalPages(Math.ceil(response.data.count / 10)); // Assuming 10 items per page
+        setContactPage(page);
       }
-
+    } catch (error) {
       console.error('Error fetching company contacts:', error);
 
-      // Handle token expiration or invalid token
-      if (error.response && error.response.status === 401) {
-        console.log('Token Validation Error:', error.response.data);
+      // Handle 401 Unauthorized error
+      if (error.response?.status === 401) {
+        console.log('Token expired, attempting to refresh...');
 
         try {
-          // Attempt to refresh the token
           const refreshToken = localStorage.getItem('refresh_token');
+
           if (refreshToken) {
             console.log('Attempting to refresh token...');
             const refreshResponse = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
@@ -1134,18 +1419,23 @@ function AdminDashboard() {
             localStorage.setItem('access_token', refreshResponse.data.access);
 
             // Retry the original request with the new token
+            const params = showAll ? { page_size: 1000 } : { page: page };
             const retryResponse = await axios.get(`http://localhost:8000/api/emails/company-contacts/`, {
               headers: {
                 'Authorization': `Bearer ${refreshResponse.data.access}`
               },
-              params: {
-                page: page
-              }
+              params: params
             });
 
-            setCompanyContacts(retryResponse.data.results);
-            setContactTotalPages(Math.ceil(retryResponse.data.count / 10));
-            setContactPage(page);
+            if (showAll) {
+              setCompanyContacts(retryResponse.data.results);
+              setContactTotalPages(1);
+              setContactPage(1);
+            } else {
+              setCompanyContacts(retryResponse.data.results);
+              setContactTotalPages(Math.ceil(retryResponse.data.count / 10));
+              setContactPage(page);
+            }
           } else {
             // No refresh token available, redirect to login
             console.error('No refresh token available');
@@ -1162,10 +1452,13 @@ function AdminDashboard() {
     }
   };
 
+  // Add state for showing all contacts
+  const [showingAllContacts, setShowingAllContacts] = useState(false);
+
   // Fetch contacts when Email tab is first opened or changed
   useEffect(() => {
-    if (value === 6) {
-      fetchCompanyContacts();
+    if (value === 7) { // Email tab (index 7)
+      fetchCompanyContacts(1, false);
     }
   }, [value]);
 
@@ -1246,7 +1539,23 @@ function AdminDashboard() {
             <DeleteIcon />
           </IconButton>
           <Box sx={{ flex: 1 }} />
-          <IconButton onClick={() => fetchCompanyContacts()}><RefreshIcon /></IconButton>
+          <Button
+            variant={showingAllContacts ? "contained" : "outlined"}
+            size="small"
+            onClick={() => {
+              if (showingAllContacts) {
+                setShowingAllContacts(false);
+                fetchCompanyContacts(1, false);
+              } else {
+                setShowingAllContacts(true);
+                fetchCompanyContacts(1, true);
+              }
+            }}
+            sx={{ mr: 1 }}
+          >
+            {showingAllContacts ? "Show Paginated" : "Show All"}
+          </Button>
+          <IconButton onClick={() => fetchCompanyContacts(1, showingAllContacts)}><RefreshIcon /></IconButton>
           <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
             {companyContacts.length} contacts
           </Typography>
@@ -1392,27 +1701,29 @@ function AdminDashboard() {
         </Box>
 
         {/* Pagination Controls */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderTop: '1px solid #eee' }}>
-          <Button
-            onClick={handlePreviousPage}
-            disabled={contactPage === 1}
-            size="small"
-            variant="outlined"
-          >
-            Previous
-          </Button>
-          <Typography variant="body2" color="text.secondary">
-            Page {contactPage} of {contactTotalPages}
-          </Typography>
-          <Button
-            onClick={handleNextPage}
-            disabled={contactPage === contactTotalPages}
-            size="small"
-            variant="outlined"
-          >
-            Next
-          </Button>
-        </Box>
+        {!showingAllContacts && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderTop: '1px solid #eee' }}>
+            <Button
+              onClick={handlePreviousPage}
+              disabled={contactPage === 1}
+              size="small"
+              variant="outlined"
+            >
+              Previous
+            </Button>
+            <Typography variant="body2" color="text.secondary">
+              Page {contactPage} of {contactTotalPages}
+            </Typography>
+            <Button
+              onClick={handleNextPage}
+              disabled={contactPage === contactTotalPages}
+              size="small"
+              variant="outlined"
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -1445,7 +1756,7 @@ function AdminDashboard() {
       await axios.post('http://localhost:8000/api/emails/bulk-delete/', {
         ids: selectedContactIds,
       });
-      fetchCompanyContacts();
+      fetchCompanyContacts(1, showingAllContacts);
       setSelectedContactIds([]);
       setOpenContactBatchDeleteConfirm(false); // Close the dialog
       setSnackbarMessage(`${selectedContactIds.length} contact${selectedContactIds.length > 1 ? 's' : ''} deleted successfully!`);
@@ -1483,6 +1794,7 @@ function AdminDashboard() {
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: false,
     uppercase: false,
+    lowercase: false,
     number: false,
     special: false
   });
@@ -1491,6 +1803,7 @@ function AdminDashboard() {
     setPasswordRequirements({
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
       number: /[0-9]/.test(password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
     });
@@ -1501,6 +1814,13 @@ function AdminDashboard() {
     setNewUser({ ...newUser, password: newPassword });
     checkPasswordStrength(newPassword);
   };
+
+  const isAddUserPasswordValid =
+    passwordRequirements.length &&
+    passwordRequirements.uppercase &&
+    passwordRequirements.lowercase &&
+    passwordRequirements.number &&
+    passwordRequirements.special;
 
   const PasswordRequirements = () => (
     <List dense sx={{ mt: 1, mb: 2 }}>
@@ -1515,6 +1835,12 @@ function AdminDashboard() {
           {passwordRequirements.uppercase ? <CheckCircle color="success" /> : <Cancel color="error" />}
         </ListItemIcon>
         <ListItemText primary="Include at least one uppercase letter" />
+      </ListItem>
+      <ListItem>
+        <ListItemIcon>
+          {passwordRequirements.lowercase ? <CheckCircle color="success" /> : <Cancel color="error" />}
+        </ListItemIcon>
+        <ListItemText primary="Include at least one lowercase letter" />
       </ListItem>
       <ListItem>
         <ListItemIcon>
@@ -1658,6 +1984,8 @@ function AdminDashboard() {
 
   // Company handlers
   const handleCompanyStatusChange = async (companyId, newStatus) => {
+    // Find the company before the async call
+    const changedCompany = companies.find(c => c.id === companyId);
     try {
       const currentUser = authService.getCurrentUser();
       if (!currentUser?.access) {
@@ -1684,6 +2012,18 @@ function AdminDashboard() {
               : company
           )
         );
+        // Use the company found before the async call
+        if (changedCompany && (newStatus === 'Approved' || newStatus === 'Rejected')) {
+          setActivityLog(prev => [
+            {
+              type: 'company-status',
+              action: newStatus,
+              company: changedCompany.name,
+              time: new Date().toISOString()
+            },
+            ...prev
+          ]);
+        }
       } else {
         setError('Failed to update company status');
       }
@@ -1702,9 +2042,9 @@ function AdminDashboard() {
       coverImage: null,
       location: event.location || '',
       locationLink: event.location_link || '',
-      categories: event.categories ? (Array.isArray(event.categories) ? event.categories : 
-        (typeof event.categories === 'string' && event.categories.startsWith('[') ? 
-        JSON.parse(event.categories) : [event.categories])) : [],
+      categories: event.categories ? (Array.isArray(event.categories) ? event.categories :
+        (typeof event.categories === 'string' && event.categories.startsWith('[') ?
+          JSON.parse(event.categories) : [event.categories])) : [],
       registration_form: event.registration_form || '',
       publish: event.privacy === 'publish',
       startAt: event.start_at ? new Date(event.start_at).toISOString().slice(0, 16) : '',
@@ -2864,7 +3204,7 @@ function AdminDashboard() {
 
   // Add this with other useEffect hooks
   useEffect(() => {
-    if (value === 4) { // Community tab
+    if (value === 5) { // Community tab
       fetchCommunityPosts();
     }
   }, [value]);
@@ -3065,6 +3405,11 @@ function AdminDashboard() {
                   label="Companies"
                 />
                 <Tab
+                  icon={<ShieldIcon sx={{ fontSize: 20 }} />}
+                  iconPosition="start"
+                  label="KYC"
+                />
+                <Tab
                   icon={<EventIcon sx={{ fontSize: 20 }} />}
                   iconPosition="start"
                   label="Events"
@@ -3112,6 +3457,7 @@ function AdminDashboard() {
                               {format(now, 'dd MMM, yyyy')} &nbsp;|&nbsp; {format(now, 'hh:mm:ss a')}
                             </Typography>
                           </Box>
+                          {/*
                           <Button
                             variant="contained"
                             color="success"
@@ -3121,6 +3467,7 @@ function AdminDashboard() {
                           >
                             Add Task
                           </Button>
+                          */}
                         </Grid>
                       </Grid>
                     </Container>
@@ -3129,46 +3476,53 @@ function AdminDashboard() {
                       <Grid container spacing={3}>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">TOTAL EARNINGS</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">Total Users</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              ${analyticsData.totalEarnings}
+                              {analyticsData.totalUsers.toLocaleString()}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
-                              +{analyticsData.earningsChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">ORDERS</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">Total Companies</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              {analyticsData.totalOrders}
+                              {analyticsData.totalCompanies?.toLocaleString() || '0'}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 700 }}>
-                              {analyticsData.ordersChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">CUSTOMERS</Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              {analyticsData.totalCustomers}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
-                              +{analyticsData.customersChange}%
-                            </Typography>
+                            <Grid container spacing={2}>
+                              <Grid item xs={6}>
+                                <Box>
+                                  <Typography variant="subtitle2" color="text.secondary">Events</Typography>
+                                  <Typography variant="h6" sx={{ fontWeight: 800, mt: 1 }}>
+                                    {analyticsData.totalEvents?.toLocaleString() || '0'}
+                                  </Typography>
+                                  
+                                </Box>
+                              </Grid>
+                              <Grid item xs={6}>
+                                <Box>
+                                  <Typography variant="subtitle2" color="text.secondary">Posts</Typography>
+                                  <Typography variant="h6" sx={{ fontWeight: 800, mt: 1 }}>
+                                    {analyticsData.totalPosts?.toLocaleString() || '0'}
+                                  </Typography>
+                                  
+                                </Box>
+                              </Grid>
+                            </Grid>
                           </Paper>
                         </Grid>
                         <Grid item xs={12} sm={6} md={3}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
-                            <Typography variant="subtitle2" color="text.secondary">MY BALANCE</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">Total Transactions</Typography>
                             <Typography variant="h5" sx={{ fontWeight: 800, mt: 1 }}>
-                              ${analyticsData.myBalance}
+                              ৳{analyticsData.totalPayments.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
-                              {analyticsData.balanceChange}%
-                            </Typography>
+                            
                           </Paper>
                         </Grid>
                       </Grid>
@@ -3176,76 +3530,108 @@ function AdminDashboard() {
                     {/* Revenue and Sales by Location Section */}
                     <Container maxWidth={false} disableGutters sx={{ mb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
                       <Grid container spacing={3}>
-                        {/* Revenue Chart Section */}
-                        <Grid item xs={12} md={8}>
-                          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
+                        {/* Activity Log Section */}
+                        {/*<Grid item xs={12} md={8}>
+                          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3', minHeight: 320 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Revenue</Typography>
-                              <Box sx={{ display: 'flex', gap: 3 }}>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Orders</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{analyticsData.revenueOrders}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Earnings</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>${analyticsData.revenueEarnings}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Refunds</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{analyticsData.revenueRefunds}</Typography>
-                                </Box>
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">Conversion Ratio</Typography>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'success.main' }}>{analyticsData.conversionRatio}%</Typography>
-                                </Box>
-                              </Box>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Activity Log</Typography>
                             </Box>
-                            {/* Revenue Bar Chart */}
-                            <Box sx={{ height: 260 }}>
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={analyticsData.revenueByMonth}>
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis dataKey="name" />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Bar dataKey="Orders" fill="#233876" radius={[4, 4, 0, 0]} />
-                                  <Bar dataKey="Earnings" fill="#82ca9d" radius={[4, 4, 0, 0]} />
-                                  <Bar dataKey="Refunds" fill="#f87171" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                              </ResponsiveContainer>
+                            <Box sx={{ maxHeight: 260, overflowY: 'auto' }}>
+                              {(activityLog && activityLog.length === 0) ? (
+                                <Typography color="text.secondary">No recent activity.</Typography>
+                              ) : (
+                                (activityLog || []).map((activity, idx) => (
+                                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2, borderRadius: 2, background: '#f7f9fb' }}>
+                                    {activity.type === 'investment' ? (
+                                      <MonetizationOnIcon color="primary" />
+                                    ) : (
+                                      <LightbulbIcon color="warning" />
+                                    )}
+                                    <Box>
+                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        {activity.type === 'investment'
+                                          ? `You invested $${activity.amount} in ${activity.company}`
+                                          : activity.type === 'company-status'
+                                            ? `You ${activity.action} ${activity.company} company`
+                                            : activity.type === 'post'
+                                              ? `You posted an idea: "${activity.title || 'No title'}"`
+                                              : ''}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {new Date(activity.time).toLocaleString()}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                ))
+                              )}
                             </Box>
                           </Paper>
-                        </Grid>
-                        {/* Sales by Location Section */}
+                        </Grid>*/}
+                        {/* Events Section */}
                         <Grid item xs={12} md={4}>
                           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3', height: '100%' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Sales by Locations</Typography>
-                              <Button size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}>Export Report</Button>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Upcoming Events (next 7 days)</Typography>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                                onClick={() => navigate('/events')}
+                              >
+                                View All
+                              </Button>
                             </Box>
-                            {/* Map Placeholder */}
-                            <Box sx={{ width: '100%', height: 120, background: '#f3f6fa', borderRadius: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b8c1', fontWeight: 700 }}>
-                              Map
-                            </Box>
-                            {/* Progress Bars for Locations */}
-                            <Box>
-                              {analyticsData.salesByLocation.map(loc => (
-                                <React.Fragment key={loc.name}>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                    <Typography variant="body2">{loc.name}</Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{loc.percent}%</Typography>
+
+                            {eventsLoading ? (
+                              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                <CircularProgress size={24} />
+                              </Box>
+                            ) : upcomingEvents.length > 0 ? (
+                              <Box>
+                                {upcomingEvents.map((event) => (
+                                  <Box
+                                    key={event.id}
+                                    sx={{
+                                      mb: 2,
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: '#f8fafc',
+                                      borderLeft: '3px solid #3f51b5',
+                                      '&:hover': {
+                                        background: '#f1f5f9',
+                                        cursor: 'pointer'
+                                      }
+                                    }}
+                                    onClick={() => navigate(`/events/${event.id}`)}
+                                  >
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                      {event.title}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: '0.8rem', mb: 0.5 }}>
+                                      <EventAvailableIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                                      {formatDate(event.registration_end)}
+                                    </Box>
+                                    {event.location && (
+                                      <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', fontSize: '0.8rem' }}>
+                                        <RoomIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                                        {event.location}
+                                      </Box>
+                                    )}
                                   </Box>
-                                  <Box sx={{ background: '#e3e8ef', borderRadius: 1, height: 8, mb: 2 }}>
-                                    <Box sx={{ width: `${loc.percent}%`, height: '100%', background: loc.color, borderRadius: 1 }} />
-                                  </Box>
-                                </React.Fragment>
-                              ))}
-                            </Box>
+                                ))}
+                              </Box>
+                            ) : (
+                              <Box sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
+                                <EventAvailableIcon sx={{ fontSize: '2.5rem', mb: 1, opacity: 0.5 }} />
+                                <Typography>No upcoming events</Typography>
+                              </Box>
+                            )}
                           </Paper>
                         </Grid>
                       </Grid>
                     </Container>
                     {/* To-Do List Section */}
+                    {/* 
                     <Container maxWidth={false} disableGutters sx={{ mb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
                       <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: '#fff', border: '1px solid #f0f1f3' }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>To-Do List</Typography>
@@ -3271,6 +3657,7 @@ function AdminDashboard() {
                         </List>
                       </Paper>
                     </Container>
+                    */}
                     <Dialog open={openAddTask} onClose={() => setOpenAddTask(false)}>
                       <DialogTitle>Add Task</DialogTitle>
                       <DialogContent>
@@ -3339,13 +3726,18 @@ function AdminDashboard() {
                         value={userSearch}
                         onChange={e => setUserSearch(e.target.value)}
                         sx={{
-                          width: 400,
+                          width: 320,
                           background: '#f7f9fb',
                           borderRadius: 2,
                           '& .MuiOutlinedInput-root': { borderRadius: 2 }
                         }}
                         InputProps={{
-                          sx: { background: '#f7f9fb', borderRadius: 2 }
+                          sx: { background: '#f7f9fb', borderRadius: 2 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon color="action" />
+                            </InputAdornment>
+                          ),
                         }}
                       />
                       <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -3439,11 +3831,11 @@ function AdminDashboard() {
                                         profile_pic: user.profile_pic,
                                         allKeys: Object.keys(user)
                                       });
-                                      
+
                                       const profilePic = user.profile_picture || user.profile_pic;
-                                      const fullUrl = profilePic ? 
-                                        (profilePic.startsWith('http') ? profilePic : 
-                                        `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                                      const fullUrl = profilePic ?
+                                        (profilePic.startsWith('http') ? profilePic :
+                                          `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) :
                                         null;
 
                                       return fullUrl ? (
@@ -3503,7 +3895,7 @@ function AdminDashboard() {
                                       <VisibilityIcon />
                                     </IconButton>
                                   </Tooltip>
-                                  <Tooltip title="Edit">
+                                  {/*<Tooltip title="Edit">
                                     <IconButton
                                       color="primary"
                                       onClick={() => {
@@ -3514,7 +3906,7 @@ function AdminDashboard() {
                                     >
                                       <EditIcon />
                                     </IconButton>
-                                  </Tooltip>
+                                  </Tooltip>*/}
                                   <Tooltip title="Delete">
                                     <IconButton onClick={() => handleDeleteUser(user)} color="error">
                                       <DeleteIcon />
@@ -3585,15 +3977,22 @@ function AdminDashboard() {
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                       <TextField
                         size="small"
-                        placeholder="Search by company name or keyword..."
+                        placeholder="Search by company name ..."
                         value={companySearch}
                         onChange={e => setCompanySearch(e.target.value)}
                         sx={{
-                          minWidth: 300,
-                          '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                          width: 320,
+                          background: '#f7f9fb',
+                          borderRadius: 2,
+                          '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 16, pl: 1 }
                         }}
                         InputProps={{
-                          sx: { background: '#f7f9fb', borderRadius: 2 }
+                          sx: { background: '#f7f9fb', borderRadius: 2 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon color="action" />
+                            </InputAdornment>
+                          ),
                         }}
                       />
                       <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -3707,10 +4106,10 @@ function AdminDashboard() {
                                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                     {company.logo && (
                                       <Avatar
-                                      src={company.logo || `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`}
-                                      alt={company.name}
-                                      sx={{ mr: 2, width: 40, height: 40 }}
-                                    />
+                                        src={company.logo || `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/company_covers/default_company_cover.jpg`}
+                                        alt={company.name}
+                                        sx={{ mr: 2, width: 40, height: 40 }}
+                                      />
                                     )}
                                     <Box>
                                       <Typography variant="subtitle2">
@@ -3809,7 +4208,7 @@ function AdminDashboard() {
                                           <VisibilityIcon />
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip title="Edit">
+                                      {/*<Tooltip title="Edit">
                                         <IconButton
                                           color="primary"
                                           onClick={() => {
@@ -3832,7 +4231,7 @@ function AdminDashboard() {
                                         >
                                           <EditIcon />
                                         </IconButton>
-                                      </Tooltip>
+                                      </Tooltip>*/}
                                       <Tooltip title="Delete">
                                         <IconButton
                                           color="error"
@@ -3853,7 +4252,7 @@ function AdminDashboard() {
                   </Box>
                 )}
                 {/* Events Tab */}
-                {value === 3 && (
+                {value === 4 && (
                   <Box>
                     <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">
@@ -3913,17 +4312,22 @@ function AdminDashboard() {
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
                       <TextField
                         size="small"
-                        placeholder="Search by company name or keyword..."
+                        placeholder="Search by event name..."
                         value={eventSearch}
                         onChange={e => setEventSearch(e.target.value)}
                         sx={{
-                          width: 400,
+                          width: 320,
                           background: '#f7f9fb',
                           borderRadius: 2,
-                          '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                          '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 16, pl: 1 }
                         }}
                         InputProps={{
-                          sx: { background: '#f7f9fb', borderRadius: 2 }
+                          sx: { background: '#f7f9fb', borderRadius: 2 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon color="action" />
+                            </InputAdornment>
+                          ),
                         }}
                       />
                       <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -3950,7 +4354,7 @@ function AdminDashboard() {
                           '&:hover': { background: '#1a285a' }
                         }}
                         startIcon={<FilterAltIcon />}
-                        //onClick={() => { setOpenAdvancedFilters(true); }}
+                      //onClick={() => { setOpenAdvancedFilters(true); }}
                       >
                         Filters
                       </Button>
@@ -4019,7 +4423,7 @@ function AdminDashboard() {
                                 <TableCell>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <Avatar
-                                      src={event.cover_image 
+                                      src={event.cover_image
                                         ? (event.cover_image.startsWith('http')
                                           ? event.cover_image
                                           : `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${event.cover_image}`)
@@ -4127,8 +4531,8 @@ function AdminDashboard() {
                     </TableContainer>
                   </Box>
                 )}
-                {/* Community Tab (now value === 4) */}
-                {value === 4 && (
+                {/* Community Tab (now value === 5) */}
+                {value === 5 && (
                   <Box>
                     <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Community</Typography>
@@ -4175,8 +4579,20 @@ function AdminDashboard() {
                         placeholder="Search by title or tags..."
                         value={postSearch}
                         onChange={e => setPostSearch(e.target.value)}
-                        sx={{ width: 400, background: '#f7f9fb', borderRadius: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        InputProps={{ sx: { background: '#f7f9fb', borderRadius: 2 } }}
+                        sx={{
+                          width: 320,
+                          background: '#f7f9fb',
+                          borderRadius: 2,
+                          '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 16, pl: 1 },
+                        }}
+                        InputProps={{
+                          sx: { background: '#f7f9fb', borderRadius: 2 },
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       <FormControl size="small" sx={{ minWidth: 180 }}>
                         <Select
@@ -4271,7 +4687,7 @@ function AdminDashboard() {
                                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                         {(console.log('User Object:', post.user), null)}
                                         <Avatar
-                                          src={post.user?.profile_picture || 
+                                          src={post.user?.profile_picture ||
                                             `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/media/profile_pics/default_profile.png`}
                                           alt={`${post.user.first_name} ${post.user.last_name}`}
                                           sx={{ width: 40, height: 40 }}
@@ -4336,81 +4752,470 @@ function AdminDashboard() {
                     )}
                   </Box>
                 )}
-                {/* Chat Tab (now value === 5) */}
-                {value === 5 && (
-                  <Box sx={{ display: 'flex', height: 500, background: '#faf9f7', borderRadius: 2, overflow: 'hidden', border: '1px solid #eee' }}>
-                    {/* Left: Chat List */}
-                    <Box sx={{ width: 300, background: '#fcf8f3', borderRight: '1px solid #eee', p: 2, display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Chats</Typography>
-                      <TextField size="small" placeholder="Search here..." sx={{ mb: 2, background: '#fff', borderRadius: 2 }} fullWidth />
-                      <Tabs value={chatTab} onChange={(_, v) => setChatTab(v)} sx={{ mb: 2 }}>
-                        <Tab label="Chats" value="chats" />
-                      </Tabs>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, mt: 1 }}>DIRECT MESSAGES</Typography>
-                      <List sx={{ flex: 1, overflowY: 'auto' }}>
-                        {chatUsers.map(user => (
-                          <ListItem
-                            key={user.id}
-                            button
-                            selected={selectedChat.id === user.id}
-                            onClick={() => setSelectedChat(user)}
-                            sx={{ borderRadius: 2, mb: 0.5, background: selectedChat.id === user.id ? '#e6f4ea' : 'transparent' }}
-                          >
-                            <Avatar src={user.avatar} sx={{ width: 32, height: 32, mr: 2 }} />
-                            <ListItemText primary={user.name} />
-                            {user.unread > 0 && (
-                              <Badge color="primary" badgeContent={user.unread} />
-                            )}
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                    {/* Right: Chat Window */}
-                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff' }}>
-                      {/* Chat Header */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', p: 2 }}>
-                        <Avatar src={selectedChat.avatar} sx={{ width: 40, height: 40, mr: 2 }} />
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{selectedChat.name}</Typography>
-                          <Typography variant="caption" color="success.main">Online</Typography>
-                        </Box>
-                        <Box sx={{ flex: 1 }} />
-                        <IconButton><SearchIcon /></IconButton>
-                        <IconButton><MoreVertIcon /></IconButton>
-                      </Box>
-                      {/* Chat Messages */}
-                      <Box sx={{ flex: 1, p: 2, overflowY: 'auto', background: '#faf9f7' }}>
-                        {chatMessages.map((msg, idx) => (
-                          <Box key={idx} sx={{ mb: 2, display: 'flex', flexDirection: msg.from === 'Me' ? 'row-reverse' : 'row', alignItems: 'flex-end' }}>
-                            <Avatar src={msg.from === 'Me' ? undefined : selectedChat.avatar} sx={{ width: 28, height: 28, mx: 1 }} />
-                            <Box sx={{ background: msg.from === 'Me' ? '#e6f4ea' : '#f3f6fa', px: 2, py: 1, borderRadius: 2, maxWidth: 320 }}>
-                              <Typography variant="body2">{msg.text}</Typography>
-                              <Typography variant="caption" color="text.secondary">{msg.time}</Typography>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                      {/* Chat Input */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', borderTop: '1px solid #eee', p: 2 }}>
-                        <IconButton><EmojiEmotionsIcon /></IconButton>
-                        <TextField
-                          fullWidth
-                          placeholder="Type your message..."
-                          value={chatInput}
-                          onChange={e => setChatInput(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') handleSendChat(); }}
-                          sx={{ mx: 2, background: '#f7f9fb', borderRadius: 2 }}
-                        />
-                        <IconButton color="success" onClick={handleSendChat}><SendIcon /></IconButton>
-                      </Box>
-                    </Box>
-                  </Box>
-                )}
+                {/* Chat Tab (now value === 6) */}
                 {value === 6 && (
+                  <Box>
+                    </Box>
+                )}
+                {value === 7 && (
                   <Box>
                     {/* Render Company Contacts */}
                     {renderCompanyContacts()}
                   </Box>
+                )}
+                {/* Settings Tab */}
+                {value === 8 && (
+                  <Box sx={{ background: '#fff', borderRadius: 3, p: 0, minHeight: 500 }}>
+                    {/* Modern Profile Cover + Avatar */}
+                    {/*<Box sx={{ position: 'relative', height: 120, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden', background: '#fff', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                
+                <Box sx={{ position: 'absolute', left: '50%', bottom: 4, transform: 'translateX(-50%)', zIndex: 2, textAlign: 'center' }}>
+                  <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                    <Avatar src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : 'https://randomuser.me/api/portraits/men/32.jpg'} sx={{ width: 112, height: 112, border: '4px solid #fff', boxShadow: 2, bgcolor: '#fff', objectFit: 'cover' }} />
+                    <IconButton sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: '#fff', boxShadow: 1 }} size="small">
+                      <PhotoCamera fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Box>
+              
+              <Box sx={{ textAlign: 'center', mt: 2, mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'Anna'} {userProfile?.last_name || 'Adame'}</Typography>
+                <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Lead Designer / Developer'}</Typography>
+              </Box>*/}
+                    {/* Main Content: Tabs and Form */}
+                    <Container maxWidth={false} disableGutters sx={{ pt: 2, pb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
+                      <Paper elevation={3} sx={{ borderRadius: 3, p: 0 }}>
+                        {/*<Tabs value={settingsTab} onChange={(_, v) => setSettingsTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', px: 3, pt: 2 }}>*/}
+                        <Tabs value={settingsTab} onChange={(event, newValue) => setSettingsTab(newValue)}>
+                          <Tab label="Personal Details" />
+                          <Tab label="Change Password" />
+                          {/*<Tab label="Experience" />*/}
+                        </Tabs>
+                        <Box sx={{ p: 3 }}>
+                          {settingsTab === 0 && (
+                            <Grid container spacing={2}>
+                              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                                <Box sx={{ position: 'relative', width: 120, height: 120 }}>
+                                  <Avatar
+                                    src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
+                                    alt="Profile"
+                                    sx={{ width: 120, height: 120, border: '2px solid #6c63ff' }}
+                                  />
+                                  <input
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    id="profile-image-upload"
+                                    type="file"
+                                    onChange={handleProfileImageChange}
+                                  />
+                                  <label htmlFor="profile-image-upload">
+                                    <IconButton
+                                      component="span"
+                                      sx={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        right: 0,
+                                        backgroundColor: '#6c63ff',
+                                        color: 'white',
+                                        '&:hover': {
+                                          backgroundColor: '#574fd6',
+                                        },
+                                      }}
+                                    >
+                                      <PhotoCamera />
+                                    </IconButton>
+                                  </label>
+                                </Box>
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="First Name"
+                                  name="first_name"
+                                  value={settingsFormData.first_name || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PersonIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Last Name"
+                                  name="last_name"
+                                  value={settingsFormData.last_name || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PersonIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Phone Number"
+                                  name="phone"
+                                  value={settingsFormData.phone || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PhoneIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Email Address"
+                                  name="email"
+                                  value={settingsFormData.email || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    readOnly: true,
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <EmailIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} md={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Joining Date"
+                                  value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : ''}
+                                  InputProps={{
+                                    readOnly: true,
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CalendarMonthIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                  sx={{ mb: 2 }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Date of Birth"
+                                  name="dob"
+                                  type="date"
+                                  value={settingsFormData.dob || ''}
+                                  onChange={handleSettingsChange}
+                                  InputLabelProps={{
+                                    shrink: true,
+                                  }}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CalendarMonthIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Designation"
+                                  name="title"
+                                  value={settingsFormData.title || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <WorkIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Website"
+                                  name="website"
+                                  value={settingsFormData.website || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LanguageIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Address"
+                                  name="address"
+                                  value={settingsFormData.address || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <HomeIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="City"
+                                  name="city"
+                                  value={settingsFormData.city || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LocationCityIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Country"
+                                  name="country"
+                                  value={settingsFormData.country || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PublicIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12}>
+                                <TextField
+                                  fullWidth
+                                  label="Description"
+                                  name="bio"
+                                  multiline
+                                  rows={3}
+                                  value={settingsFormData.bio || ''}
+                                  onChange={handleSettingsChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <InfoOutlinedIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid item xs={12} sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
+                                  onClick={handleSettingsUpdate}
+                                  disabled={isUpdating}
+                                  startIcon={isUpdating ? <CircularProgress size={20} color="inherit" /> : null}
+                                >
+                                  {isUpdating ? 'Updating...' : 'Update'}
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  color="error"
+                                  sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
+                                  onClick={() => {
+                                    if (userProfile) {
+                                      setSettingsFormData({
+                                        first_name: userProfile.first_name || '',
+                                        last_name: userProfile.last_name || '',
+                                        phone: userProfile.phone || '',
+                                        email: userProfile.email || '',
+                                        title: userProfile.title || '',
+                                        company: userProfile.company || '',
+                                        website: userProfile.website || '',
+                                        city: userProfile.city || '',
+                                        state: userProfile.state || '',
+                                        bio: userProfile.bio || '',
+                                        position: userProfile.position || '',
+                                        address: userProfile.address || '',
+                                        country: userProfile.country || '',
+                                        skills: userProfile.skills || '',
+                                        dob: userProfile.dob || ''
+                                      });
+                                    }
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Grid>
+                            </Grid>
+                          )}
+
+                          {settingsTab === 1 && (
+                            <Grid container spacing={2} alignItems="flex-end">
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Old Password*"
+                                  placeholder="Enter current password"
+                                  type={showOldPassword ? 'text' : 'password'}
+                                  name="old_password"
+                                  value={passwordData.old_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowOldPassword(!showOldPassword)}
+                                          edge="end"
+                                        >
+                                          {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <LockIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="New Password*"
+                                  placeholder="Enter new password"
+                                  type={showNewPassword ? 'text' : 'password'}
+                                  name="new_password"
+                                  value={passwordData.new_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowNewPassword(!showNewPassword)}
+                                          edge="end"
+                                        >
+                                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <VpnKeyIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Confirm Password*"
+                                  placeholder="Confirm password"
+                                  type={showConfirmPassword ? 'text' : 'password'}
+                                  name="confirm_password"
+                                  value={passwordData.confirm_password}
+                                  onChange={handlePasswordInputChange}
+                                  InputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                          edge="end"
+                                        >
+                                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ),
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CheckCircleIcon color="action" />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} md={4}>
+                                <Box sx={{ mt: 1 }}>
+                                  <a
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      navigate('/forgot-password');
+                                    }}
+                                    style={{ fontSize: 14, color: '#6c63ff', textDecoration: 'underline' }}
+                                  >
+                                    Forgot Password ?
+                                  </a>
+                                </Box>
+                              </Grid>
+                              <Grid item xs={12} md={8} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                                {passwordError && (
+                                  <Typography color="error" sx={{ mb: 1 }}>{passwordError}</Typography>
+                                )}
+                                {passwordSuccess && (
+                                  <Typography color="success.main" sx={{ mb: 1 }}>{passwordSuccess}</Typography>
+                                )}
+                                <Button
+                                  variant="contained"
+                                  sx={{
+                                    background: '#ff865a',
+                                    color: '#fff',
+                                    fontWeight: 600,
+                                    borderRadius: 2,
+                                    px: 4,
+                                    boxShadow: 'none',
+                                    '&:hover': { background: '#ff6a3d' }
+                                  }}
+                                  onClick={handleChangePassword}
+                                >
+                                  Change Password
+                                </Button>
+                              </Grid>
+                            </Grid>
+                          )}
+                        </Box>
+                      </Paper>
+                    </Container>
+                  </Box>
+                )}
+                {/* KYC Tab */}
+                {value === 3 && (
+                  <KYCPage />
                 )}
               </Box>
             </Paper>
@@ -4426,9 +5231,9 @@ function AdminDashboard() {
                       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                         {(() => {
                           const profilePic = selectedUser.profile_picture || selectedUser.profile_pic;
-                          const fullUrl = profilePic ? 
-                            (profilePic.startsWith('http') ? profilePic : 
-                            `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) : 
+                          const fullUrl = profilePic ?
+                            (profilePic.startsWith('http') ? profilePic :
+                              `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${profilePic}`) :
                             null;
 
                           return fullUrl ? (
@@ -5484,6 +6289,11 @@ function AdminDashboard() {
                             </IconButton>
                           </InputAdornment>
                         ),
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon color="action" />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                     <PasswordRequirements />
@@ -5557,6 +6367,7 @@ function AdminDashboard() {
                   variant="contained"
                   color="primary"
                   sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
+                  disabled={!isAddUserPasswordValid}
                 >
                   Add User
                 </Button>
@@ -5688,386 +6499,6 @@ function AdminDashboard() {
               </Alert>
             </Snackbar>
 
-            {/* Settings Tab */}
-            {value === 7 && (
-              <Box sx={{ background: '#fff', borderRadius: 3, p: 0, minHeight: 500 }}>
-                {/* Modern Profile Cover + Avatar */}
-                {/*<Box sx={{ position: 'relative', height: 120, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden', background: '#fff', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                
-                <Box sx={{ position: 'absolute', left: '50%', bottom: 4, transform: 'translateX(-50%)', zIndex: 2, textAlign: 'center' }}>
-                  <Box sx={{ position: 'relative', display: 'inline-block' }}>
-                    <Avatar src={userProfile?.profile_pic ? `/images/profile_pic/${userProfile.profile_pic}` : 'https://randomuser.me/api/portraits/men/32.jpg'} sx={{ width: 112, height: 112, border: '4px solid #fff', boxShadow: 2, bgcolor: '#fff', objectFit: 'cover' }} />
-                    <IconButton sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: '#fff', boxShadow: 1 }} size="small">
-                      <PhotoCamera fontSize="small" />
-                    </IconButton>
-                  </Box>
-                </Box>
-              </Box>
-              
-              <Box sx={{ textAlign: 'center', mt: 2, mb: 0.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>{userProfile?.first_name || 'Anna'} {userProfile?.last_name || 'Adame'}</Typography>
-                <Typography variant="body2" color="text.secondary">{userProfile?.title || 'Lead Designer / Developer'}</Typography>
-              </Box>*/}
-                {/* Main Content: Tabs and Form */}
-                <Container maxWidth={false} disableGutters sx={{ pt: 2, pb: 4, px: { xs: 1, sm: 3, md: 6 } }}>
-                  <Paper elevation={3} sx={{ borderRadius: 3, p: 0 }}>
-                    <Tabs value={settingsTab} onChange={(_, v) => setSettingsTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', px: 3, pt: 2 }}>
-                      <Tab label="Personal Details" />
-                      <Tab label="Change Password" />
-                      {/*<Tab label="Experience" />*/}
-                    </Tabs>
-                    <Box sx={{ p: 3 }}>
-                      {settingsTab === 0 && (
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                            <Box sx={{ position: 'relative', width: 120, height: 120 }}>
-                              <Avatar
-                                src={profileImagePreview || profileImageUrl || "https://placehold.co/120x120"}
-                                alt="Profile"
-                                sx={{ width: 120, height: 120, border: '2px solid #6c63ff' }}
-                              />
-                              <input
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                id="profile-image-upload"
-                                type="file"
-                                onChange={handleProfileImageChange}
-                              />
-                              <label htmlFor="profile-image-upload">
-                                <IconButton
-                                  component="span"
-                                  sx={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    right: 0,
-                                    backgroundColor: '#6c63ff',
-                                    color: 'white',
-                                    '&:hover': {
-                                      backgroundColor: '#574fd6',
-                                    },
-                                  }}
-                                >
-                                  <PhotoCamera />
-                                </IconButton>
-                              </label>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="First Name"
-                              name="first_name"
-                              value={settingsFormData.first_name}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Last Name"
-                              name="last_name"
-                              value={settingsFormData.last_name}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Phone Number"
-                              name="phone"
-                              value={settingsFormData.phone}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Email Address"
-                              name="email"
-                              value={settingsFormData.email}
-                              onChange={handleSettingsChange}
-                              InputProps={{
-                                readOnly: true,
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              label="Joining Date"
-                              value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : ''}
-                              InputProps={{
-                                readOnly: true,
-                              }}
-                              sx={{ mb: 2 }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Date of Birth"
-                              name="dob"
-                              type="date"
-                              value={settingsFormData.dob}
-                              onChange={handleSettingsChange}
-                              InputLabelProps={{
-                                shrink: true,
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Designation"
-                              name="title"
-                              value={settingsFormData.title}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Website"
-                              name="website"
-                              value={settingsFormData.website}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Address"
-                              name="address"
-                              value={settingsFormData.address}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="City"
-                              name="city"
-                              value={settingsFormData.city}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              fullWidth
-                              label="Country"
-                              name="country"
-                              value={settingsFormData.country}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              fullWidth
-                              label="Description"
-                              name="bio"
-                              multiline
-                              rows={3}
-                              value={settingsFormData.bio}
-                              onChange={handleSettingsChange}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
-                              onClick={() => {
-                                console.log('Button clicked');
-                                handleSettingsUpdate();
-                              }}
-                            >
-                              Update
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              sx={{ borderRadius: 2, fontWeight: 700, px: 4 }}
-                              onClick={() => {
-                                // Reset form data to current user profile data
-                                if (userProfile) {
-                                  setSettingsFormData({
-                                    first_name: userProfile.first_name || '',
-                                    last_name: userProfile.last_name || '',
-                                    phone: userProfile.phone || '',
-                                    email: userProfile.email || '',
-                                    title: userProfile.title || '',
-                                    company: userProfile.company || '',
-                                    website: userProfile.website || '',
-                                    city: userProfile.city || '',
-                                    state: userProfile.state || '',
-                                    bio: userProfile.bio || '',
-                                    position: userProfile.position || '',
-                                    address: userProfile.address || '',
-                                    country: userProfile.country || '',
-                                    skills: userProfile.skills || '',
-                                    dob: userProfile.dob || ''
-                                  });
-                                }
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      )}
-                      {settingsTab === 1 && (
-                        // Change Password Form
-                        <Grid container spacing={2} alignItems="flex-end">
-                          <Grid item xs={12} md={4}>
-                            <TextField
-                              fullWidth
-                              label="Old Password*"
-                              placeholder="Enter current password"
-                              type={showOldPassword ? 'text' : 'password'}
-                              name="old_password"
-                              value={passwordData.old_password}
-                              onChange={handlePasswordInputChange}
-                              InputProps={{
-                                endAdornment: (
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      onClick={() => setShowOldPassword(!showOldPassword)}
-                                      edge="end"
-                                    >
-                                      {showOldPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                ),
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <TextField
-                              fullWidth
-                              label="New Password*"
-                              placeholder="Enter new password"
-                              type={showNewPassword ? 'text' : 'password'}
-                              name="new_password"
-                              value={passwordData.new_password}
-                              onChange={handlePasswordInputChange}
-                              InputProps={{
-                                endAdornment: (
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      onClick={() => setShowNewPassword(!showNewPassword)}
-                                      edge="end"
-                                    >
-                                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                ),
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <TextField
-                              fullWidth
-                              label="Confirm Password*"
-                              placeholder="Confirm password"
-                              type={showConfirmPassword ? 'text' : 'password'}
-                              name="confirm_password"
-                              value={passwordData.confirm_password}
-                              onChange={handlePasswordInputChange}
-                              InputProps={{
-                                endAdornment: (
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                      edge="end"
-                                    >
-                                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                ),
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <Box sx={{ mt: 1 }}>
-                              <a
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  navigate('/forgot-password');
-                                }}
-                                style={{ fontSize: 14, color: '#6c63ff', textDecoration: 'underline' }}
-                              >
-                                Forgot Password ?
-                              </a>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12} md={8} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                            {passwordError && (
-                              <Typography color="error" sx={{ mb: 1 }}>{passwordError}</Typography>
-                            )}
-                            {passwordSuccess && (
-                              <Typography color="success.main" sx={{ mb: 1 }}>{passwordSuccess}</Typography>
-                            )}
-                            <Button
-                              variant="contained"
-                              sx={{
-                                background: '#ff865a',
-                                color: '#fff',
-                                fontWeight: 600,
-                                borderRadius: 2,
-                                px: 4,
-                                boxShadow: 'none',
-                                '&:hover': { background: '#ff6a3d' }
-                              }}
-                              onClick={handleChangePassword}
-                            >
-                              Change Password
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      )}
-                      {/*settingsTab === 2 && (
-                        // Experience Form
-                        <Grid container spacing={2} alignItems="flex-end">
-                          <Grid item xs={12}>
-                            <TextField fullWidth label="Job Title" value="Lead Designer / Developer" />
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <TextField fullWidth label="Company Name" value="Themesbrand" />
-                          </Grid>
-                          <Grid item xs={6} md={2}>
-                            <TextField fullWidth label="Experience Years" value="2017" select SelectProps={{ native: true }}>
-                              <option value="2017">2017</option>
-                              <option value="2018">2018</option>
-                              <option value="2019">2019</option>
-                              <option value="2020">2020</option>
-                            </TextField>
-                          </Grid>
-                          <Grid item xs={6} md={2}>
-                            <TextField fullWidth label="to" value="2020" select SelectProps={{ native: true }}>
-                              <option value="2017">2017</option>
-                              <option value="2018">2018</option>
-                              <option value="2019">2019</option>
-                              <option value="2020">2020</option>
-                            </TextField>
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField fullWidth label="Job Description" multiline rows={3} value="You always want to make sure that your fonts work well together and try to limit the number of fonts you use to three or less. Experiment and play around with the fonts that you already have in the software you're working with reputable font websites." />
-                          </Grid>
-                          <Grid item xs={12} md={8} sx={{ display: 'flex', gap: 2 }}>
-                            <Button variant="contained" sx={{ background: '#6c63ff', color: '#fff', fontWeight: 600, borderRadius: 2, px: 4, boxShadow: 'none', '&:hover': { background: '#574fd6' } }}>Update</Button>
-                            <Button variant="contained" sx={{ background: '#ff865a', color: '#fff', fontWeight: 600, borderRadius: 2, px: 4, boxShadow: 'none', '&:hover': { background: '#ff6a3d' } }}>Add New</Button>
-                          </Grid>
-                          <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                            <Button variant="contained" sx={{ background: '#ff6a3d', color: '#fff', fontWeight: 600, borderRadius: 2, px: 4, boxShadow: 'none', '&:hover': { background: '#d63a1a' } }}>Delete</Button>
-                          </Grid>
-                        </Grid>
-                      )}*/}
-                    </Box>
-                  </Paper>
-                </Container>
-              </Box>
-            )}
           </Grid>
         </Grid>
       </Container>
@@ -6699,8 +7130,8 @@ function AdminDashboard() {
                       position: 'relative'
                     }}>
                       <img
-                        src={selectedEvent.cover_image.startsWith('http') 
-                          ? selectedEvent.cover_image 
+                        src={selectedEvent.cover_image.startsWith('http')
+                          ? selectedEvent.cover_image
                           : `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${selectedEvent.cover_image}`}
                         alt={selectedEvent.title}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -6734,11 +7165,11 @@ function AdminDashboard() {
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>Categories</Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {selectedEvent.categories && (Array.isArray(selectedEvent.categories) ? selectedEvent.categories : 
-                      (typeof selectedEvent.categories === 'string' && selectedEvent.categories.startsWith('[') ? 
-                      JSON.parse(selectedEvent.categories) : [selectedEvent.categories])).map((category, index) => (
-                      <Chip key={index} label={category} />
-                    ))}
+                    {selectedEvent.categories && (Array.isArray(selectedEvent.categories) ? selectedEvent.categories :
+                      (typeof selectedEvent.categories === 'string' && selectedEvent.categories.startsWith('[') ?
+                        JSON.parse(selectedEvent.categories) : [selectedEvent.categories])).map((category, index) => (
+                          <Chip key={index} label={category} />
+                        ))}
                   </Box>
                 </Grid>
 

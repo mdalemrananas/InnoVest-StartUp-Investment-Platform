@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Breadcrumbs, Link, Container, TextField, FormControl, InputLabel, Select, MenuItem, Button, Card, CardMedia, CardContent, CardActions, Grid, IconButton, Autocomplete } from '@mui/material';
+import { Box, Typography, Breadcrumbs, Link, Container, TextField, FormControl, InputLabel, Select, MenuItem, Button, Card, CardMedia, CardContent, CardActions, Grid, IconButton, Autocomplete, InputAdornment } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,14 +20,14 @@ function stripHtml(html) {
 }
 
 const categoryOptions = [
-  { value: 'Conference', label: 'Conference' },
-  { value: 'Workshop', label: 'Workshop' },
-  { value: 'Seminar', label: 'Seminar' },
-  { value: 'Networking', label: 'Networking' },
-  { value: 'Training', label: 'Training' },
-  { value: 'Webinar', label: 'Webinar' },
-  { value: 'Hackathon', label: 'Hackathon' },
-  { value: 'Other', label: 'Other' },
+  { value: '["Conference"]', label: 'Conference' },
+  { value: '["Workshop"]', label: 'Workshop' },
+  { value: '["Seminar"]', label: 'Seminar' },
+  { value: '["Networking"]', label: 'Networking' },
+  { value: '["Training"]', label: 'Training' },
+  { value: '["Webinar"]', label: 'Webinar' },
+  { value: '["Hackathon"]', label: 'Hackathon' },
+  { value: '["Other"]', label: 'Other' },
 ];
 
 const Events = () => {
@@ -95,8 +95,11 @@ const Events = () => {
 
     const matchesCategory = !category || event.categories === category?.value;
     const isPublished = event.privacy === 'publish';
+    
+    // Check if registration deadline has not passed
+    const hasValidDeadline = !event.registration_end || new Date(event.registration_end) > new Date();
 
-    return matchesSearch && matchesCategory && isPublished;
+    return matchesSearch && matchesCategory && isPublished && hasValidDeadline;
   });
 
   return (
@@ -194,6 +197,13 @@ const Events = () => {
                 boxShadow: 'none',
               },
             }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
           />
           <Autocomplete
             size="small"
@@ -253,7 +263,23 @@ const Events = () => {
         ) : (
           <Grid container spacing={3}>
             {filteredEvents
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .sort((a, b) => {
+                // First, handle events without registration_end dates
+                const aHasDeadline = a.registration_end && new Date(a.registration_end) > new Date();
+                const bHasDeadline = b.registration_end && new Date(b.registration_end) > new Date();
+                
+                // If both have valid deadlines, sort by deadline (closest first)
+                if (aHasDeadline && bHasDeadline) {
+                  return new Date(a.registration_end) - new Date(b.registration_end);
+                }
+                
+                // If only one has a deadline, prioritize the one with deadline
+                if (aHasDeadline && !bHasDeadline) return -1;
+                if (!aHasDeadline && bHasDeadline) return 1;
+                
+                // If neither has a deadline, sort by creation date (newest first)
+                return new Date(b.created_at) - new Date(a.created_at);
+              })
               .map((event) => (
               <Grid item xs={12} key={event.id}>
                 <Box

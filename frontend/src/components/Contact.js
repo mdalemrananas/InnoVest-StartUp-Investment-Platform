@@ -12,11 +12,14 @@ import {
   Snackbar,
   Divider,
   useMediaQuery,
-  useTheme
+  useTheme,
+  InputAdornment
 } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PersonIcon from '@mui/icons-material/Person';
+import MessageIcon from '@mui/icons-material/Message';
 import axios from 'axios';
 
 const RED = '#e50914';
@@ -136,6 +139,13 @@ const Contact = () => {
                       helperText={errors.name}
                       size="small"
                       sx={{ background: 'white', borderRadius: 2 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -150,7 +160,13 @@ const Contact = () => {
                       helperText={errors.phone}
                       size="small"
                       sx={{ background: 'white', borderRadius: 2 }}
-                      //sx={{ background: 'white', borderRadius: 2, '& .MuiOutlinedInput-root': {'&.Mui-focused fieldset': { borderColor: '#e50914', colorboxShadow: 'none', }} }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PhoneIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -165,6 +181,13 @@ const Contact = () => {
                       helperText={errors.email}
                       size="small"
                       sx={{ background: 'white', borderRadius: 2 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <EmailIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -181,6 +204,13 @@ const Contact = () => {
                       multiline
                       minRows={4}
                       sx={{ background: 'white', borderRadius: 2 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <MessageIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
