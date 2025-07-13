@@ -5,13 +5,14 @@ from rest_framework.views import APIView
 from .models import Company
 from .serializers import CompanySerializer, CompanyPaymentSerializer
 from backend.models import CompanyPayment
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from django.conf import settings
 import os
 import logging
 import json
 import uuid
 from datetime import datetime
+from rest_framework.permissions import AllowAny
 
 class FileUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -36,9 +37,23 @@ class FileUploadView(APIView):
         
         # Save the file
         file_path = os.path.join(upload_dir, filename)
+        
+        # Add logging to debug the file upload
+        logger.info(f"Uploading file: {file_obj.name}")
+        logger.info(f"Upload directory: {upload_dir}")
+        logger.info(f"Full file path: {file_path}")
+        logger.info(f"MEDIA_ROOT: {settings.MEDIA_ROOT}")
+        
         with open(file_path, 'wb+') as destination:
             for chunk in file_obj.chunks():
                 destination.write(chunk)
+        
+        # Verify file was created
+        if os.path.exists(file_path):
+            logger.info(f"File successfully saved: {file_path}")
+            logger.info(f"File size: {os.path.getsize(file_path)} bytes")
+        else:
+            logger.error(f"File was not created: {file_path}")
         
         # Return the relative URL
         file_url = os.path.join(settings.MEDIA_URL, upload_to, filename)
@@ -237,6 +252,44 @@ class CompanyViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"Error getting user payments: {str(e)}")
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='recently-funded', permission_classes=[AllowAny])
+    def recently_funded(self, request):
+        """
+        Returns companies ordered by their most recent paid payment date (latest first).
+        """
+        companies = Company.objects.annotate(
+            latest_payment=Max('companypayment__payment_date')
+        ).filter(
+            companypayment__payment_status='paid',
+            latest_payment__isnull=False
+        ).order_by('-latest_payment').distinct()
+        serializer = self.get_serializer(companies, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='paid_investors_count')
+    def paid_investors_count(self, request, pk=None):
+        try:
+            company = self.get_object()
+            # Count distinct users who have paid payments for this company
+            paid_investors_count = CompanyPayment.objects.filter(
+                company=company,
+                payment_status='paid'
+            ).values('user').distinct().count()
+            return Response({
+                'status': 'success',
+                'count': paid_investors_count
+            })
+        except Company.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Company not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
             return Response({
                 'status': 'error',
                 'message': str(e)
