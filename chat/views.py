@@ -78,7 +78,7 @@ class UsersView(views.APIView):
     def get(self, request):
         try:
             logger.info(f"Fetching users for {request.user.email}")
-            users = User.objects.exclude(id=request.user.id)
+            users = User.objects.exclude(id=request.user.id).exclude(user_type='admin')
             logger.info(f"Found {users.count()} users")
             
             # Log first few users for debugging
