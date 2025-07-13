@@ -27,7 +27,7 @@ SECRET_KEY = 'your-secret-key-here'  # Change this in production
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '54cc-103-191-98-69.ngrok-free.app']
 
 
 # Application definition
@@ -60,6 +60,9 @@ INSTALLED_APPS = [
     'my_companies',
     'my_companies_trackprogress',
     'my_companies_permission',
+    'kyc',
+    'kyc_control',
+    'company_addUser',
 ]
 
 MIDDLEWARE = [
@@ -149,7 +152,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_DIRS = [
     os.path.join(MEDIA_ROOT, 'id_documents'),
     os.path.join(MEDIA_ROOT, 'address_proofs'),
-    os.path.join(MEDIA_ROOT, 'signatures')
+    os.path.join(MEDIA_ROOT, 'signatures'),
+    os.path.join(MEDIA_ROOT, 'company_documents'),
+    os.path.join(MEDIA_ROOT, 'company_slides'),
+    os.path.join(MEDIA_ROOT, 'company_covers'),
+    os.path.join(MEDIA_ROOT, 'company_logos'),
+    os.path.join(MEDIA_ROOT, 'profile_pics'),
+    os.path.join(MEDIA_ROOT, 'investment_documents'),
+    os.path.join(MEDIA_ROOT, 'chat_attachments'),
+    os.path.join(MEDIA_ROOT, 'community_attachments'),
+    os.path.join(MEDIA_ROOT, 'event_images'),
+    os.path.join(MEDIA_ROOT, 'event_covers'),
 ]
 
 for directory in MEDIA_DIRS:

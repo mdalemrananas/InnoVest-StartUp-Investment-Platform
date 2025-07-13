@@ -7,7 +7,8 @@ from backend.views import (
     CompanyBusinessPlanViewSet,
     CompanyFundraiseTermsViewSet,
     CompanyContactView,
-    submit_kyc
+    submit_kyc,
+    statistics
 )
 
 router = routers.DefaultRouter()
@@ -23,6 +24,7 @@ urlpatterns = [
     path('api/auth/', include('authentication.urls')),
     path('api/', include('contact.urls')),
     path('api/contact/', CompanyContactView.as_view(), name='contact'),
+    path('api/statistics/', statistics, name='statistics'),
     path('api-auth/', include('rest_framework.urls')),
     path('api/company-permission/', include('company_permission.urls')),
     path('api/emails/', include('emails.urls')),
@@ -37,4 +39,6 @@ urlpatterns = [
     path('api/', include('my_companies_trackprogress.urls')),
     path('api/', include('my_companies_permission.urls')),
     path('api/ml/', include('ml_api.urls')),  # ML API endpoints
+    path('api/kyc/', include('kyc_control.urls')),
+    path('api/company-add-user/', include('company_addUser.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
