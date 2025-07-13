@@ -20,6 +20,8 @@ import logging
 import traceback
 import time
 from rest_framework.views import APIView
+from chat.models import ChatRequest
+from authentication.models import CustomUser
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,7 @@ def initiate_payment(request):
                 company_id=request.data['company_id'],
                 amount=request.data['amount'],
                 payment_method=request.data['payment_method'],
+                #payment_method='sslcommerz',
                 transaction_id=transaction_id,
                 payment_status='unpaid'
             )
@@ -561,6 +564,27 @@ class VerifyPaymentView(APIView):
             }
 
             logger.info(f"Payment verification successful - Response data: {response_data}")
+
+            # --- ChatRequest creation logic ---
+            try:
+                from_user = payment.user
+                to_user_id = company.user_id  # This is the owner's user id (int)
+                # Defensive: get the user instance
+                to_user = CustomUser.objects.get(id=to_user_id)
+                # Only create if not already exists in either direction
+                chat_request, created = ChatRequest.objects.get_or_create(
+                    from_user=from_user,
+                    to_user=to_user,
+                    defaults={'status': 'accepted'}
+                )
+                if not created and chat_request.status != 'accepted':
+                    chat_request.status = 'accepted'
+                    chat_request.save()
+                logger.info(f"ChatRequest created/updated: {chat_request.id} (from {from_user.id} to {to_user.id})")
+            except Exception as e:
+                logger.error(f"Error creating ChatRequest after payment: {str(e)}")
+            # --- End ChatRequest logic ---
+
             return Response(response_data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -611,7 +635,14 @@ def payment_list_create(request):
 
     elif request.method == 'GET':
         try:
-            payments = Payment.objects.filter(user=request.user)
+            # Check if user is admin
+            if request.user.is_staff or request.user.is_superuser:
+                # Admin can see all payments
+                payments = Payment.objects.all()
+            else:
+                # Regular users can only see their own payments
+                payments = Payment.objects.filter(user=request.user)
+                
             return Response({
                 'success': True,
                 'payments': [{
@@ -621,7 +652,9 @@ def payment_list_create(request):
                     'payment_method': payment.payment_method,
                     'transaction_id': payment.transaction_id,
                     'payment_status': payment.payment_status,
-                    'payment_date': payment.payment_date
+                    'payment_date': payment.payment_date,
+                    'user_id': payment.user_id,  # Include user_id for admin reference
+                    'user_email': payment.user.email if payment.user else None  # Include user email for admin reference
                 } for payment in payments]
             })
         except Exception as e:
@@ -630,3 +663,16 @@ def payment_list_create(request):
                 'error': 'Failed to fetch payment records',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_company_user_payment(request, company_id, user_id):
+    try:
+        payment = Payment.objects.filter(company_id=company_id, user_id=user_id).first()
+        if not payment:
+            return Response({'detail': 'Payment not found.'}, status=status.HTTP_404_NOT_FOUND)
+        payment.delete()
+        return Response({'detail': 'User payment deleted.'}, status=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

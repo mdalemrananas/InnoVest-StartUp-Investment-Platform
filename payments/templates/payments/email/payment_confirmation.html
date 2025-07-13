@@ -58,7 +58,7 @@
         <div class="details">
             <h3>Transaction Details:</h3>
             <p><strong>Company:</strong> {{ company_name }}</p>
-            <p><strong>Amount:</strong> <span class="amount">${{ amount|floatformat:2 }}</span></p>
+            <p><strong>Amount:</strong> <span class="amount">৳{{ amount|floatformat:2 }}</span></p>
             <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
             <p><strong>Date:</strong> {{ date }}</p>
         </div>
