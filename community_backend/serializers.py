@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CommunityPost, CommunityComment
+from django.db import connection
 
 class CommunityPostSerializer(serializers.ModelSerializer):
     interest_count = serializers.SerializerMethodField()
@@ -44,11 +45,12 @@ class CommunityPostSerializer(serializers.ModelSerializer):
 class CommunityCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     post = serializers.PrimaryKeyRelatedField(queryset=CommunityPost.objects.all())
+    parent_id = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = CommunityComment
-        fields = ['id', 'post', 'user', 'content', 'created_at', 'updated_at']
-        read_only_fields = ['user', 'created_at', 'updated_at']
+        fields = ['id', 'post', 'user', 'content', 'created_at', 'updated_at', 'parent_id']
+        read_only_fields = ['user', 'created_at', 'updated_at', 'parent_id']
 
     def get_user(self, obj):
         profile_picture_url = None
@@ -69,6 +71,12 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
             'profile_picture': profile_picture_url
         }
         
+    def get_parent_id(self, obj):
+        # Use raw SQL to fetch parent_id since it's not in the model
+        cursor = connection.cursor()
+        cursor.execute("SELECT parent_id FROM community_backend_communitycomment WHERE id = %s", [obj.id])
+        row = cursor.fetchone()
+        return row[0] if row else None
 
     def validate_content(self, value):
         if not value or not value.strip():

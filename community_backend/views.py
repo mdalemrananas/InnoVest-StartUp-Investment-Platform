@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 import requests
 from django.conf import settings
 import logging
+from django.db import connection
 
 from .models import CommunityPost, CommunityComment, CommunityInterest
 from .serializers import CommunityPostSerializer, CommunityCommentSerializer, NotificationSerializer
@@ -20,9 +21,16 @@ class CommunityPostCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # To return all posts, use the next line. To return only the current user's posts, uncomment the filter line below.
-        posts = CommunityPost.objects.all()
-        # posts = CommunityPost.objects.filter(user=request.user)
+        # Check if author filter is provided in query parameters
+        author_id = request.query_params.get('author')
+        
+        if author_id:
+            # Filter posts by the specified author
+            posts = CommunityPost.objects.filter(user_id=author_id)
+        else:
+            # Return all posts if no author filter
+            posts = CommunityPost.objects.all()
+            
         serializer = CommunityPostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -61,12 +69,29 @@ class CommunityCommentView(APIView):
             serializer = CommunityCommentSerializer(comment)
             return Response(serializer.data)
         elif post_id:
-            # Get all comments for a specific post
-            comments = CommunityComment.objects.filter(post_id=post_id)
-            serializer = CommunityCommentSerializer(comments, many=True)
+            # Use raw SQL to fetch all comments for a post, including parent_id
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, post_id, user_id, content, created_at, updated_at, parent_id
+                    FROM community_backend_communitycomment
+                    WHERE post_id = %s
+                    ORDER BY created_at ASC
+                """, [post_id])
+                rows = cursor.fetchall()
+            # Build comment dicts for serializer
+            comments = []
+            for row in rows:
+                comment_obj = CommunityComment(id=row[0], post_id=row[1], user_id=row[2], content=row[3], created_at=row[4], updated_at=row[5])
+                comment_obj._parent_id = row[6]  # for serializer
+                comments.append(comment_obj)
+            # Patch serializer to use _parent_id
+            class PatchedSerializer(CommunityCommentSerializer):
+                def get_parent_id(self, obj):
+                    return getattr(obj, '_parent_id', None)
+            serializer = PatchedSerializer(comments, many=True, context={'request': request})
             return Response(serializer.data)
         else:
-            # Get all comments
+            # Get all comments (no parent filter)
             comments = CommunityComment.objects.all()
             serializer = CommunityCommentSerializer(comments, many=True)
             return Response(serializer.data)
@@ -112,18 +137,14 @@ class CommunityCommentView(APIView):
         try:
             post = get_object_or_404(CommunityPost, id=post_id)
             logger.info(f"Creating comment for post {post_id} by user {request.user.id}")
-            
-            # Get the comment text
             comment_text = request.data.get('content', '').strip()
             if not comment_text:
                 return Response(
                     {"detail": "Comment text is required"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
             # Check for hate speech
             is_hate_speech, confidence, message = self._check_hate_speech(comment_text)
-            
             if is_hate_speech:
                 logger.warning(
                     f"Blocked hate speech comment from user {request.user.id} "
@@ -133,26 +154,39 @@ class CommunityCommentView(APIView):
                     {"detail": message or "This comment violates our community guidelines."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
-            # Add post_id to the request data
-            data = request.data.copy()
-            data['post'] = post_id
-            
-            # Log that we're about to save the comment
-            logger.debug(f"Saving comment for post {post_id} by user {request.user.id}")
-            
-            serializer = CommunityCommentSerializer(data=data)
-            if serializer.is_valid():
-                comment = serializer.save(user=request.user, post=post)
-                logger.info(f"Comment {comment.id} created successfully for post {post_id}")
+            parent_id = request.data.get('parent_id')
+            if parent_id:
+                # Use raw SQL to insert reply
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO community_backend_communitycomment (post_id, user_id, content, created_at, updated_at, read, parent_id)
+                        VALUES (%s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'No', %s)
+                        RETURNING id
+                        """,
+                        [post_id, request.user.id, comment_text, parent_id]
+                    )
+                    new_id = cursor.fetchone()[0]
+                    # Fetch the new comment for serialization
+                    cursor.execute("SELECT id, post_id, user_id, content, created_at, updated_at, parent_id FROM community_backend_communitycomment WHERE id = %s", [new_id])
+                    row = cursor.fetchone()
+                comment_obj = CommunityComment(id=row[0], post_id=row[1], user_id=row[2], content=row[3], created_at=row[4], updated_at=row[5])
+                comment_obj._parent_id = row[6]
+                class PatchedSerializer(CommunityCommentSerializer):
+                    def get_parent_id(self, obj):
+                        return getattr(obj, '_parent_id', None)
+                serializer = PatchedSerializer(comment_obj, context={'request': request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
-                logger.warning(
-                    f"Validation error creating comment for post {post_id} by user {request.user.id}: "
-                    f"{serializer.errors}"
-                )
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                
+                # Normal comment (no parent)
+                data = request.data.copy()
+                data['post'] = post_id
+                serializer = CommunityCommentSerializer(data=data)
+                if serializer.is_valid():
+                    comment = serializer.save(user=request.user, post=post)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(
                 f"Error creating comment for post {post_id} by user {request.user.id}: {str(e)}",
